@@ -25,8 +25,19 @@ function ensureUser(){if(!profile?.active)throw new Error('Sem perfil ativo auto
 async function getProfile() {
   const {data:{user},error}=await supabase.auth.getUser();
   if(error||!user)return null;
-  const row=check(await supabase.from('profiles').select('*').eq('id',user.id).single());
-  if(!row.active)throw new Error('Seu cadastro existe, mas aguarda ativação por um administrador.');
+  // Os sistemas dividem Auth, mas têm perfis/permissões INDEPENDENTES.
+  let row=check(await supabase.from('profiles').select('*').eq('id',user.id).maybeSingle());
+  if(!row){
+    check(await supabase.rpc('dcs_register_profile'));
+    row=check(await supabase.from('profiles').select('*').eq('id',user.id).single());
+  }
+  if(!row.active){
+    // Um administrador já existente do Autoridades SP pode assumir o primeiro
+    // posto administrativo do HUB. Não altera sua função no Autoridades SP.
+    const claimed=check(await supabase.rpc('dcs_claim_initial_admin'));
+    if(claimed)row=check(await supabase.from('profiles').select('*').eq('id',user.id).single());
+  }
+  if(!row.active)throw new Error('Sua conta do DCS HUB está cadastrada, mas aguarda ativação por um administrador.');
   return row;
 }
 function labelFor(id){return id ? (labelById.get(id)||'Equipe'):'Equipe';}
@@ -216,8 +227,18 @@ export const backend={
   },
   async listRequesters(){
     ensureUser();
-    return check(await supabase.from('event_requesters')
-      .select('id,name,kind,source,active,created_at,updated_at').order('name'));
+    // Autoridades SP é a fonte única dos deputados em exercício.
+    // Não se copiam nem alteram registros de public.autoridades.
+    const [master,custom]=await Promise.all([
+      supabase.from('autoridades').select('id,name,kind,updated_at').eq('kind','deputado_estadual').order('name'),
+      supabase.from('event_requesters').select('id,name,kind,source,active,created_at,updated_at').order('name')
+    ]);
+    const deputies=check(master).map(a=>({
+      id:'a:'+a.id,name:a.name,kind:'deputado',source:'Autoridades SP · cadastro oficial',
+      active:true,updated_at:a.updated_at,linked_authority_id:a.id
+    }));
+    const added=check(custom).map(r=>({...r,id:'c:'+r.id}));
+    return [...deputies,...added].sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
   },
   async createRequester(data){
     ensureUser();
@@ -227,7 +248,8 @@ export const backend={
   async updateRequester(id,data){
     ensureUser();
     if(profile.role!=='admin')throw new Error('Somente administrador gerencia solicitantes');
-    return check(await supabase.from('event_requesters').update(data).eq('id',id).select('id').single());
+    if(!id.startsWith('c:'))throw new Error('Deputados são mantidos pelo Autoridades SP, não pelo DCS HUB');
+    return check(await supabase.from('event_requesters').update(data).eq('id',id.slice(2)).select('id').single());
   },
   async delegateChecklistItem(eventId,index,label,team,due){
     ensureUser();
