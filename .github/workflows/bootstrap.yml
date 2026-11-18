@@ -21,7 +21,7 @@ jobs:
           python - <<'PY'
           import base64, json, lzma, pathlib, shutil
           root = pathlib.Path('.').resolve()
-          b64 = pathlib.Path('.dcs-transfer/payload.b64').read_text('ascii').strip()
+          b64 = ''.join(pathlib.Path('.dcs-transfer/' + f).read_text('ascii').strip() for f in ['payload-part-1.b64', 'payload-part-2.b64', 'payload-part-3.b64', 'payload.b64'])
           files = json.loads(lzma.decompress(base64.b64decode(b64)).decode('utf-8'))
           assert len(files) == 15, "Manifesto inesperado"
           for rel, value in files.items():
