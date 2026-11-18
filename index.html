@@ -251,5 +251,11 @@ let t0;try{t0=localStorage.getItem('dcs-theme')}catch(e){}
 theme(t0||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'));
 window.DCS_BRIDGE={E,T,PPL,A,N,S,route,refresh,rr,openEv,closeOv,toast,bell};
 </script>
-<script type="module" src="/src/backend.js"></script>
+<script type="module">
+  // GitHub Pages publica somente a prévia demonstrativa estática.
+  // No ambiente Vite, o código de backend é empacotado normalmente.
+  if (!location.hostname.endsWith('.github.io')) {
+    import('./src/backend.js');
+  }
+</script>
 </body></html>
