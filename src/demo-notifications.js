@@ -54,4 +54,5 @@ function isMine(name){
  return name==='Você'||roles[window.DCS_BRIDGE?.S.role]?.name===name;
 }
 window.DCS_DEMO_NOTIFY={switchAccount,assigned,markRead,logout,reset,isMine};
+if(window.DCS_DEMO_AUTH?.currentEmail()&&window.DCS_BRIDGE?.S?.in)switchAccount(window.DCS_DEMO_AUTH.currentEmail());
 })();
