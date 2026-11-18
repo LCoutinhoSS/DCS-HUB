@@ -11,6 +11,7 @@ let profile=null;
 let profiles=[];
 let labelById=new Map();
 let idByLabel=new Map();
+let notificationPoll=null;
 
 function check(response) {
   if(response.error) throw new Error(response.error.message);
@@ -38,9 +39,10 @@ async function loadAll() {
     supabase.from('events').select('*').order('start_at'),
     supabase.from('event_checklist').select('*'),
     supabase.from('tasks').select('*').order('created_at',{ascending:false}),
-    supabase.from('event_history').select('*').order('created_at',{ascending:false}).limit(500)
+    supabase.from('event_history').select('*').order('created_at',{ascending:false}).limit(500),
+    supabase.from('task_notifications').select('id,task_id,title,created_at,read_at').order('created_at',{ascending:false}).limit(100)
   ]);
-  const [people,events,checklist,tasks,history]=q.map(check);
+  const [people,events,checklist,tasks,history,notifications]=q.map(check);
   profiles=people;
   labelById=new Map();idByLabel=new Map();
   people.forEach(p=>{
@@ -56,8 +58,10 @@ async function loadAll() {
   data.E.splice(0,data.E.length,...events.map(e=>toUiEvent(e,checklist,history,labelFor)));
   data.T.splice(0,data.T.length,...tasks.map(t=>toUiTask(t,eventMap,labelFor)));
   data.A.splice(0,data.A.length,...history.slice(0,8).map(h=>[describeHistory(h),new Date(h.created_at).toLocaleString('pt-BR')]));
-  data.N.splice(0,data.N.length); // Nunca exibir notificações fictícias no modo real.
+  data.N.splice(0,data.N.length,...notifications.map(n=>({id:n.id,t:n.title,w:new Date(n.created_at).toLocaleString('pt-BR'),u:!n.read_at})));
   data.bell();
+  window.DCS_TEAMS?.load().catch(e=>console.warn('[DCS HUB] Não foi possível carregar a equipe:',e));
+  window.DCS_VENUES?.load().catch(e=>console.warn('[DCS HUB] Não foi possível carregar espaços:',e));
   return {events:events.length,tasks:tasks.length};
 }
 function enterApp() {
@@ -67,6 +71,8 @@ function enterApp() {
   const avatar=$('#av');if(avatar)avatar.textContent=profile.full_name.split(/\s+/).slice(0,2).map(s=>s[0]).join('').toUpperCase();
   const note=$('.sb .pl');if(note)note.innerHTML='Banco institucional <b>conectado</b> · <span id="pf">'+ui.S.role+'</span>';
   $('#login').hidden=true;$('#app').hidden=false;ui.route();
+  if(notificationPoll)clearInterval(notificationPoll);
+  notificationPoll=setInterval(()=>{if(profile?.active)backend.refreshNotifications().catch(console.warn);},30000);
 }
 function showLogin(){
   const ui=bridge();ui.S.in=0;$('#app').hidden=true;$('#login').hidden=false;
@@ -99,15 +105,15 @@ export const backend={
       await loadAll();enterApp();
     }catch(e){await supabase.auth.signOut();profile=null;alertError(e);}
   },
-  async logout(){check(await supabase.auth.signOut());profile=null;window.DCS_KNOWLEDGE?.reset();showLogin();bridge().toast('Sessão encerrada');},
+  async logout(){if(notificationPoll)clearInterval(notificationPoll);notificationPoll=null;check(await supabase.auth.signOut());profile=null;window.DCS_KNOWLEDGE?.reset();window.DCS_VENUES?.reset();showLogin();bridge().toast('Sessão encerrada');},
   async reload(){await loadAll();bridge().refresh();},
   async createEvent(form){
     ensureUser();
     const dates=eventPeriod(form.get('d'),form.get('h'),form.get('e'));
     const name=String(form.get('t')||'').trim();if(!name)throw new Error('Título obrigatório');
     check(await supabase.from('events').insert({
-      title:name,category:form.get('c'),location:String(form.get('l')||'').trim()||'A definir',
-      ...dates,created_by:profile.id,owner_id:profile.id,status:'pending'
+      title:name,category:form.get('c'),location:window.DCS_VENUES?.get(form.get('venue_id'))?.name||'',
+      ...dates,venue_id:form.get('venue_id'),created_by:profile.id,owner_id:profile.id,status:'pending'
     }).select('id').single());
     bridge().closeOv();await this.reload();bridge().toast('Atividade pendente criada no banco');
   },
@@ -131,13 +137,14 @@ export const backend={
     const label=form.get('w');const eventId=form.get('v')||null;
     check(await supabase.from('tasks').insert({
       title:String(form.get('t')||'').trim(),event_id:eventId,
-      assignee_id:idFor(label),created_by:profile.id,due_at:form.get('d'),
+      assignee_id:idFor(label),team:form.get('team'),created_by:profile.id,due_at:form.get('d'),
       priority:PRIORITY_CODE[form.get('p')]||'medium',status:'pending'
     }).select('id').single());
     bridge().closeOv();await this.reload();bridge().toast('Tarefa cadastrada e atribuída no banco');
   },
   async assignTask(id,label){
-    check(await supabase.from('tasks').update({assignee_id:idFor(label)}).eq('id',id).select('id').single());
+    const team=window.DCS_TEAMS?.getTeam(label);
+    check(await supabase.from('tasks').update({assignee_id:idFor(label),...(team?{team}:{})}).eq('id',id).select('id').single());
     await this.reload();bridge().rr();bridge().toast('Responsável atualizado');
   },
   async taskStatus(id,label){
@@ -175,9 +182,16 @@ export const backend={
   },
   async listArticles(){
     ensureUser();
-    return check(await supabase.from('knowledge_articles')
-      .select('id,title,summary,body,category,status,tags,event_id,author_id,version,created_at,updated_at')
+    const items=check(await supabase.from('knowledge_articles')
+      .select('id,title,summary,body,category,status,tags,event_id,author_id,version,media,created_at,updated_at')
       .order('updated_at',{ascending:false}));
+    return await Promise.all(items.map(async article=>({
+      ...article,media:await Promise.all((article.media||[]).map(async m=>{
+        if(!m.path)return m;
+        const {data,error}=await supabase.storage.from('dcs-editorial').createSignedUrl(m.path,3600);
+        return {...m,src:error?'':data.signedUrl};
+      }))
+    })));
   },
   async createArticle(data){
     ensureUser();
@@ -194,8 +208,47 @@ export const backend={
   async listArticleRevisions(id){
     ensureUser();
     return check(await supabase.from('knowledge_article_revisions')
-      .select('id,article_id,version,title,summary,body,category,status,created_at')
+      .select('id,article_id,version,title,summary,body,category,status,media,created_at')
       .eq('article_id',id).order('version',{ascending:false}));
+  },
+  async listVenues(){
+    ensureUser();
+    return check(await supabase.from('venues').select('id,name,kind,authority,active,created_at,updated_at').order('name'));
+  },
+  async createVenue(data){
+    ensureUser();
+    return check(await supabase.from('venues').insert(data).select('id').single());
+  },
+  async updateVenue(id,data){
+    ensureUser();
+    return check(await supabase.from('venues').update(data).eq('id',id).select('id').single());
+  },
+  async listTeamProfiles(){
+    ensureUser();
+    const rows=check(await supabase.from('profiles').select('id,full_name,department,role,active').eq('active',true));
+    return rows.map(p=>({...p,label:p.id===profile.id?'Você':(labelById.get(p.id)||p.full_name+' · '+p.id.slice(0,6))}));
+  },
+  async refreshNotifications(){
+    if(!profile?.active)return;
+    const items=check(await supabase.from('task_notifications').select('id,title,created_at,read_at').order('created_at',{ascending:false}).limit(100));
+    const ui=bridge();
+    ui.N.splice(0,ui.N.length,...items.map(n=>({id:n.id,t:n.title,w:new Date(n.created_at).toLocaleString('pt-BR'),u:!n.read_at})));
+    ui.bell();
+  },
+  async markNotificationsRead(){
+    ensureUser();
+    check(await supabase.from('task_notifications').update({read_at:new Date().toISOString()}).is('read_at',null).select('id'));
+    await this.refreshNotifications();
+  },
+  async uploadArticlePhoto(articleId,file){
+    ensureUser();
+    if(!['image/png','image/jpeg','image/webp'].includes(file?.type)||file.size>5*1024*1024)throw new Error('Foto deve ser PNG, JPG ou WebP de até 5 MB');
+    const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
+    const path=profile.id+'/'+articleId+'/'+crypto.randomUUID()+'.'+ext;
+    const {error}=await supabase.storage.from('dcs-editorial').upload(path,file,{contentType:file.type,upsert:false});
+    if(error)throw new Error('Não foi possível armazenar a foto: '+error.message);
+    const {data}=await supabase.storage.from('dcs-editorial').createSignedUrl(path,3600);
+    return {path,src:data?.signedUrl||'',caption:'',credit:''};
   },
   currentUserId(){return profile?.id||null;},
   async listAdminProfiles(){
