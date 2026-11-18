@@ -167,11 +167,13 @@ function cardDoc(d,compact=false){
  '<small class="mu">'+esc(selectedEventName(d.event_id))+(d.task_id?' · '+esc(selectedTaskName(d.task_id)):'')+'</small>'+foot+'</article>';
 }
 function cardArticle(a){
- const status=a.status==='published'?'Publicado':'Rascunho';
- return '<article class="hub-item"><div style="display:flex;justify-content:space-between;gap:8px"><span class="hub-icon gold">§</span>'+pill(status)+'</div>'+
- '<div><b class="hub-item-title">'+esc(a.title)+'</b><p>'+esc(a.summary||'Sem resumo')+'</p></div>'+
- '<div class="hub-tags">'+pill(label(LABEL_CATEGORY,a.category))+tags(a.tags)+'</div>'+
- '<div class="hub-item-foot"><small>Versão '+Number(a.version||1)+' · '+humanDate(a.updated_at)+'</small><button class="btn pri" data-k-read="'+esc(a.id)+'">Ler artigo</button></div></article>';
+ const media=articleMedia(a),source=media.length?mediaSource(media[0]):'';
+ const badge=a.status==='published'?'Publicada':'Rascunho';
+ return '<article class="hub-item editorial-card">'+
+ '<div class="editorial-cover-thumb">'+(source?'<img loading="lazy" src="'+esc(source)+'" alt="'+esc(media[0].caption||'Fotografia de capa')+'">':'<span class="editorial-placeholder">DCS · Revista Interna</span>')+'</div>'+
+ '<div class="editorial-card-body"><div class="editorial-meta"><span class="editorial-category">'+esc(label(LABEL_CATEGORY,a.category))+'</span><span>·</span><span>'+esc(humanDate(a.updated_at))+'</span><span>·</span><span>'+esc(badge)+'</span></div>'+
+ '<h3>'+esc(a.title)+'</h3><p>'+esc(a.summary||'Clique para ler a matéria completa.')+'</p>'+
+ '<div class="editorial-card-footer"><small class="mu">Edição '+Number(a.version||1)+' · '+media.length+' fotografia(s)</small><button class="btn pri" data-k-read="'+esc(a.id)+'">Ler matéria</button></div></div></article>';
 }
 function visibleArticles(){
  return state.articles.filter(a=>a.status==='published'||isManager()||(isEditor()&&isOwn(a)));
@@ -285,7 +287,7 @@ function openArticleForm(id,eventId){
  '<label>Resumo<input class="fi" name="summary" maxlength="350" value="'+esc(a?.summary||'')+'"></label>'+
  '<div class="hub-fields"><label>Área<select class="fi" name="category">'+opts(CATEGORIES,a?.category||'geral')+'</select></label>'+
  '<label>Situação<select class="fi" name="status">'+opts([['draft','Rascunho'],['published','Publicado']],a?.status||'draft')+'</select></label></div>'+
- '<label>Conteúdo<textarea class="fi hub-long" name="body" required minlength="10" maxlength="30000" placeholder="Descreva o procedimento, materiais, etapas e responsáveis.">'+esc(a?.body||'')+'</textarea></label>'+
+ '<label>Corpo da matéria (use ## Título de seção e **negrito**)<textarea class="fi hub-long editorial-long" name="body" required minlength="10" maxlength="30000" placeholder="Escreva o texto jornalístico em parágrafos. Use ## para intertítulos.">'+esc(a?.body||'')+'</textarea></label>'+photoInputs(a)+
  '<div class="hub-fields"><label>Vincular evento<select class="fi" name="event_id">'+eventOptions(a?.event_id||eventId)+'</select></label>'+
  '<label>Tags<input class="fi" name="tags" maxlength="320" value="'+esc((a?.tags||[]).join(', '))+'"></label></div>'+
  '<p class="hub-note">Use rascunho enquanto aguarda revisão. A publicação permite a leitura pelos demais servidores autorizados. Alterações criam versões.</p>'+
@@ -295,12 +297,21 @@ function openArticleForm(id,eventId){
 function showArticle(id){
  const a=state.articles.find(x=>x.id===id);if(!a)return;
  if(a.status==='draft'&&!isManager()&&!isOwn(a))return;
- modal('Artigo de conhecimento','<div class="hub-head"><div><div class="hub-kicker">'+esc(label(LABEL_CATEGORY,a.category))+' · versão '+Number(a.version||1)+'</div>'+
- '<h2 style="font-size:24px;margin-top:7px">'+esc(a.title)+'</h2></div><button class="ib" data-close aria-label="Fechar">×</button></div>'+
- '<p class="hub-article-summary">'+esc(a.summary||'')+'</p><div class="hub-tags" style="margin:9px 0 17px">'+pill(a.status==='published'?'Publicado':'Rascunho')+tags(a.tags)+'</div>'+
- '<div class="hub-article-body">'+esc(a.body)+'</div><div class="hub-actions" style="justify-content:flex-end;margin-top:17px">'+
- (canManage(a)?'<button class="btn" data-k-revisions="'+esc(id)+'">Versões</button><button class="btn" data-k-edit-article="'+esc(id)+'">Editar</button>':'')+
- '<button class="btn pri" data-close>Fechar</button></div>');
+ const photos=articleMedia(a),cover=photos[0],src=mediaSource(cover);
+ const gallery=photos.slice(1).map(editorialFig).join('');
+ const header='<div class="editorial-reader-hero">'+(src?'<img src="'+esc(src)+'" alt="'+esc(cover.caption||'Foto de capa')+'">':'<div class="editorial-noimage">DCS · Publicação Interna</div>')+'</div>';
+ const buttons=(canManage(a)?'<button class="btn" data-k-revisions="'+esc(id)+'">Versões</button><button class="btn" data-k-edit-article="'+esc(id)+'">Editar matéria</button>':'')+
+ '<button class="btn pri" data-close>Fechar</button>';
+ $('#ov').innerHTML='<div class="bk" data-close></div><article class="card editorial-reader" role="dialog" aria-modal="true" aria-label="Ler matéria: '+esc(a.title)+'">'+
+ header+'<div class="editorial-reader-inner"><div class="editorial-category">'+esc(label(LABEL_CATEGORY,a.category))+'</div>'+
+ '<h1>'+esc(a.title)+'</h1><p class="editorial-subhead">'+esc(a.summary||'')+'</p>'+
+ '<div class="editorial-byline">DCS HUB · '+esc(humanDate(a.updated_at))+' · '+(a.status==='published'?'Publicada':'Rascunho')+' · Edição '+Number(a.version||1)+'</div>'+
+ (cover?.caption||cover?.credit?'<p class="editorial-form-hint">Capa: '+esc(cover.caption||'')+(cover.credit?' · Foto: '+esc(cover.credit):'')+'</p>':'')+
+ '<div class="editorial-body">'+editorialText(a.body)+'</div>'+
+ (gallery?'<div class="editorial-media-grid">'+gallery+'</div>':'')+
+ '<div class="hub-tags" style="margin:16px 0">'+tags(a.tags)+'</div>'+
+ '<div class="hub-actions" style="justify-content:flex-end;flex-wrap:wrap;margin-top:20px">'+buttons+'</div></div></article>';
+ const control=$('#ov [data-close]');if(control)control.focus?.();
 }
 async function showRevisions(id){
  const a=state.articles.find(x=>x.id===id);if(!a||!canManage(a))return;
