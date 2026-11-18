@@ -25,6 +25,8 @@ jobs:
           files = json.loads(lzma.decompress(base64.b64decode(b64)).decode('utf-8'))
           assert len(files) == 15, "Manifesto inesperado"
           for rel, value in files.items():
+              if rel.startswith('.github/workflows/'):
+                  continue
               path = (root / rel).resolve()
               assert path.is_relative_to(root) and '.git' not in path.parts, f"Caminho proibido: {rel}"
               path.parent.mkdir(parents=True, exist_ok=True)
