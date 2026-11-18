@@ -39,6 +39,58 @@ function safeReference(value){
   }catch(_){}
   return null;
 }
+// Conteúdo editorial: sem HTML livre para impedir scripts injetados.
+function mediaSource(m){
+ const s=String(m?.src||m?.url||'');
+ if(/^data:image\/(png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(s)&&s.length<4500000&&!isLive())return s;
+ try{const u=new URL(s);if(u.protocol==='https:'&&!u.username&&!u.password)return u.toString();}catch(_){}
+ return '';
+}
+function articleMedia(a){return Array.isArray(a?.media)?a.media.slice(0,6):[];}
+function editorialFig(m){
+ const src=mediaSource(m);if(!src)return '';
+ return '<figure class="editorial-media"><img loading="lazy" src="'+esc(src)+'" alt="'+esc(m.caption||'Fotografia ilustrativa do artigo')+'"><figcaption>'+
+ esc(m.caption||'')+(m.credit?' · Foto: '+esc(m.credit):'')+'</figcaption></figure>';
+}
+function editorialText(body){
+ const lines=String(body||'').split(/\n/);let p=[],out=[];
+ const flush=()=>{if(p.length){out.push('<p>'+p.join(' ')+'</p>');p=[];}};
+ for(const line of lines){
+  const t=line.trim();
+  if(!t){flush();continue;}
+  if(t.startsWith('## ')){flush();out.push('<h2>'+esc(t.slice(3))+'</h2>');continue;}
+  if(t.startsWith('### ')){flush();out.push('<h3>'+esc(t.slice(4))+'</h3>');continue;}
+  p.push(esc(t).replace(/\*\*(.{1,120}?)\*\*/g,'<strong>$1</strong>'));
+ }
+ flush();return out.join('');
+}
+function fileAsImageData(file){
+ return new Promise((resolve,reject)=>{
+  if(!['image/png','image/jpeg','image/webp'].includes(file?.type)||file.size>2*1024*1024){
+   reject(new Error('Na demonstração, cada foto deve ser PNG/JPG/WebP de até 2 MB'));return;
+  }
+  const reader=new FileReader();
+  reader.onload=()=>resolve(String(reader.result));reader.onerror=()=>reject(new Error('Falha ao ler a imagem'));
+  reader.readAsDataURL(file);
+ });
+}
+function photoInputs(a){
+ const existing=articleMedia(a);
+ const existingHtml=existing.length?'<p class="editorial-form-hint">Fotos atuais: desmarque as que deseja retirar desta matéria.</p><div class="editorial-image-preview">'+existing.map((m,i)=>{
+  const src=mediaSource(m);
+  return '<label class="editorial-preview-tile">'+(src?'<img src="'+esc(src)+'" alt="'+esc(m.caption||'Foto atual')+'">':'')+
+   '<small><input type="checkbox" name="keep_image" value="'+i+'" checked> Manter foto '+(i+1)+'</small></label>';
+ }).join('')+'</div>':'';
+ const rows=[0,1,2].map(i=>'<div class="editorial-photo-row"><div class="wide"><b class="editorial-label">Nova imagem '+(i+1)+'</b></div>'+
+ '<label class="wide">Arquivo local (JPG, PNG ou WebP)<input type="file" class="fi" name="image_file_'+i+'" accept="image/jpeg,image/png,image/webp"></label>'+
+ '<label class="wide">Ou URL HTTPS pública da imagem<input class="fi" type="url" name="image_url_'+i+'" placeholder="https://...imagem.jpg" maxlength="1800"></label>'+
+ '<label>Legenda<input class="fi" name="image_caption_'+i+'" maxlength="220" placeholder="Descreva a fotografia"></label>'+
+ '<label>Crédito da foto<input class="fi" name="image_credit_'+i+'" maxlength="120" placeholder="Nome do fotógrafo ou setor"></label></div>').join('');
+ return '<div class="editorial-image-editor"><b>Fotografias da matéria</b><p>A primeira imagem aparece como capa; as demais formam uma galeria abaixo do texto. Cada foto pode ter legenda e crédito. Máximo de seis imagens por matéria.</p>'+
+ existingHtml+'<div class="editorial-photo-rows">'+rows+'</div><p class="editorial-form-hint">'+
+ (isLive()?'Os arquivos serão guardados em armazenamento privado do Supabase, após configurar a migração 005.':
+ 'Fotos locais aparecem somente nesta sessão de demonstração. Não envie fotos reais de servidores ou eventos internos ao site público.')+'</p></div>';
+}
 function selectedEventName(id){
   if(!id)return 'Sem evento vinculado';
   return bridge().E.find(x=>x.id===id)?.t||'Evento indisponível';
