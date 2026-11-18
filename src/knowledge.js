@@ -346,7 +346,7 @@ document.addEventListener('click',e=>{
  const node=e.target.closest('[data-k-nav],[data-k-add],[data-k-add-event-doc],[data-k-edit-doc],[data-k-edit-article],[data-k-open-doc],[data-k-read],[data-k-revisions],[data-k-show-revision],[data-k-delete-doc],[data-k-delete-article],[data-k-confirm-remove],[data-k-refresh]');
  if(!node||!bridge()?.S?.in)return;
  if(node.dataset.kNav){location.hash=node.dataset.kNav;return;}
- if(node.dataset.kRefresh){state.loaded=false;render(bridge().S.route);return;}
+ if(node.dataset.kRefresh){state.loaded=false;state.error=null;if(bridge().S.route==='eventos'){ensureData().then(()=>bridge().rr()).catch(err=>bridge().toast('Erro: '+err.message));}else render(bridge().S.route);return;}
  if(node.dataset.kAdd){if(node.dataset.kAdd==='doc')openDocForm(null,null);else openArticleForm(null,null);return;}
  if(node.dataset.kAddEventDoc){openDocForm(null,node.dataset.kAddEventDoc);return;}
  if(node.dataset.kEditDoc){openDocForm(node.dataset.kEditDoc,null);return;}
