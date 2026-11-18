@@ -16,7 +16,7 @@ const isLive=()=>!!(window.DCS_BACKEND&&window.DCS_BACKEND.enabled);
 const isEditor=()=>bridge().S.role!=='Leitor';
 const isManager=()=>['Gestor','Administrador'].includes(bridge().S.role);
 const me=()=>isLive()?window.DCS_BACKEND.currentUserId():'demo-me';
-const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;':'&quot;',"'":'&#39;'}[c]));
+const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const normalize=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 const now=()=>new Date().toISOString();
 const tagList=v=>String(v||'').split(',').map(s=>s.trim()).filter(Boolean).slice(0,8).map(x=>x.slice(0,40));
