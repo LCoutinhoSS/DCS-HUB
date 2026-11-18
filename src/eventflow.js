@@ -24,7 +24,7 @@ function meetingFields(){
 function checklistRows(kind){
  const tasks=ck().items(kind);
  const sections=[...new Set(tasks.map(t=>t.section))];
- const team=window.DCS_TEAMS?.defaultTeam()||'DCS';
+ const team=$('#event-wizard-form')?.elements?.namedItem('team')?.value||window.DCS_TEAMS?.defaultTeam()||'DCS';
  const options=window.DCS_TEAMS?.membersOptions(team)||'<option value="Equipe">Atribuir depois</option>';
  return '<div class="flow-assign-header"><b>'+tasks.length+' itens do modelo</b><span>Não marque tarefas não aplicáveis</span></div>'+
  sections.map(section=>'<section class="flow-checklist-group"><h3>'+esc(section)+' <small>'+tasks.filter(t=>t.section===section).length+' itens</small></h3>'+
@@ -83,6 +83,8 @@ function updateKind(){
  const kind=$('#flow-kind')?.value||'sessao_solene';
  const meeting=$('#flow-meeting');
  if(meeting)meeting.hidden=kind!=='reuniao';
+ const teamSelect=$('#event-wizard-form')?.elements?.namedItem('team');
+ if(teamSelect)teamSelect.value=['sessao_solene','audiencia_publica','cursos_palestras','recepcao_autoridades','velorio'].includes(kind)?'Cerimonial':'DCS';
  const container=$('#flow-task-list');if(container)container.innerHTML=checklistRows(kind);
 }
 function validate(stepNumber){
@@ -159,7 +161,7 @@ async function openCreate(date){
  if(B().S.role==='Leitor'){B().toast('Leitor: somente consulta');return;}
  await Promise.all([window.DCS_REQUESTERS.load(),window.DCS_VENUES.load(),window.DCS_TEAMS.load()]);
  document.querySelector('#ov').innerHTML=createMarkup(date);
- showStep(0);
+ updateKind();showStep(0);
 }
 function extraHtml(ev){
  const b=ev.briefing||{};
@@ -182,7 +184,7 @@ function meetingHtml(ev){
  row('Participantes',b.attendees)+row('Recursos',b.resources)+'</div>'+
  '<h3>Pauta</h3><p class="flow-pre">'+esc(b.agenda_text||'Pauta não preenchida')+'</p>'+
  '<h3>Decisões e encaminhamentos</h3><p class="flow-pre">'+esc(b.decisions||'A registrar após a reunião')+'</p>'+
- '<button class="btn pri" data-nt="'+esc(ev.id)+'">+ Criar tarefa para um encaminhamento</button></div>';
+ '<div class="hub-actions"><button class="btn" data-flow-meeting-edit="'+esc(ev.id)+'">Editar pauta e decisões</button><button class="btn pri" data-nt="'+esc(ev.id)+'">+ Tarefa para encaminhamento</button></div></div>';
 }
 function checklistHtml(ev){
  const cklist=ev.chk||[],sections=[...new Set(cklist.map(x=>x.section||'Etapas'))];
@@ -190,10 +192,66 @@ function checklistHtml(ev){
  '<div class="flow-checklist-group"><h3>'+esc(section)+'</h3>'+
  cklist.map((x,i)=>({x,i})).filter(z=>(z.x.section||'Etapas')===section).map(({x,i})=>
  '<div class="flow-checklist-item"><button class="tk'+(x.d?' dn':'')+'" data-ck="'+esc(ev.id)+':'+i+'" role="checkbox" aria-checked="'+!!x.d+'"><span class="cb"></span><b>'+esc(x.x)+'</b></button>'+
- '<small>'+esc(x.assignee_label||x.assignee||'Equipe')+' · '+(x.applicable===false?'Não aplicável':x.d?'Concluído':'Pendente')+'</small></div>').join('')+
+ '<small>'+esc(x.assignee_label||x.assignee||'Equipe')+' · '+(x.applicable===false?'Não aplicável':x.d?'Concluído':'Pendente')+'</small>'+(B().S.role==='Leitor'?'':'<button class="btn" data-flow-delegate="'+esc(ev.id)+':'+i+'">Delegar</button>')+'</div>').join('')+
  '</div>').join('')+'</div>';
 }
+function delegationModal(eventId,index){
+ const ev=B().E.find(e=>e.id===eventId),item=ev?.chk[index];
+ if(!ev||!item||B().S.role==='Leitor')return;
+ const team=item.team||ev.team||'DCS';
+ document.querySelector('#ov').innerHTML='<div class="bk" data-close></div><form class="card md" id="flow-assign-form" role="dialog" aria-modal="true" aria-label="Delegar etapa">'+
+ '<h2>Delegar uma etapa</h2><p class="mu">'+esc(item.x)+'</p>'+
+ '<input type="hidden" name="event" value="'+esc(eventId)+'"><input type="hidden" name="idx" value="'+index+'">'+
+ '<label>Equipe<select class="fi" name="team" id="flow-delegation-team">'+(window.DCS_TEAMS?.groupOptions(team)||'<option>DCS</option>')+'</select></label>'+
+ '<label>Responsável<select class="fi" name="assignee" id="flow-delegation-person">'+(window.DCS_TEAMS?.membersOptions(team,item.assignee_label||'Equipe')||'<option>Equipe</option>')+'</select></label>'+
+ '<label>Prazo<input class="fi" type="date" name="due" value="'+esc(item.due_at||'')+'"></label>'+
+ '<p class="hub-note">Se o evento estiver confirmado, atribuir uma pessoa cria/atualiza sua tarefa e, com Supabase ativo, gera o aviso interno. Sem pessoa definida, permanece apenas no checklist.</p>'+
+ '<div class="hub-actions" style="justify-content:flex-end"><button class="btn" type="button" data-close>Cancelar</button><button class="btn pri">Salvar atribuição</button></div></form>';
+}
+async function submitDelegation(form){
+ const data=new FormData(form),id=String(data.get('event')),index=Number(data.get('idx'));
+ const ev=B().E.find(x=>x.id===id),item=ev?.chk[index];
+ if(!item)throw new Error('Etapa indisponível');
+ const team=String(data.get('team')),raw=String(data.get('assignee'));
+ if(!['DCS','Cerimonial'].includes(team))throw new Error('Equipe inválida');
+ const label=window.DCS_TEAMS?.normalizeAssignee(raw)||raw;
+ if(label!=='Equipe'){
+  const person=window.DCS_TEAMS?.list().find(x=>x.label===label&&x.active&&x.department===team&&x.role!=='reader');
+  if(!person)throw new Error('Selecione servidor ativo da equipe');
+ }
+ if(live())await window.DCS_BACKEND.delegateChecklistItem(id,index,label,team,data.get('due'));
+ else{
+  item.assignee_label=label;item.team=team;item.due_at=data.get('due')||null;item.applicable=true;
+  if(ev.st==='Confirmado')B().generateDemoTasks(ev);
+  B().rr();
+ }
+ B().closeOv();B().toast('Etapa delegada'+(live()?' no banco':' na demonstração'));
+}
+function meetingModal(id){
+ const ev=B().E.find(e=>e.id===id);if(!ev||B().S.role==='Leitor')return;
+ const b=ev.briefing||{};
+ const field=(label,name,value,rows=3)=>'<label>'+label+'<textarea class="fi" name="'+name+'" rows="'+rows+'" maxlength="5000">'+esc(value||'')+'</textarea></label>';
+ document.querySelector('#ov').innerHTML='<div class="bk" data-close></div><form class="card md" id="flow-meeting-form" role="dialog" aria-modal="true" aria-label="Editar pauta e decisões">'+
+ '<h2>Atualizar pauta e decisões</h2><p class="mu">'+esc(ev.t)+'</p><input type="hidden" name="event" value="'+esc(id)+'">'+
+ field('Objetivo','purpose',b.purpose,2)+field('Pauta','agenda_text',b.agenda_text,4)+
+ field('Participantes','attendees',b.attendees,3)+field('Decisões e encaminhamentos','decisions',b.decisions,5)+
+ '<div class="hub-actions" style="justify-content:flex-end"><button class="btn" data-close type="button">Cancelar</button><button class="btn pri">Salvar alterações</button></div></form>';
+}
+async function submitMeeting(form){
+ const fd=new FormData(form),id=String(fd.get('event'));
+ const patch={purpose:String(fd.get('purpose')||'').slice(0,2000),agenda_text:String(fd.get('agenda_text')||'').slice(0,5000),
+ attendees:String(fd.get('attendees')||'').slice(0,2500),decisions:String(fd.get('decisions')||'').slice(0,4000)};
+ if(live())await window.DCS_BACKEND.updateMeetingBriefing(id,patch);
+ else{
+  const ev=B().E.find(e=>e.id===id);if(!ev)throw Error('Reunião não encontrada');
+  ev.briefing={...ev.briefing,...patch};ev.hist.unshift('Pauta e encaminhamentos atualizados');
+  B().rr();
+ }
+ B().closeOv();B().toast('Informações da reunião atualizadas');
+}
 document.addEventListener('click',e=>{
+ const delegate=e.target.closest('[data-flow-delegate]');if(delegate){const [id,i]=delegate.dataset.flowDelegate.split(':');delegationModal(id,Number(i));return;}
+ const meeting=e.target.closest('[data-flow-meeting-edit]');if(meeting){meetingModal(meeting.dataset.flowMeetingEdit);return;}
  if(!e.target.closest('#flow-sheet'))return;
  if(e.target.closest('[data-flow-next]')){if(validate(step))showStep(step+1);return;}
  if(e.target.closest('[data-flow-prev]')){showStep(step-1);return;}
@@ -202,9 +260,13 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('change',e=>{
  if(e.target.id==='flow-kind')updateKind();
+ if(e.target.id==='flow-delegation-team'){const sel=$('#flow-delegation-person');if(sel)sel.innerHTML=window.DCS_TEAMS?.membersOptions(e.target.value,'Equipe')||'<option>Equipe</option>';}
+ if(e.target.name==='team'&&e.target.closest('#event-wizard-form')){const list=$('#flow-task-list');if(list)list.innerHTML=checklistRows($('#flow-kind').value);}
  if(e.target.id==='requester-select'){} // Seleção padronizada validada em salvar.
 });
 document.addEventListener('submit',e=>{
+ if(e.target.id==='flow-assign-form'){e.preventDefault();const btn=e.target.querySelector('[type=submit]');btn.disabled=true;submitDelegation(e.target).catch(x=>B().toast('Erro: '+x.message)).finally(()=>{if(btn.isConnected)btn.disabled=false;});return;}
+ if(e.target.id==='flow-meeting-form'){e.preventDefault();const btn=e.target.querySelector('[type=submit]');btn.disabled=true;submitMeeting(e.target).catch(x=>B().toast('Erro: '+x.message)).finally(()=>{if(btn.isConnected)btn.disabled=false;});return;}
  if(e.target.id!=='event-wizard-form')return;
  e.preventDefault();if(validate(0)&&validate(1))save();
 });
