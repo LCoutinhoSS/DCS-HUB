@@ -26,6 +26,7 @@ function harness(){
  const sessionStorage={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)};
  const bridge={S:{role:'',in:0,route:'dashboard',first:1},bell(){},route(){},toast(){}};
  const document={
+  documentElement:{dataset:{}},
   querySelector:s=>instances.get(s)||null,
   createElement:tag=>make(tag),
   addEventListener:(type,callback)=>{handlers['document '+type]=callback;}
