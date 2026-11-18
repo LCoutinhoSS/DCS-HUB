@@ -8,6 +8,7 @@ const code=read('../src/demo-auth.js');
 const index=read('../index.html');
 const demo=read('../demo.html');
 const backend=read('../src/backend.js');
+const boot=read('../src/boot.js');
 
 function harness(){
  const instances=new Map();
@@ -45,7 +46,8 @@ test('duas interfaces carregam tela de acesso e abandonam entrada sem senha',()=
   assert.match(html,/DCS_DEMO_AUTH\?\.logout\(\)/);
   assert.doesNotMatch(html,/\bS\.role=\$\('#rl'\)\.value/);
  }
- assert.match(index,/import\('\.\/src\/backend\.js'\)/);
+ assert.match(index,/src\/boot\.js/);
+ assert.match(boot,/import\('\.\/backend\.js'\)/);
  assert.match(demo,/src\/demo-auth\.js/);
 });
 
@@ -104,7 +106,9 @@ test('restaurar teste só funciona em perfil administrador',()=>{
 });
 
 test('modo Supabase continua com login real e não usa credenciais fictícias',()=>{
- assert.match(index,/if \(!backend\.enabled\) await import\('\.\/src\/demo-auth\.js'\)/);
+ assert.match(boot,/if\(!backend\.enabled\)await import\('\.\/demo-auth\.js'\)/);
+ assert.match(boot,/if\(stage\)/);
+ assert.match(boot,/if\(!configured\)showBootError/);
  assert.match(backend,/document\.documentElement\.dataset\.authMode='real'/);
  assert.match(backend,/supabase\.auth\.signInWithPassword/);
  assert.match(backend,/Seu cadastro existe, mas aguarda ativação/);
