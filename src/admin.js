@@ -1,7 +1,7 @@
 /* DCS HUB · Administração v0.4 | dados de demonstração não persistem */
 (function(){
 'use strict';
-var state={search:'',filter:'all',profiles:null,audit:[],loading:false,busy:false};
+var state={search:'',filter:'all',department:'all',profiles:null,audit:[],loading:false,busy:false};
 var roleNames={admin:'Administrador',manager:'Gestor',dcs:'Servidor DCS',ceremonial:'Servidor Cerimonial',reader:'Leitor'};
 var roles=[
  ['admin','Administrador','Gerencia usuários e todas as operações'],
@@ -45,6 +45,7 @@ async function fetchData(){
  } else {
    if(!state.profiles)state.profiles=demoProfiles();
    if(!state.audit.length)state.audit=demoAudit.slice();
+   window.DCS_TEAMS?.setDemoMembers(state.profiles);
  }
 }
 async function render(){
@@ -68,7 +69,7 @@ function filtered(){
  var q=state.search.trim().toLocaleLowerCase('pt-BR');
  return (state.profiles||[]).filter(function(p){
   var match=!q||(fullName(p)+' '+p.email+' '+roleNames[p.role]+' '+p.department).toLocaleLowerCase('pt-BR').includes(q);
-  return match&&(state.filter==='all'||(state.filter==='active'&&p.active)||(state.filter==='pending'&&!p.active)||state.filter===p.role);
+  return match&&(state.department==='all'||p.department===state.department)&&(state.filter==='all'||(state.filter==='active'&&p.active)||(state.filter==='pending'&&!p.active)||state.filter===p.role);
  });
 }
 function tableHtml(){
@@ -103,7 +104,7 @@ function paint(){
  '<section class="card admin-toolbar"><div class="admin-toolbar-main"><div><h2>Diretório da equipe</h2><p class="mu" style="margin:3px 0 0">Perfis e acessos da Divisão de Comunicação Social</p></div>'+
  '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-admin-refresh>Atualizar</button><button class="btn pri" data-admin-add>'+escape(controlLabel)+'</button></div></div>'+
  '<div style="margin-top:14px"><input class="admin-search" id="admin-search" type="search" placeholder="Buscar servidor, e-mail ou setor…" aria-label="Buscar servidores" value="'+escape(state.search)+'"></div>'+
- '<div class="admin-filters">'+[['all','Todos'],['active','Ativos'],['pending','Pendentes'],['admin','Administradores'],['manager','Gestores'],['dcs','DCS'],['ceremonial','Cerimonial'],['reader','Leitores']].map(function(x){return '<button class="cp'+(state.filter===x[0]?' on':'')+'" data-admin-filter="'+x[0]+'">'+x[1]+'</button>';}).join('')+'</div>'+
+ '<div class="admin-filters"><select class="hub-filter" id="admin-department" aria-label="Filtrar por equipe"><option value="all"'+(state.department==='all'?' selected':'')+'>Todas as equipes</option><option value="DCS"'+(state.department==='DCS'?' selected':'')+'>DCS</option><option value="Cerimonial"'+(state.department==='Cerimonial'?' selected':'')+'>Cerimonial</option></select>'+[['all','Todos'],['active','Ativos'],['pending','Pendentes'],['admin','Administradores'],['manager','Gestores'],['dcs','DCS'],['ceremonial','Cerimonial'],['reader','Leitores']].map(function(x){return '<button class="cp'+(state.filter===x[0]?' on':'')+'" data-admin-filter="'+x[0]+'">'+x[1]+'</button>';}).join('')+'</div>'+
  '<div id="admin-table">'+tableHtml()+'</div></section>'+
  '<div class="admin-two-col"><section class="card p"><h2>Histórico de permissões</h2><p class="mu" style="margin:5px 0 10px">Últimas mudanças de perfil, ativação e dados cadastrais.</p>'+auditHtml()+'</section>'+
  '<section class="card p"><h2>Matriz de permissões</h2><p class="mu" style="margin:5px 0 10px">Funções institucionais do HUB.</p>'+
@@ -155,6 +156,7 @@ async function updateProfile(form){
    await fetchData();
   }else{
    old.full_name=name;old.role=role;old.department=department;old.active=active;
+   window.DCS_TEAMS?.setDemoMembers(state.profiles);
    state.audit.unshift({actor_id:'demo-adm',target_name:name,old_role:form.dataset.oldRole||'reader',new_role:role,old_active:form.dataset.oldActive==='true',new_active:active,created_at:new Date().toISOString()});
   }
   clearModal();paint();toast('Permissões atualizadas'+(real()?' e auditadas':' (demonstração)'));
@@ -167,6 +169,7 @@ document.addEventListener('click',function(e){
  if(e.target.closest('[data-admin-add]')){if(real())showInstructions();else addDemo();return;}
  if(e.target.closest('[data-admin-refresh]')){render();}
 });
+document.addEventListener('change',function(e){if(e.target.id==='admin-department'){state.department=e.target.value;paint();}});
 document.addEventListener('input',function(e){
  if(e.target.id!=='admin-search')return;
  state.search=e.target.value;
