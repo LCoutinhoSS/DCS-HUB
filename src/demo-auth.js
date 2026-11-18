@@ -57,6 +57,7 @@ function enter(account,restored=false){
  $('#lf input[type=password]').value='';
  clearError();
  markSidebarRole();
+ window.DCS_DEMO_NOTIFY?.switchAccount(account.email);
  ui.bell();
  ui.route();
  return true;
@@ -80,6 +81,7 @@ function logout(){
  const ui=bridge();
  if(ui){ui.S.in=0;ui.S.first=1;ui.S.role='';ui.S.ev=null;}
  if(window.DCS_KNOWLEDGE?.reset)window.DCS_KNOWLEDGE.reset();
+ window.DCS_DEMO_NOTIFY?.logout();
  const app=$('#app');if(app)app.hidden=true;
  const login=$('#login');if(login)login.hidden=false;
  const pass=$('#lf input[type=password]');if(pass)pass.value='';
@@ -98,6 +100,7 @@ function reset(){
  if(!proceed)return false;
  try{
   sessionStorage.removeItem(store);
+  window.DCS_DEMO_NOTIFY?.reset();
   localStorage.removeItem('dcs-hub-preview-data-v1');
  }catch(_){}
  window.location.reload();
@@ -148,6 +151,6 @@ function setup(){
  });
  restore();
 }
-window.DCS_DEMO_AUTH={login,logout,reset,restore,accounts:accounts.map(x=>({email:x.email,role:x.role})),version:'0.6'};
+window.DCS_DEMO_AUTH={login,logout,reset,restore,currentEmail:()=>accounts.find(a=>a.role===bridge()?.S?.role)?.email||null,accounts:accounts.map(x=>({email:x.email,role:x.role})),version:'0.7'};
 setup();
 })();
