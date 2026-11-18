@@ -85,7 +85,8 @@ test('fotografias editoriais: capa, legenda, crédito e armazenamento privado',(
 
 test('separação de apresentação e Supabase permanece explícita',()=>{
  assert.match(demo,/demo-auth\.js/);
- assert.match(app,/import\('\.\/src\/backend\.js'\)/);
+ assert.match(app,/src\/boot\.js/);
+ assert.match(read('../src/boot.js'),/import\('\.\/backend\.js'\)/);
  assert.match(notify,/sessionStorage/);
  assert.doesNotMatch(venues,/service_role/);
  assert.doesNotMatch(teams,/service_role/);
