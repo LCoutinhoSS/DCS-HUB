@@ -161,4 +161,51 @@ end;
 $$;
 revoke all on function public.approve_event(uuid) from public,anon;
 grant execute on function public.approve_event(uuid) to authenticated;
+-- Delegação posterior de uma etapa, mantendo checklist e Kanban sincronizados.
+-- Executada somente pelo gestor ou criador autorizado do evento.
+create function public.delegate_event_checklist(
+ p_checklist uuid,p_assignee uuid,p_team text,p_due date
+) returns void language plpgsql security definer set search_path='' as $$
+declare v_ec public.event_checklist%rowtype; v_ev public.events%rowtype;
+ v_dept text;v_active boolean;v_role text;v_task uuid;
+begin
+ if (select auth.uid()) is null or not public.is_editor() then
+  raise exception 'Sem permissão de delegação';
+ end if;
+ select * into v_ec from public.event_checklist where id=p_checklist for update;
+ if not found then raise exception 'Etapa não encontrada'; end if;
+ select * into v_ev from public.events where id=v_ec.event_id;
+ if not found or v_ev.status not in ('pending','confirmed') then
+  raise exception 'Evento não permite atribuições';
+ end if;
+ if not (public.is_manager() or v_ev.created_by=auth.uid()) then
+  raise exception 'Somente o criador ou gestor atribui esta tarefa';
+ end if;
+ if p_team not in ('DCS','Cerimonial') then raise exception 'Equipe inválida'; end if;
+ if p_assignee is not null then
+  select department,active,role into v_dept,v_active,v_role from public.profiles where id=p_assignee;
+  if not found or not v_active or v_role='reader' or v_dept is distinct from p_team then
+   raise exception 'Responsável fora da equipe ou sem permissão';
+  end if;
+ end if;
+ update public.event_checklist
+ set assignee_id=p_assignee,team=p_team,due_at=p_due,applicable=true
+ where id=p_checklist;
+ select id into v_task from public.tasks where source_checklist_id=p_checklist for update;
+ if v_task is not null then
+  update public.tasks set assignee_id=p_assignee,team=p_team,
+   due_at=coalesce(p_due,(v_ev.start_at at time zone 'America/Sao_Paulo')::date)
+   where id=v_task;
+ elsif v_ev.status='confirmed' and p_assignee is not null and not v_ec.completed then
+  insert into public.tasks(event_id,title,assignee_id,team,created_by,due_at,priority,status,source_checklist_id)
+  values(v_ev.id,left(v_ec.label,160),p_assignee,p_team,auth.uid(),
+   coalesce(p_due,(v_ev.start_at at time zone 'America/Sao_Paulo')::date),
+   v_ec.priority,'pending',v_ec.id)
+  on conflict (source_checklist_id) do nothing;
+ end if;
+end;
+$$;
+revoke all on function public.delegate_event_checklist(uuid,uuid,text,date) from public,anon;
+grant execute on function public.delegate_event_checklist(uuid,uuid,text,date) to authenticated;
+
 commit;
