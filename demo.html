@@ -250,4 +250,4 @@ $('#lo').onclick=()=>{S.in=0;S.first=1;closeOv();$('#app').hidden=true;$('#login
 $('#lf').onsubmit=e=>{e.preventDefault();S.role=$('#rl').value;S.in=1;$('#ur').textContent=S.role;$('#pf').textContent=S.role;$('#login').hidden=true;$('#app').hidden=false;bell();route()};
 let t0;try{t0=localStorage.getItem('dcs-theme')}catch(e){}
 theme(t0||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'));
-</script><script defer src="./src/admin.js"></script><script defer src="./src/knowledge.js"></script></body></html>
+</script><script type="module" src="./src/admin.js"></script><script type="module" src="./src/knowledge.js"></script></body></html>
