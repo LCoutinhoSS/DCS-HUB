@@ -76,6 +76,7 @@ export const backend={
   enabled:configured,
   async initialize(){
     if(!configured)return;
+    document.documentElement.dataset.authMode='real';
     window.DCS_KNOWLEDGE?.reset();
     const box=$('#rl')?.closest('label');if(box)box.hidden=true;
     const note=$('.lc .pl');if(note)note.textContent='Acesso real via Supabase Auth. Apenas contas ativadas pela administração podem entrar. Não há seleção de perfil de demonstração.';
