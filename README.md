@@ -185,6 +185,10 @@ Autoridades SP → INATIVO (futuro conector somente-leitura)
 
 Ver [docs/OPERACOES_08.md](docs/OPERACOES_08.md) para o fluxo e os limites atuais.
 
+### Preparação para login real — aguardando confirmação da organização Supabase
+
+O frontend está preparado para `VITE_DCS_MODE=homologacao`, que exige o projeto de banco isolado, chave publicável e autenticação Supabase, **sem fallback para contas fictícias**. Foi corrigida a atribuição de tarefas à própria conta e reforçada a limpeza da sessão ao sair. O site GitHub Pages público continua em **modo demonstrativo**. Ainda não foi criado o projeto DCS HUB no Supabase nem aplicado SQL em banco real; o projeto **BUSCA AUTORIDADE** permanece intacto. Para o passo a passo, leia [docs/HOMOLOGACAO_SUPABASE.md](docs/HOMOLOGACAO_SUPABASE.md).
+
 ## Atualização 0.7
 
 O DCS HUB agora possui artigos com estrutura jornalística, fotos de capa e galeria; catálogo de 20 espaços ALESP (com edição por Administrador); equipes DCS e Cerimonial; e uma camada de avisos internos de tarefas, pronta para ativação em banco isolado. Leia [docs/OPERACOES_07.md](docs/OPERACOES_07.md) para as fontes e limites da demonstração.
