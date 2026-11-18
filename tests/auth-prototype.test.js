@@ -111,5 +111,6 @@ test('modo Supabase continua com login real e não usa credenciais fictícias',(
  assert.match(boot,/if\(!configured\)showBootError/);
  assert.match(backend,/document\.documentElement\.dataset\.authMode='real'/);
  assert.match(backend,/supabase\.auth\.signInWithPassword/);
- assert.match(backend,/Seu cadastro existe, mas aguarda ativação/);
+ assert.match(backend,/Sua conta do DCS HUB está cadastrada, mas aguarda ativação/);
+ assert.match(backend,/dcs_claim_initial_admin/);
 });
