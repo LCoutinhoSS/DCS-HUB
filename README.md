@@ -1,4 +1,4 @@
-# DCS HUB · v0.5 — operações, administração, documentos e conhecimento
+# DCS HUB · v0.6 — protótipo com acesso demonstrativo, operações e conhecimento
 
 **Projeto de desenvolvimento independente; não modifica nem acessa a produção do Autoridades SP.**
 
@@ -8,7 +8,7 @@ Esta versão parte do HTML do DCS HUB fornecido pelo usuário e preserva o desen
 
 | Área | Sem credenciais (demonstração) | Projeto Supabase configurado |
 | --- | --- | --- |
-| Login | Seleção de perfil fictício | E-mail/senha pelo Supabase Auth; perfil conferido no banco |
+| Login | E-mail + senha fictícios, sessão temporária e seletor de conta demonstrativa (sem segurança real) | E-mail/senha pelo Supabase Auth; perfil conferido no banco |
 | Agenda e exposições | Em memória | Eventos gravados no banco; intervalos exibidos em todos os dias |
 | Aprovação de eventos | Gestor fictício | Apenas perfil manager/admin, verificado no Postgres |
 | Modelos e checklists | Em memória | Checklists nascem automaticamente do modelo no momento do cadastro |
@@ -26,7 +26,7 @@ Esta versão parte do HTML do DCS HUB fornecido pelo usuário e preserva o desen
 
 ## 1. Testar a interface imediatamente (sem instalar nada)
 
-Abra `demo.html` no navegador ou a prévia pública em https://lcoutinhoss.github.io/DCS-HUB/. A interface funciona com informações demonstrativas e credenciais não validadas. Escolha **Gestor** para confirmar eventos ou **Administrador** para testar a gestão de servidores. Os dados somem ao recarregar a página.
+Abra a prévia pública em https://lcoutinhoss.github.io/DCS-HUB/ ou `demo.html` localmente. Escolha uma conta fictícia, insira a senha demonstrativa **DCSdemo2026!** e entre. As credenciais são públicas e verificadas exclusivamente no navegador: **este acesso não protege dados reais**. Para descartar os testes locais, entre como **Administrador** e use **Restaurar demonstração**. Consulte [docs/ACESSO_PROTOTIPO.md](docs/ACESSO_PROTOTIPO.md).
 
 ## 2. Criar um banco de TESTE separado
 
@@ -155,6 +155,7 @@ Autoridades SP → INATIVO (futuro conector somente-leitura)
 - `index.html`: interface original com pontos de integração opcionais para Supabase.
 - `demo.html`: interface demonstrativa em memória para experimentar sem instalação.
 - `src/backend.js`: autenticação e acesso Supabase, eventos, tarefas, administração, documentos e artigos versionados.
+- `src/demo-auth.js` e `src/auth.css`: portal demonstrativo com contas fictícias, sessão temporária e restauração da apresentação.
 - `src/model.js`: modelo de dados, períodos e conversões para a interface.
 - `src/knowledge.js` e `src/knowledge.css`: biblioteca, wiki, versões e vínculos.
 - `src/admin.js` e `src/admin.css`: administração de usuários.
