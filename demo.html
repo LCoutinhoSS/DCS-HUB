@@ -86,7 +86,7 @@ label{display:block;font-size:12px;color:var(--mu);margin-top:12px}
 .kb{display:grid;grid-template-columns:repeat(5,minmax(230px,1fr));gap:12px;overflow:auto;padding-bottom:6px;align-items:start}.kc{padding:12px;display:flex;flex-direction:column;gap:8px}.kt{padding:10px;border-radius:12px;border:1px solid var(--bd);background:var(--gl2)}
 @media(max-width:600px){.mc{min-height:58px}.mch{font-size:0;height:6px;padding:0;border:0;background:var(--c);border-radius:3px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
-</style></head><body>
+</style><link rel="stylesheet" href="./src/admin.css"></head><body>
 <div id="login" class="lg"><form id="lf" class="card lc"><div class="lo" style="padding:0 0 18px"><span class="mk">D</span>DCS HUB</div><h1 style="font-size:25px">Central Inteligente de Operações</h1><p class="mu">Divisão de Comunicação Social · Assembleia Legislativa do Estado de São Paulo</p>
 <label>E-mail institucional<input class="fi" type="email" placeholder="nome@instituicao.gov.br" autocomplete="username"></label><label>Senha<input class="fi" type="password" autocomplete="current-password"></label>
 <label>Perfil de demonstração<select class="fi" id="rl"><option>Administrador</option><option>Gestor</option><option>Servidor DCS</option><option selected>Servidor Cerimonial</option><option>Leitor</option></select></label>
@@ -158,7 +158,7 @@ function paint(){$('#view').innerHTML=dash();kpis();agenda();tasks();feed()}
 function route(){const h=location.hash.slice(1),r=NAV.some(n=>n[0]===h)?h:'dashboard';S.route=r;
  $$('.nv[data-go]').forEach(b=>{const on=b.dataset.go===r;b.classList.toggle('on',on);on?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current')});
  $('#bc').innerHTML='DCS HUB / <b>'+NAV.find(n=>n[0]===r)[1]+'</b>';closeSb();const v=$('#view');
- v.classList.remove('re');if(r!=='eventos')S.ev=null;if(r==='agenda'||r==='tarefas'||r==='eventos'){page();return}if(r!=='dashboard'){v.innerHTML=stub(r);return}
+ v.classList.remove('re');if(r!=='eventos')S.ev=null;if(r==='agenda'||r==='tarefas'||r==='eventos'){page();return}if(r==='admin'&&window.DCS_ADMIN){window.DCS_ADMIN.render();return}if(r!=='dashboard'){v.innerHTML=stub(r);return}
  if(S.first){S.first=0;v.innerHTML='<div class="sk" style="height:76px;width:62%"></div><div class="kp">'+'<div class="sk"></div>'.repeat(6)+'</div><div class="gr"><div class="sk" style="height:380px"></div><div class="sk" style="height:380px"></div></div>';setTimeout(()=>S.in&&S.route==='dashboard'&&paint(),650)}else paint()}
 function drIn(e){const d=e.chk.filter(c=>c.d).length,pc=Math.round(d/e.chk.length*100),c=CAT[e.c];
  return `<div style="display:flex;justify-content:space-between;align-items:center"><span class="pill" style="background:${c[1]}26">${c[0]}</span><button class="ib" data-close aria-label="Fechar painel">${ic('x')}</button></div><h2 style="font-size:23px;margin:10px 0 6px">${esc(e.t)}</h2><p class="mu" style="margin:0 0 8px">${fmtr(e)} · ${esc(e.loc)}</p><p style="margin:0"><span class="pill">${e.st}</span> ${e.who.map(w=>`<span class="pill">${esc(w)}</span>`).join(' ')}</p>
@@ -249,4 +249,4 @@ $('#lo').onclick=()=>{S.in=0;S.first=1;closeOv();$('#app').hidden=true;$('#login
 $('#lf').onsubmit=e=>{e.preventDefault();S.role=$('#rl').value;S.in=1;$('#ur').textContent=S.role;$('#pf').textContent=S.role;$('#login').hidden=true;$('#app').hidden=false;bell();route()};
 let t0;try{t0=localStorage.getItem('dcs-theme')}catch(e){}
 theme(t0||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'));
-</script></body></html>
+</script><script defer src="./src/admin.js"></script></body></html>
