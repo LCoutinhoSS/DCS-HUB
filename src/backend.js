@@ -225,6 +225,13 @@ export const backend={
       .select('id,article_id,version,title,summary,body,category,status,media,created_at')
       .eq('article_id',id).order('version',{ascending:false}));
   },
+  async listAuthorities(){
+    ensureUser();
+    // Fonte única: tabela Autoridades SP. Consulta somente leitura.
+    return check(await supabase.from('autoridades')
+      .select('id,name,kind,role,org,city,partido,email,status_verificacao,updated_at')
+      .order('name',{ascending:true}).limit(1000));
+  },
   async listRequesters(){
     ensureUser();
     // Autoridades SP é a fonte única dos deputados em exercício.
