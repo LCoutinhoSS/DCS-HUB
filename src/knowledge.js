@@ -177,11 +177,11 @@ async function render(route){
  if(route==='documentos')paintDocs();else paintWiki();
 }
 function eventDocsHtml(ev){
+ if(state.error)return '<p class="mu">Não foi possível carregar os documentos.</p><button class="btn" data-k-refresh>Recarregar</button>';
  if(!state.loaded){
   if(!state.loading)ensureData().then(()=>{if(bridge().S.route==='eventos'&&bridge().S.tb==='docs')bridge().rr();}).catch(()=>{if(bridge().S.route==='eventos'&&bridge().S.tb==='docs')bridge().rr();});
   return '<p class="mu">Carregando documentos do evento…</p>';
  }
- if(state.error)return '<p class="mu">Não foi possível carregar os documentos.</p><button class="btn" data-k-refresh>Recarregar</button>';
  const docs=state.docs.filter(x=>x.event_id===ev.id);
  const articles=visibleArticles().filter(x=>x.event_id===ev.id);
  return '<div class="hd" style="align-items:center;margin:12px 0"><div><h2>Acervo deste evento</h2><p class="mu" style="margin:4px 0 0">Referências e orientações vinculadas à atividade.</p></div>'+
