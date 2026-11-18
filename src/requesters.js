@@ -21,8 +21,9 @@ async function load(force=false){
  loading=(async()=>{cache=real()?await window.DCS_BACKEND.listRequesters():base();return cache;})();
  try{return await loading;}finally{loading=null;}
 }
-function options(selected=''){
- const active=list().filter(x=>x.active||x.id===selected);
+function options(selected='',term=''){
+ const q=String(term||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR').trim();
+ const active=list().filter(x=>(x.active||x.id===selected)&&(!q||x.id===selected||x.name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR').includes(q)));
  const group=(kind,label)=>'<optgroup label="'+esc(label)+'">'+active.filter(x=>x.kind===kind).map(x=>
  '<option value="'+esc(x.id)+'"'+(x.id===selected?' selected':'')+'>'+esc(x.name)+(x.active?'':' (inativo)')+'</option>').join('')+'</optgroup>';
  return '<option value="">Selecione o solicitante do evento</option>'+
@@ -31,12 +32,15 @@ function options(selected=''){
 function picker(selected=''){
  if(!cache&&!loading)load().then(()=>syncOptions()).catch(e=>bridge()?.toast('Falha ao carregar solicitantes: '+e.message));
  return '<label class="flow-field">Solicitante <span class="required">*</span>'+
+ '<input class="fi" type="search" id="requester-search" placeholder="Pesquise pelo nome ou sobrenome" aria-label="Buscar solicitante" autocomplete="off">'+
  '<select class="fi" name="requester_id" id="requester-select" required>'+options(selected)+'</select></label>'+
  '<small class="mu">Deputados da 20ª Legislatura vigente em novembro/2026. Outros nomes são incluídos pelo Administrador.</small>';
 }
 function syncOptions(){
  const select=document.querySelector('#requester-select');
- if(!select)return;const old=select.value;select.innerHTML=options(old);select.value=old;
+ if(!select)return;const old=select.value;
+ const search=document.querySelector('#requester-search')?.value||'';
+ select.innerHTML=options(old,search);select.value=old;
 }
 function filtered(){
  const q=query.toLocaleLowerCase('pt-BR');
@@ -91,7 +95,7 @@ document.addEventListener('click',e=>{
  if(e.target.closest('[data-req-new]'))edit(null);
  const row=e.target.closest('[data-req-edit]');if(row)edit(row.dataset.reqEdit);
 });
-document.addEventListener('input',e=>{if(e.target.id==='req-search'){query=e.target.value;paint();document.querySelector('#req-search')?.focus();}});
+document.addEventListener('input',e=>{if(e.target.id==='requester-search'){syncOptions();return;}if(e.target.id==='req-search'){query=e.target.value;paint();document.querySelector('#req-search')?.focus();}});
 document.addEventListener('change',e=>{if(e.target.id==='req-filter'){filter=e.target.value;paint();}});
 document.addEventListener('submit',e=>{
  if(e.target.id!=='req-form')return;e.preventDefault();
