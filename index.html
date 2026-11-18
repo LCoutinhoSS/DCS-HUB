@@ -305,20 +305,5 @@ function createFlowDemo(data){
 }
 window.DCS_BRIDGE={E,T,PPL,A,N,S,route,refresh,rr,openEv,closeOv,toast,bell,createFlowDemo,generateDemoTasks:gen};
 </script>
-<script type="module">
-  // No GitHub Pages o acesso é SOMENTE demonstrativo e client-side.
-  // O modo real requer Vite + Supabase Auth + políticas RLS no banco próprio.
-  try {
-    if (location.hostname.endsWith('.github.io')) {
-      await import('./src/demo-auth.js');
-    } else {
-      const { backend } = await import('./src/backend.js');
-      if (!backend.enabled) await import('./src/demo-auth.js');
-    }
-  } catch (err) {
-    console.error('[DCS HUB] Falha ao iniciar autenticação', err);
-    const alert = document.querySelector('#auth-error');
-    if (alert) { alert.hidden = false; alert.textContent = 'Não foi possível iniciar o acesso. Atualize a página.'; }
-  }
-</script>
+<script type="module" src="./src/boot.js"></script>
 <script type="module" src="./src/admin.js"></script><script type="module" src="./src/knowledge.js"></script><script type="module" src="./src/teams.js"></script><script type="module" src="./src/venues.js"></script><script type="module" src="./src/demo-notifications.js"></script><script type="module" src="./src/checklist-models.js"></script><script type="module" src="./src/requesters.js"></script><script type="module" src="./src/eventflow.js"></script></body></html>
