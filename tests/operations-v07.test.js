@@ -33,7 +33,7 @@ test('ALESP: catálogo selecionável, preservação de referências e edição s
  assert.match(venues,/Auditório Franco Montoro/);
  assert.match(venues,/Hall Nobre 23 de Maio/);
  for(const html of [demo,app]){
-  assert.match(html,/name="venue_id"/);
+  assert.match(venues,/name="venue_id"/);
   assert.match(html,/selectMarkup\(\)/);
   assert.doesNotMatch(html,/<label>Local<input class="fi" name="l"/);
   assert.match(html,/r==='espacos'/);
@@ -48,7 +48,7 @@ test('equipes DCS e Cerimonial, filtro de tarefa e pessoas separadas',()=>{
  assert.match(teams,/Cerimonial/);
  assert.match(teams,/membersOptions\(team/);
  for(const html of [demo,app]){
-  assert.match(html,/name="team"/);
+  assert.match(teams,/name="team"/);
   assert.match(html,/DCS_TEAMS\.taskFormHtml/);
   assert.match(html,/filterHtml\(S\.tg/);
   assert.match(html,/r==='equipes'/);
