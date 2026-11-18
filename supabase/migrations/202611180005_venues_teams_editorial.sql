@@ -68,14 +68,14 @@ for each row execute function public.validate_event_venue();
 
 -- Se o administrador corrigir o nome oficial, atualizar os vínculos existentes.
 create function public.sync_venue_event_names()
-returns trigger language plpgsql security definer set search_path='' as $
+returns trigger language plpgsql security definer set search_path='' as $$
 begin
  if new.name is distinct from old.name then
   update public.events set location=new.name where venue_id=new.id;
  end if;
  return new;
 end;
-$;
+$$;
 create trigger sync_venue_name after update of name on public.venues
 for each row execute function public.sync_venue_event_names();
 
@@ -115,7 +115,7 @@ for each row execute function public.validate_task_team();
 -- Alterar equipe de servidor atualiza o agrupamento de suas tarefas em aberto.
 -- Desativar uma conta não apaga tarefas; elas voltam à fila da equipe, sem responsável.
 create function public.sync_profile_task_assignments()
-returns trigger language plpgsql security definer set search_path='' as $
+returns trigger language plpgsql security definer set search_path='' as $$
 begin
  if new.active=false or new.role='reader' then
   update public.tasks set assignee_id=null
@@ -126,7 +126,7 @@ begin
  end if;
  return new;
 end;
-$;
+$$;
 create trigger sync_profile_assignment
 after update of department,active,role on public.profiles
 for each row execute function public.sync_profile_task_assignments();
