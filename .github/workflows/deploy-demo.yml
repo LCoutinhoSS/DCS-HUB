@@ -1,0 +1,39 @@
+name: Publicar somente DEMO no GitHub Pages
+
+# Publicacao manual: somente dados demonstrativos, sem Supabase ou credenciais.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-demo
+  cancel-in-progress: false
+
+jobs:
+  deploy-demo:
+    name: Hospedar a previa ficticia (sem Supabase)
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Preparar apenas o HTML demonstrativo
+        run: |
+          mkdir -p _site
+          cp demo.html _site/index.html
+          touch _site/.nojekyll
+      - name: Configurar Pages
+        uses: actions/configure-pages@v5
+      - name: Enviar artefato do site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - name: Publicar
+        id: deployment
+        uses: actions/deploy-pages@v4
