@@ -1,4 +1,4 @@
-# DCS HUB · v0.7 — editorial, espaços ALESP, equipes e notificações internas
+# DCS HUB · v0.8.1 — eventos guiados, solicitantes, checklists ALESP e matérias
 
 **Projeto de desenvolvimento independente; não modifica nem acessa a produção do Autoridades SP.**
 
@@ -41,6 +41,7 @@ Abra a prévia pública em https://lcoutinhoss.github.io/DCS-HUB/ ou `demo.html`
    - `supabase/migrations/202611180003_admin_users.sql`
    - `supabase/migrations/202611180004_knowledge.sql`
    - `supabase/migrations/202611180005_venues_teams_editorial.sql`
+   - `supabase/migrations/202611180006_requesters_eventflow.sql`
 3. Em **Authentication → Users**, crie manualmente uma conta de teste com e-mail e senha (para ambiente de teste). O gatilho cria em `profiles` uma conta inicialmente `reader` e `active = false`.
 4. Faça a liberação inicial dessa conta no SQL Editor, **substituindo** o endereço de exemplo pelo endereço verificado e que você controla:
 
@@ -172,6 +173,17 @@ Autoridades SP → INATIVO (futuro conector somente-leitura)
 - `supabase/tests_security.sql`: consulta de conferência de RLS.
 - `tests/*.test.js`: testes automatizados de lógica e integridade estática.
 - `.env.example`, `.gitignore`, `package.json`: configuração local/segredos e build.
+
+## Atualização 0.8.1
+
+- **Cadastro de solicitantes:** 94 deputados da 20ª Legislatura, pesquisa por nome e novos solicitantes administráveis; a lista é uma referência estática e não substitui a atualização oficial.
+- **Criação guiada em quatro etapas:** tipo de evento, solicitante, datas/locais, informações detalhadas (inclusive pauta e decisões em reuniões), checklist e revisão.
+- **Modelos adaptados de cinco planilhas ALESP:** Sessão Solene, Audiência Pública, Cursos/Palestras, Recepção de Autoridades e Velório. A **Sessão Solene agora contempla as duas abas** de origem (reunião preparatória + planejamento/execução/pós-evento), totalizando 73 etapas no protótipo.
+- **Atribuições mais fáceis:** checklist agrupado em fases recolhíveis; cada item define sua própria equipe DCS/Cerimonial, responsável e prazo. Só itens aplicáveis **atribuídos a uma pessoa** viram cartões de tarefas quando o gestor confirma.
+- **Matérias em página própria:** capa, linha fina, fotos, legendas e conteúdos relacionados, com URL compartilhável na aplicação; a leitura não usa pop-up.
+- **Realidade do protótipo:** o GitHub Pages continua usando login e dados fictícios no navegador. A migração 006 e o login real devem ser homologados em um **Supabase novo**, sem tocar no Autoridades SP.
+
+Ver [docs/OPERACOES_08.md](docs/OPERACOES_08.md) para o fluxo e os limites atuais.
 
 ## Atualização 0.7
 
