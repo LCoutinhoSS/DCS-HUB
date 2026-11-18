@@ -77,7 +77,8 @@ test('fotografias editoriais: capa, legenda, crédito e armazenamento privado',(
  assert.match(wiki,/function photoInputs/);
  assert.match(wiki,/function editorialFig/);
  assert.match(wiki,/fileAsImageData/);
- assert.match(wiki,/editorial-reader-hero/);
+ assert.match(wiki,/renderArticlePage/);
+ assert.match(wiki,/article-page-hero/);
  assert.match(wiki,/image_caption_/);
  assert.match(wiki,/image_credit_/);
 });
