@@ -24,8 +24,9 @@ begin
   values(new.id, coalesce(new.email, ''), coalesce(nullif(split_part(new.email,'@',1),''),'Usuário'), 'reader', false);
   return new;
 end $$;
-create trigger on_auth_user_created after insert on auth.users
-for each row execute function public.handle_new_user();
+-- Banco compartilhado com Autoridades SP: NÃO instalar gatilho em auth.users.
+-- A função de registro DCS é chamada sob demanda após o login (migração 007).
+-- A função handle_new_user é mantida para compatibilidade, mas não cria gatilho global.
 
 create function public.is_member()
 returns boolean language sql stable security definer set search_path = '' as $$
