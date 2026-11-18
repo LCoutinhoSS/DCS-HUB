@@ -5,7 +5,7 @@ begin;
 create table public.event_requesters (
  id uuid primary key default gen_random_uuid(),
  name text not null check(length(btrim(name)) between 2 and 160),
- kind text not null check(kind in ('deputado','setor','outro')),
+ kind text not null check(kind in ('setor','outro')),
  source text not null default 'Cadastro administrativo' check(length(source)<=160),
  active boolean not null default true,
  created_at timestamptz not null default now(),
@@ -14,10 +14,8 @@ create table public.event_requesters (
 create unique index event_requesters_name_key on public.event_requesters(lower(btrim(name)));
 create trigger event_requesters_timestamp before update on public.event_requesters for each row
 execute function public.set_updated_at();
-insert into public.event_requesters(name,kind,source)
-select trim(n), 'deputado', 'ALESP · 20ª Legislatura · ref. 18/11/2026'
-from unnest(string_to_array('AGENTE FEDERAL DANILO BALAS|ALEX MADUREIRA|ALTAIR MORAES|ANA CAROLINA SERRA|ANALICE FERNANDES|ANA PERUGINI|ANDRÉA WERNER|ANDRÉ BUENO|ANDRÉ DO PRADO|ATILA JACOMUSSI|BARROS MUNHOZ|BETH SAHÃO|BRUNA FURLAN|BRUNO ZAMBELLI|CAIO FRANÇA|CAPITÃO TELHADA|CARLA MORANDO|CARLÃO PIGNATARI|CARLOS GIANNAZI|CLARICE GANEM|CONTE LOPES|DANI ALONSO|DANIEL SOARES|DELEGADA GRACIELA|DELEGADO OLIM|DIRCEU DALBEN|DONATO|DR. EDUARDO NÓBREGA|DR. ELTON|DR. JORGE DO CARMO|DRA. DAMARIS MOURA|EDIANE MARIA|EDNA MACEDO|EDSON GIRIBONI|EDUARDO SUPLICY|EMÍDIO DE SOUZA|ENIO TATTO|FABIANA BOLSONARO|FÁBIO FARIA DE SÁ|FELIPE FRANCO|GIL DINIZ BOLSONARO|GILMACI SANTOS|GUILHERME CORTEZ|GUTO ZACARIAS|ITAMAR BORGES|JORGE CARUSO|JORGE WILSON XERIFE DO CONSUMIDOR|LECI BRANDÃO|LEONARDO SIQUEIRA|LÉO OLIVEIRA|LETÍCIA AGUIAR|LUCAS BOVE|LUIZ CLAUDIO MARCOLINO|LUIZ FERNANDO T. FERREIRA|MAJOR MECCA|MARCELO AGUIAR|MÁRCIA LIA|MARCIO NAKASHIMA|MARCOS DAMASIO|MARIA LÚCIA AMARY|MARINA HELOU|MARTA COSTA|MAURICI|MAURO BRAGATO|MILTON LEITE FILHO|MONICA SEIXAS DO MOVIMENTO PRETAS|OSEIAS DE MADUREIRA|PAULA DA BANCADA FEMINISTA|PAULO CORREA JR|PAULO FIORILO|PAULO MANSUR|PROFESSORA BEBEL|PROFª CAMILA GODOI|RAFAEL SARAIVA|RAFAEL SILVA|RAFA ZIMBALDI|REIS|RICARDO FRANÇA|RICARDO MADALENA|RODRIGO MORAES|ROGÉRIO NOGUEIRA|ROGÉRIO SANTOS|RÔMULO FERNANDES|RUI ALVES|SEBASTIÃO SANTOS|SOLANGE FREITAS|TENENTE COIMBRA|TEONILIO BARBA|THAINARA FARIA|THIAGO AURICCHIO|TOMÉ ABDUCH|VALDOMIRO LOPES|VALERIA BOLSONARO|VITÃO DO CACHORRÃO','|')) n
-on conflict do nothing;
+-- Deputados NÃO são duplicados: o seletor consulta public.autoridades (Autoridades SP).
+-- Esta tabela guarda exclusivamente órgãos/setores/outros solicitantes cadastrados pelo HUB.
 
 alter table public.event_requesters enable row level security;
 create policy requesters_read on public.event_requesters for select to authenticated
@@ -32,6 +30,7 @@ grant update(name,kind,source,active) on public.event_requesters to authenticate
 
 alter table public.events
  add column requester_id uuid references public.event_requesters(id) on delete restrict,
+ add column requester_authority_id text references public.autoridades(id) on delete set null,
  add column requester_name_snapshot text,
  add column event_kind text check(event_kind in
   ('sessao_solene','audiencia_publica','cursos_palestras','recepcao_autoridades',
@@ -39,6 +38,7 @@ alter table public.events
  add column team text check(team in ('DCS','Cerimonial')),
  add column briefing jsonb not null default '{}'::jsonb;
 create index events_requester_idx on public.events(requester_id);
+create index events_requester_authority_idx on public.events(requester_authority_id);
 create index events_kind_idx on public.events(event_kind);
 
 alter table public.event_checklist
@@ -68,11 +68,12 @@ revoke all on function public.create_checklist_from_template() from public,anon,
 -- Não permitir inserção arbitrária do checklist pelo cliente. Apenas a RPC
 -- transacional, com auth.uid() e verificações de RLS/integridade, cria linhas.
 create function public.create_planned_event(
- p_title text,p_kind text,p_category text,p_requester uuid,p_venue uuid,
+ p_title text,p_kind text,p_category text,p_requester text,p_venue uuid,
  p_team text,p_start timestamptz,p_end timestamptz,p_briefing jsonb,p_items jsonb
 ) returns uuid language plpgsql security definer set search_path='' as $$
 declare
  v_event uuid; v_name text; v_venue text; v_item jsonb;
+ v_authority_id text; v_custom_id uuid;
  v_id uuid; v_dept text; v_active boolean; v_role text; v_pos integer:=0;
  v_group text; v_priority text; v_title text;
 begin
@@ -94,14 +95,24 @@ begin
     or jsonb_array_length(p_items)<1 then raise exception 'Checklist inválido'; end if;
  if p_briefing is null or jsonb_typeof(p_briefing)<>'object' or length(p_briefing::text)>12000 then
   raise exception 'Ficha de planejamento inválida'; end if;
- select name into v_name from public.event_requesters where id=p_requester and active;
- if v_name is null then raise exception 'Solicitante inválido/inativo'; end if;
+ if left(p_requester,2)='a:' then
+  v_authority_id:=substr(p_requester,3);
+  select a.name into v_name from public.autoridades a
+  where a.id=v_authority_id and a.kind='deputado_estadual';
+ elsif left(p_requester,2)='c:' then
+  v_custom_id:=substr(p_requester,3)::uuid;
+  select r.name into v_name from public.event_requesters r
+  where r.id=v_custom_id and r.active;
+ else
+  raise exception 'Formato de solicitante inválido';
+ end if;
+ if v_name is null then raise exception 'Solicitante inexistente ou inativo'; end if;
  select name into v_venue from public.venues where id=p_venue and active;
  if v_venue is null then raise exception 'Espaço inválido/inativo'; end if;
  insert into public.events (title,category,description,location,start_at,end_at,
-   created_by,owner_id,status,venue_id,requester_id,requester_name_snapshot,event_kind,team,briefing)
+   created_by,owner_id,status,venue_id,requester_id,requester_authority_id,requester_name_snapshot,event_kind,team,briefing)
  values(btrim(p_title),p_category,left(coalesce(p_briefing->>'description',''),2000),v_venue,
-   p_start,p_end,auth.uid(),auth.uid(),'pending',p_venue,p_requester,v_name,p_kind,p_team,p_briefing)
+   p_start,p_end,auth.uid(),auth.uid(),'pending',p_venue,v_custom_id,v_authority_id,v_name,p_kind,p_team,p_briefing)
  returning id into v_event;
 
  for v_item in select value from jsonb_array_elements(p_items) loop
@@ -129,8 +140,8 @@ begin
  return v_event;
 end;
 $$;
-revoke all on function public.create_planned_event(text,text,text,uuid,uuid,text,timestamptz,timestamptz,jsonb,jsonb) from public,anon;
-grant execute on function public.create_planned_event(text,text,text,uuid,uuid,text,timestamptz,timestamptz,jsonb,jsonb) to authenticated;
+revoke all on function public.create_planned_event(text,text,text,text,uuid,text,timestamptz,timestamptz,jsonb,jsonb) from public,anon;
+grant execute on function public.create_planned_event(text,text,text,text,uuid,text,timestamptz,timestamptz,jsonb,jsonb) to authenticated;
 
 -- Confirmação do gestor preserva responsáveis e prazos escolhidos e evita duplicação.
 create or replace function public.approve_event(p_event_id uuid)
