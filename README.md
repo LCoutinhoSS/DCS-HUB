@@ -1,4 +1,4 @@
-# DCS HUB · v0.3 — base real de autenticação e operações
+# DCS HUB · v0.4 — operações e administração de usuários
 
 **Projeto de desenvolvimento independente; não modifica nem acessa a produção do Autoridades SP.**
 
@@ -16,6 +16,7 @@ Esta versão parte do HTML do DCS HUB fornecido pelo usuário e preserva o desen
 | Evitar duplicação | Em memória | Constraint UNIQUE + transação na função `approve_event` |
 | Reagendamento | Em memória | RPC de reagendamento com motivo no histórico |
 | Histórico | Em memória | Geração no banco por gatilhos (triggers) |
+| Administração de usuários | Diretório e alterações fictícios | Perfis reais, ativação/desativação e auditoria protegida por RLS |
 | Arquivos Microsoft 365 | Não | Somente estrutura de metadados; **sem integração real** |
 | Autoridades SP | Não | Somente estrutura de referência; **sem integração real** |
 
@@ -23,7 +24,7 @@ Esta versão parte do HTML do DCS HUB fornecido pelo usuário e preserva o desen
 
 ## 1. Testar a interface imediatamente (sem instalar nada)
 
-Abra `demo.html` no navegador. A interface original funciona com informações demonstrativas e credenciais não validadas. Escolha Gestor no seletor para confirmar atividades. Os dados somem ao recarregar a página.
+Abra `demo.html` no navegador ou a prévia pública em https://lcoutinhoss.github.io/DCS-HUB/. A interface funciona com informações demonstrativas e credenciais não validadas. Escolha **Gestor** para confirmar eventos ou **Administrador** para testar a gestão de servidores. Os dados somem ao recarregar a página.
 
 ## 2. Criar um banco de TESTE separado
 
@@ -31,6 +32,7 @@ Abra `demo.html` no navegador. A interface original funciona com informações d
 2. No Supabase, abra **SQL Editor** e execute **na ordem**:
    - `supabase/migrations/202611180001_core.sql`
    - `supabase/migrations/202611180002_templates.sql`
+   - `supabase/migrations/202611180003_admin_users.sql`
 3. Em **Authentication → Users**, crie manualmente uma conta de teste com e-mail e senha (para ambiente de teste). O gatilho cria em `profiles` uma conta inicialmente `reader` e `active = false`.
 4. Faça a liberação inicial dessa conta no SQL Editor, **substituindo** o endereço de exemplo pelo endereço verificado e que você controla:
 
@@ -41,9 +43,9 @@ where id = (select id from auth.users where email = 'SEU_EMAIL_DE_TESTE@EXEMPLO.
 returning id, email, role, active;
 ```
 
-**Atenção:** antes de executar, revise a identidade da conta e verifique o resultado. Esse comando é uma etapa administrativa manual, não está embutido no software. Contas posteriores podem ser aprovadas por um administrador autorizado; a tela de administração ainda não foi implementada.
+**Atenção:** antes de executar, revise a identidade da conta e verifique o resultado. Esse comando é uma etapa administrativa manual, não está embutido no software. Contas posteriores podem ser aprovadas por um administrador autorizado na tela **Administração → Equipe e permissões**. Instruções detalhadas em [docs/ADMINISTRACAO.md](docs/ADMINISTRACAO.md).
 
-5. Para testar os outros perfis, crie contas adicionais em Auth e ajuste `role` e `active` por SQL administrativo, apenas no banco de testes. Os valores de `role` são `admin`, `manager`, `dcs`, `ceremonial`, `reader`.
+5. Para testar os outros perfis, crie contas adicionais no Auth do projeto de testes e use a nova tela **Administração → Gerenciar** para definir `role`, unidade e situação. Os valores de `role` são `admin`, `manager`, `dcs`, `ceremonial`, `reader`.
 6. Em **Authentication → Providers**, desabilite cadastro público para evitar criação indiscriminada de contas. Use contas criadas/invitadas pela administração.
 
 ### Regras de acesso implementadas no banco
@@ -159,7 +161,7 @@ Autoridades SP → INATIVO (futuro conector somente-leitura)
 
 ## Próxima etapa proposta
 
-Homologar esta base num Supabase **separado**, adicionar uma tela de **administração de usuários e permissões**, permitir editar dados de eventos e tarefas com validação de campos, e então avançar para documentos e biblioteca SharePoint. Nenhuma alteração será feita na branch `main` do Autoridades SP sem autorização explícita.
+Homologar esta base num Supabase **separado**, testar a tela de **administração de usuários e permissões** com contas distintas, permitir editar dados de eventos e tarefas com validação de campos, e então avançar para documentos e biblioteca SharePoint. Nenhuma alteração será feita na branch `main` do Autoridades SP sem autorização explícita.
 
 ---
 
