@@ -109,6 +109,7 @@ using (
   and exists(
     select 1 from public.knowledge_articles a
     where a.id=article_id
+      and (a.author_id=(select auth.uid()) or (select public.is_manager()))
   )
 );
 
