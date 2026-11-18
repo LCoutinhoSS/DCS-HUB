@@ -227,6 +227,27 @@ export const backend={
     if(profile.role!=='admin')throw new Error('Somente administrador gerencia solicitantes');
     return check(await supabase.from('event_requesters').update(data).eq('id',id).select('id').single());
   },
+  async delegateChecklistItem(eventId,index,label,team,due){
+    ensureUser();
+    const ev=bridge().E.find(x=>x.id===eventId),item=ev?.chk[index];
+    if(!item?.id)throw new Error('Etapa não encontrada');
+    check(await supabase.rpc('delegate_event_checklist',{
+      p_checklist:item.id,p_assignee:idFor(label),p_team:team,p_due:due||null
+    }));
+    await this.reload();bridge().rr();bridge().toast('Responsável da etapa atualizado');
+  },
+  async updateMeetingBriefing(eventId,patch){
+    ensureUser();
+    const ev=bridge().E.find(x=>x.id===eventId);
+    if(!ev||ev.kind!=='reuniao')throw new Error('Reunião não encontrada');
+    if(!['admin','manager'].includes(profile.role)&&ev.createdBy!==profile.id)
+      throw new Error('Sem permissão para editar a pauta');
+    const allowed=['purpose','agenda_text','attendees','meeting_format','duration_min','minutes_owner','resources','decisions'];
+    const filtered=Object.fromEntries(allowed.filter(k=>Object.hasOwn(patch,k)).map(k=>[k,patch[k]]));
+    check(await supabase.from('events').update({briefing:{...ev.briefing,...filtered}})
+      .eq('id',eventId).select('id').single());
+    await this.reload();bridge().rr();bridge().toast('Ficha da reunião atualizada');
+  },
   async createFlowEvent(data){
     ensureUser();
     const kindInfo=window.DCS_CHECKLISTS?.find(data.kind);
