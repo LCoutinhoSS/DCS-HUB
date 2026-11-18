@@ -38,8 +38,9 @@ export function toUiEvent(row,checklist,history,labelFor) {
   return {
     id:row.id,t:row.title,c:row.category,createdBy:row.created_by,d:new Date(row.start_at),de:new Date(row.end_at),
     loc:row.location||'A definir',who:[labelFor(row.owner_id)],st:EVENT_STATUS_LABEL[row.status]||row.status,
+    kind:row.event_kind||null,requester_id:row.requester_id||null,requester_name:row.requester_name_snapshot||'',team:row.team||'DCS',briefing:row.briefing||{},
     chk:checklist.filter(c=>c.event_id===row.id).sort((a,b)=>a.position-b.position)
-      .map(c=>({id:c.id,x:c.label,d:c.completed})),
+      .map(c=>({id:c.id,x:c.label,d:c.completed,section:c.phase||'Etapas',applicable:c.applicable!==false,assignee_label:labelFor(c.assignee_id),team:c.team||'DCS',due_at:c.due_at||null,priority:c.priority||'medium'})),
     hist:history.filter(h=>h.event_id===row.id)
       .sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).map(describeHistory)
   };
