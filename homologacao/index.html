@@ -1,0 +1,309 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>DCS HUB — Central Inteligente de Operações</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F6F8FC;--tx:#10243A;--mu:#5B6B80;--gl:rgba(255,255,255,.66);--gl2:rgba(255,255,255,.9);--bd:rgba(16,36,58,.1);--sh:0 10px 30px -12px rgba(16,36,58,.18);--acc:#397DCC;--gold:#C5A36A;--ok:#2FA37A;--wa:#D9822B;--rd:#D4503F;--hv:rgba(57,125,204,.1);color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0A1522;--tx:#EAF0F8;--mu:#93A4BA;--gl:rgba(22,42,66,.58);--gl2:rgba(14,28,46,.92);--bd:rgba(255,255,255,.09);--sh:0 10px 30px -12px rgba(0,0,0,.6);--acc:#5B9BE8;--hv:rgba(91,155,232,.15);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0A1522;--tx:#EAF0F8;--mu:#93A4BA;--gl:rgba(22,42,66,.58);--gl2:rgba(14,28,46,.92);--bd:rgba(255,255,255,.09);--sh:0 10px 30px -12px rgba(0,0,0,.6);--acc:#5B9BE8;--hv:rgba(91,155,232,.15);color-scheme:dark}
+*,*::before,*::after{box-sizing:inherit}html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;height:100%;overflow:hidden;font:14px/1.5 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--tx);background:radial-gradient(55% 45% at 8% 0,rgba(57,125,204,.22),transparent),radial-gradient(45% 40% at 100% 8%,rgba(197,163,106,.2),transparent),var(--bg)}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer;background:none;border:0;padding:0}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:8px}[hidden]{display:none!important}svg{flex:none}
+h1,h2,h3{margin:0;font-family:Fraunces,Georgia,serif;font-weight:600;letter-spacing:-.01em}h1{font-size:clamp(24px,3.2vw,34px);line-height:1.15}h2{font-size:17px}h3{font-size:14px;margin:16px 0 4px}
+.card{background:var(--gl);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);border:1px solid var(--bd);border-radius:18px;box-shadow:var(--sh)}
+.pal,.dr,.md,.dd{background-color:var(--gl2)}
+.ic{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.btn{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 14px;border-radius:11px;border:1px solid var(--bd);background:var(--gl);font-weight:500;transition:.2s}.btn:hover{background:var(--hv)}
+.pri{background:linear-gradient(135deg,#397DCC,#234B73);color:#fff;border-color:transparent}.pri:hover{background:linear-gradient(135deg,#4a8ede,#2b5a8a)}
+.ib{width:38px;height:38px;display:grid;place-items:center;border-radius:11px;position:relative;transition:.2s;flex:none}.ib:hover{background:var(--hv)}
+.mu{color:var(--mu);font-size:12.5px}.pill{font-size:11.5px;font-style:normal;padding:2px 9px;border-radius:99px;background:var(--hv);white-space:nowrap}
+.pl{margin:8px 4px 0;padding:8px 10px;border-radius:10px;background:rgba(197,163,106,.16);color:#9a7a44;font-size:11.5px;line-height:1.35}
+:root[data-theme="dark"] .pl{color:var(--gold)}
+#app{display:grid;grid-template-columns:248px 1fr;gap:12px;height:100%;padding:12px;transition:grid-template-columns .3s}#app.cl{grid-template-columns:72px 1fr}
+.sb{display:flex;flex-direction:column;padding:14px 10px;overflow:hidden;z-index:30}
+.lo{display:flex;align-items:center;gap:10px;padding:2px 8px 16px;font-family:Fraunces,Georgia,serif;font-weight:600;font-size:19px;white-space:nowrap}
+.mk{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--gold),#234B73 75%);display:grid;place-items:center;color:#fff;font-size:15px;flex:none;box-shadow:0 4px 14px -4px rgba(35,75,115,.6)}
+.nv{display:flex;align-items:center;gap:12px;height:40px;padding:0 12px;border-radius:11px;color:var(--mu);white-space:nowrap;width:100%;text-align:left;transition:.2s;position:relative}.nv:hover,.nv.on{background:var(--hv);color:var(--tx)}.nv.on{font-weight:600}
+.nv.on::before{content:"";position:absolute;left:-10px;top:10px;bottom:10px;width:3px;border-radius:3px;background:var(--gold)}
+#nav{display:flex;flex-direction:column;gap:3px;flex:1}#cl .ic{transition:transform .3s}.cl #cl .ic{transform:rotate(180deg)}
+@media(min-width:901px){.cl .tx,.cl .pl{display:none}}
+main{display:flex;flex-direction:column;gap:12px;min-width:0;min-height:0}
+.top{display:flex;align-items:center;gap:6px;padding:8px 10px}
+.bc{font-size:13px;color:var(--mu);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bc b{color:var(--tx);font-weight:600}
+.sr{display:flex;align-items:center;gap:8px;height:38px;padding:0 12px;border-radius:11px;border:1px solid var(--bd);color:var(--mu);min-width:250px;transition:.2s}.sr:hover{background:var(--hv)}
+.sr kbd{margin-left:auto;font:11px Inter,sans-serif;padding:1px 6px;border-radius:6px;border:1px solid var(--bd)}
+.me{display:flex;align-items:center;gap:10px;padding-left:8px}.me small{display:block;color:var(--mu);font-size:11px;line-height:1.2}.me b{font-size:13px}
+.av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--gold));color:#fff;display:grid;place-items:center;font-weight:600;font-size:12px;flex:none}
+.bg{position:absolute;top:4px;right:4px;min-width:16px;height:16px;border-radius:8px;background:var(--rd);color:#fff;font-size:10px;display:grid;place-items:center;padding:0 4px}
+.mb{display:none}
+.view{flex:1;overflow:auto;min-height:0;padding:2px 4px 24px;display:flex;flex-direction:column;gap:14px;outline:0}
+.view>*{animation:in .5s both}.view>:nth-child(2){animation-delay:.06s}.view>:nth-child(3){animation-delay:.12s}
+@keyframes in{from{opacity:0;transform:translateY(10px)}}@keyframes fi{from{opacity:0}}@keyframes sl{from{transform:translateX(30px);opacity:0}}@keyframes sh{to{background-position:-200% 0}}
+.hd{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}.hd p{margin:6px 0 0;color:var(--mu)}
+.kp{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px}
+.k{padding:16px}.k .ci{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;margin-bottom:14px;color:#fff}
+.k b{font:600 32px/1 Fraunces,Georgia,serif;display:block;margin-bottom:4px}
+.gr{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:14px}.cw{display:flex;flex-direction:column;gap:14px;min-width:0}
+.p{padding:18px}.p>h2{margin-bottom:12px}
+.wk{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:12px}
+.dy{padding:8px 0 6px;border-radius:12px;border:1px solid var(--bd);text-align:center;font-size:12px;color:var(--mu);transition:.2s;text-transform:capitalize}.dy:hover{background:var(--hv)}
+.dy b{display:block;font-size:16px;color:var(--tx);font-weight:600}.dy.on{background:linear-gradient(135deg,#397DCC,#234B73);color:#dbe8f8;border-color:transparent}.dy.on b{color:#fff}
+.dt{display:flex;gap:3px;justify-content:center;height:6px;margin-top:3px}.dt i{width:5px;height:5px;border-radius:50%}
+.ch{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.cp{padding:4px 11px;border-radius:99px;border:1px solid var(--bd);font-size:12px;color:var(--mu);display:flex;gap:6px;align-items:center;transition:.2s}.cp.on{background:var(--hv);color:var(--tx);border-color:var(--acc)}.cp i{width:8px;height:8px;border-radius:50%}
+.ev{display:grid;grid-template-columns:4px 1fr auto;gap:12px;align-items:center;width:100%;text-align:left;padding:10px 12px;border-radius:12px;transition:.2s}.ev:hover{background:var(--hv)}
+.ev>i{align-self:stretch;border-radius:4px}.ev b{font-weight:600;display:block}.ev small{color:var(--mu);font-size:12px}
+.tk{display:flex;gap:10px;align-items:flex-start;padding:8px 6px;border-radius:10px;width:100%;text-align:left;transition:.2s}.tk:hover{background:var(--hv)}
+.cb{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--mu);display:grid;place-items:center;flex:none;margin-top:1px;transition:.2s;color:#fff}
+.dn .cb{background:var(--ok);border-color:var(--ok)}.dn b{text-decoration:line-through;color:var(--mu)}.tk b{font-weight:500}
+.qa{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:10px}
+.q{padding:14px;border-radius:14px;border:1px solid var(--bd);display:flex;flex-direction:column;gap:10px;align-items:flex-start;text-align:left;transition:.25s;font-weight:500}.q:hover{background:var(--hv);border-color:var(--acc);transform:translateY(-2px)}.q .ic{color:var(--acc)}
+.fd{display:flex;gap:10px;padding:7px 0;font-size:13px}.fd>i{width:8px;height:8px;border-radius:50%;background:var(--gold);margin-top:6px;flex:none}
+.it{display:flex;justify-content:space-between;gap:10px;padding:8px 0;font-size:13px;border-bottom:1px solid var(--bd)}.it:last-of-type{border:0}.it span:last-child{font-size:12px;white-space:nowrap}
+.s0{color:var(--wa)}.s1{color:var(--mu)}.s2{color:var(--ok)}
+.pg{height:6px;border-radius:6px;background:var(--bd);margin:6px 0 10px;overflow:hidden}.pg i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--gold))}
+.st{margin:auto;text-align:center;max-width:460px;padding:40px 28px}.st .mk{margin:0 auto 18px;width:56px;height:56px;border-radius:16px}.st .mk .ic{width:26px;height:26px}.st p{color:var(--mu);margin:10px 0 18px}
+.sk{border-radius:18px;height:110px;background:linear-gradient(90deg,var(--gl),var(--hv),var(--gl));background-size:200% 100%;animation:sh 1.2s infinite}
+#ov{position:fixed;inset:0;z-index:50;pointer-events:none}#ov>*{pointer-events:auto}
+.bk{position:fixed;inset:0;background:rgba(8,18,30,.45);backdrop-filter:blur(3px);animation:fi .2s}
+.pal{position:fixed;left:50%;top:14vh;transform:translateX(-50%);width:min(620px,92vw);overflow:hidden;animation:fi .2s}
+.pal input{width:100%;height:54px;padding:0 18px;background:none;border:0;border-bottom:1px solid var(--bd);outline:0;font-size:16px}
+.pi{display:flex;gap:10px;align-items:center;width:100%;padding:10px 18px;text-align:left}.pi.on{background:var(--hv)}.pi em{margin-left:auto;font-style:normal;color:var(--mu);font-size:12px}
+.dr{position:fixed;right:12px;top:12px;bottom:12px;width:min(420px,calc(100vw - 24px));padding:20px;overflow:auto;animation:sl .3s}
+.md{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(460px,92vw);padding:22px;animation:fi .2s}
+.dd{position:fixed;top:calc(74px + env(safe-area-inset-top,0px));right:20px;width:min(360px,calc(100vw - 24px));padding:10px;animation:fi .2s}
+label{display:block;font-size:12px;color:var(--mu);margin-top:12px}
+.fi{display:block;width:100%;height:40px;margin-top:4px;padding:0 12px;border-radius:10px;border:1px solid var(--bd);background:var(--gl2)}
+.lg{height:100%;display:grid;place-items:center;padding:16px;overflow:auto}.lc{width:min(410px,100%);padding:28px;animation:in .6s}.lc p{margin:6px 0 0}
+#ts{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;z-index:60;width:max-content;max-width:92vw}
+.ts{padding:10px 16px;border-radius:12px;background:#10243A;color:#fff;border:1px solid rgba(255,255,255,.14);box-shadow:var(--sh);animation:in .3s}
+.scrim{position:fixed;inset:0;background:rgba(8,18,30,.45);z-index:25;display:none}
+@media(max-width:900px){#app,#app.cl{grid-template-columns:1fr;padding:8px;gap:8px}.sb{position:fixed;left:8px;top:calc(8px + env(safe-area-inset-top,0px));bottom:8px;width:264px;transform:translateX(-120%);transition:transform .3s;background-color:var(--gl2)}.sb.op{transform:none}.sb.op~.scrim{display:block}
+.mb{display:grid}.gr{grid-template-columns:1fr}.sr{min-width:0;width:38px;padding:0;justify-content:center}.sr span,.sr kbd,.me div{display:none}.me{padding-left:0}#cl{display:none}.dd{right:8px}}
+.view.re>*{animation:none}button.k{display:block;transition:.25s}button.k:hover{transform:translateY(-3px);border-color:var(--acc)}
+.mg{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}.mc{min-height:92px;padding:4px;border-radius:10px;border:1px solid var(--bd);display:flex;flex-direction:column;gap:3px;overflow:hidden}.mc.ot{opacity:.45}.mc.td{border-color:var(--acc);background:var(--hv)}
+.dn{align-self:flex-start;font-size:12px;font-weight:600;min-width:22px;height:22px;border-radius:6px}.dn:hover{background:var(--hv)}
+.mch{display:block;width:100%;text-align:left;font-size:11px;padding:1px 5px;border-radius:5px;border-left:3px solid var(--c);background:var(--hv);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kb{display:grid;grid-template-columns:repeat(5,minmax(230px,1fr));gap:12px;overflow:auto;padding-bottom:6px;align-items:start}.kc{padding:12px;display:flex;flex-direction:column;gap:8px}.kt{padding:10px;border-radius:12px;border:1px solid var(--bd);background:var(--gl2)}
+@media(max-width:600px){.mc{min-height:58px}.mch{font-size:0;height:6px;padding:0;border:0;background:var(--c);border-radius:3px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>  <script type="module" crossorigin src="./assets/index-CqXMAwJY.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-zf_qonPo.css">
+</head><body>
+<div id="login" class="lg auth-login">
+ <div class="auth-shell">
+  <aside class="auth-brand">
+   <div class="auth-identity"><span class="mk">D</span><span>DCS HUB</span></div>
+   <div class="auth-overline">Central de Operações · DCS / Cerimonial</div>
+   <h1>Conectando pessoas,<br><em>organizando cada detalhe.</em></h1>
+   <p>Uma experiência única para planejar eventos, administrar exposições, acompanhar tarefas e reunir o conhecimento institucional.</p>
+   <div class="auth-features">
+    <div class="auth-feature"><b>01 · Agenda unificada</b><small>Eventos, visitas e exposições</small></div>
+    <div class="auth-feature"><b>02 · Trabalho em equipe</b><small>Tarefas e acompanhamento</small></div>
+    <div class="auth-feature"><b>03 · Acervo central</b><small>Documentos e procedimentos</small></div>
+    <div class="auth-feature"><b>04 · Gestão inteligente</b><small>Perfis e histórico de ações</small></div>
+   </div>
+   <p class="auth-brand-foot">PROTÓTIPO DE HOMOLOGAÇÃO · DIVISÃO DE COMUNICAÇÃO SOCIAL · ALESP<br>Plataforma independente; não integra serviços institucionais nesta demonstração.</p>
+  </aside>
+  <div class="auth-panel">
+   <form id="lf" class="lc auth-form">
+    <span class="auth-eyebrow">Acesso à plataforma</span>
+    <h2>Bem-vindo ao DCS HUB.</h2>
+    <p class="auth-lead">Identifique-se para entrar no ambiente de apresentação e explorar os recursos da plataforma.</p>
+    <label for="auth-email">E-mail de acesso
+      <input id="auth-email" class="fi" type="email" required placeholder="usuario@demo.dcs-hub.invalid" autocomplete="username" maxlength="254">
+    </label>
+    <div class="auth-password-row">
+      <label for="auth-pass">Senha
+        <input id="auth-pass" class="fi" type="password" required autocomplete="current-password" placeholder="Digite sua senha">
+      </label>
+      <button id="auth-toggle" type="button" class="auth-show" aria-label="Mostrar senha">Mostrar</button>
+    </div>
+    <label class="auth-demo-only" for="rl">Conta de treinamento
+      <select class="fi" id="rl">
+       <option selected>Administrador</option><option>Gestor</option><option>Servidor DCS</option><option>Servidor Cerimonial</option><option>Leitor</option>
+      </select>
+    </label>
+    <p id="auth-error" role="alert" aria-live="polite" style="color:var(--rd);font-size:12px;margin:10px 0 0" hidden></p>
+    <button class="btn pri auth-submit" type="submit">Entrar no DCS HUB <span aria-hidden="true">→</span></button>
+    <div class="auth-demo-credentials auth-demo-only">
+     <strong>Credenciais para apresentar à equipe</strong>
+     <p>Selecione uma conta acima e use a senha <code>DCSdemo2026!</code>. Cada conta entra com o perfil correspondente. Todos os acessos são fictícios.</p>
+    </div>
+    <p class="pl auth-legal">Modo de treinamento em site público. A validação ocorre somente neste navegador e <b>não é autenticação institucional</b>. Nunca insira senhas ou dados reais.</p>
+   </form>
+  </div>
+ </div>
+</div>
+<div id="app" hidden><aside class="card sb" id="sb"><div class="lo"><span class="mk">D</span><span class="tx">DCS HUB</span></div><nav id="nav" aria-label="Navegação principal"></nav><div class="pl"><span class="tx">Prévia com dados demonstrativos. Perfil: <b id="pf"></b></span></div><button class="nv" id="cl"><span id="cli"></span><span class="tx">Recolher menu</span></button></aside>
+<main><header class="card top"><button class="ib mb" id="mb" aria-label="Abrir menu"></button><div class="bc" id="bc"></div>
+<button class="sr" data-pal aria-label="Pesquisa global, atalho Ctrl+K"><span id="si"></span><span>Pesquisar…</span><kbd>Ctrl K</kbd></button>
+<button class="ib" id="nbtn" aria-label="Notificações"><span id="bi"></span><span class="bg" id="nb"></span></button><button class="ib" id="th" aria-label="Alternar modo claro e escuro"></button>
+<div class="me"><div class="av" id="av">SD</div><div><b>Servidor Demo</b><small id="ur"></small></div><button class="ib" id="lo" aria-label="Sair"></button></div></header>
+<div class="view" id="view" tabindex="-1"></div></main><div class="scrim" id="scrim"></div></div>
+<div id="ov"></div><div id="ts" aria-live="polite"></div>
+<script>
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';'),nm=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const P={home:'<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/>',spark:'<path d="m12 3 1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9zM19 16l.7 1.8L21.5 18.5l-1.8.7L19 21l-.7-1.8-1.8-.7 1.8-.7z"/>',check:'<rect x="3" y="3" width="18" height="18" rx="3"/><path d="m8 12 3 3 5-6"/>',folder:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',book:'<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 19a2 2 0 0 0 2 2h13"/>',users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2.2.6 3.5 2.6 3.5 5"/>',shield:'<path d="M12 3 4 6v6c0 4.5 3.2 7.8 8 9 4.8-1.2 8-4.5 8-9V6z"/>',search:'<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',bell:'<path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9M10 20a2 2 0 0 0 4 0"/>',sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/>',moon:'<path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/>',menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',plus:'<path d="M12 5v14M5 12h14"/>',x:'<path d="M6 6l12 12M18 6 6 18"/>',out:'<path d="M9 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4M16 8l4 4-4 4M20 12H9"/>',chev:'<path d="m15 6-6 6 6 6"/>'};
+const ic=n=>`<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${P[n]}</svg>`;
+const TICK='<svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px;stroke-width:3"><path d="m5 12 5 5 9-10"/></svg>';
+const NAV=[['dashboard','Dashboard','home'],['agenda','Agenda integrada','cal'],['eventos','Gestão de eventos','spark'],['tarefas','Tarefas','check'],['documentos','Documentos','folder'],['conhecimento','Wiki DCS','book'],['equipes','Equipes','users'],['espacos','Espaços ALESP','cal'],['solicitantes','Solicitantes','users'],['autoridades','Autoridades SP','users'],['admin','Administração','shield']];
+const DESC={agenda:['Fase 2','Visões mensal, semanal, diária e em lista, com filtros por área, responsável e status.'],eventos:['Fase 2','Área de trabalho por evento, com modelos que geram tarefas sem duplicação.'],tarefas:['Fase 2','Kanban, lista e calendário com subtarefas, comentários e prazos.'],documentos:['Fase 3','Biblioteca privada com versões, tags, permissões e vínculo a eventos.'],conhecimento:['Fase 3','Matérias de comunicação em página inteira, com fotos e créditos.'],solicitantes:['Fase 4','Lista de deputados e solicitantes cadastrados pela Administração.'],espacos:['Fase 4','Espaços institucionais padronizados.'],equipes:['Fase 4','DCS e Cerimonial, membros e responsáveis.'],autoridades:['Fase 4','Consulta ao Autoridades SP, participantes e nominatas, sem criar uma segunda base. Depende do acesso ao repositório existente.'],admin:['Fase 5','Usuários, perfis, auditoria, integrações e configurações.']};
+const CAT={cer:['Cerimonial','#C5A36A'],exp:['Exposições','#397DCC'],vis:['Visitas guiadas','#2FA37A'],cv:['Comunicação visual','#8A6BD1'],reu:['Reuniões','#6B7F99']};
+const TPL={cer:['Conferir informações do evento','Preparar roteiro','Elaborar nominata','Confirmar autoridades','Organizar receptivo','Arquivar documentos'],exp:['Analisar solicitação','Verificar disponibilidade','Registrar autorização','Organizar montagem','Coordenar desmontagem'],vis:['Verificar disponibilidade','Confirmar nº de visitantes','Designar responsável','Realizar visita','Registrar conclusão'],cv:['Elaborar briefing','Produzir material','Enviar para revisão','Aprovar','Entregar'],reu:['Elaborar pauta','Registrar ata']};
+const PRI={Alta:'#D4503F',Média:'#D9822B',Baixa:'#2FA37A'};
+const day0=new Date();day0.setHours(0,0,0,0);
+const at=(n,h,m=0)=>{const d=new Date(day0);d.setDate(d.getDate()+n);d.setHours(h,m);return d};
+let seq=20;const mk=(t,c,d,loc,who,st,done=0)=>({id:'e'+(++seq),t,c,d,loc,who,st,hist:['Criado a partir do modelo “'+CAT[c][0]+'”'],chk:TPL[c].map((x,i)=>({x,d:i<done}))});
+const E=[mk('Sessão Solene — Homenagem Institucional','cer',at(1,19),'Plenário Juscelino Kubitschek',['Marina S.','Rafael T.'],'Confirmado',3),mk('Recepção de autoridades — comitiva','cer',at(2,10),'Salão Nobre',['Rafael T.'],'Pendente',1),Object.assign(mk('Exposição “Memória Legislativa”','exp',at(3,9),'Hall do Auditório Franco Montoro',['Camila A.'],'Confirmado',2),{de:at(9,18)}),mk('Visita guiada — Escola Estadual Demo','vis',at(1,14),'Roteiro histórico',['Bruno L.'],'Confirmado',4),mk('Arte do convite — Sessão Solene','cv',at(0,16),'Prazo de aprovação',['Júlia M.'],'Aguardando aprovação',3),mk('Sinalização da exposição','cv',at(4,12),'Entrega à produção',['Júlia M.'],'Pendente',1),mk('Reunião de pauta semanal','reu',at(0,11),'Sala da DCS',['Equipe'],'Confirmado'),mk('Visita guiada — Universidade Demo','vis',at(5,10),'Roteiro histórico',['Bruno L.'],'Pendente'),mk('Sessão Solene — Entrega de medalha','cer',at(-3,19),'Plenário Juscelino Kubitschek',['Marina S.'],'Concluído',6),mk('Visita guiada — Grupo da melhor idade','vis',at(-8,10),'Roteiro histórico',['Bruno L.'],'Concluído',6)];
+const T=[{id:'t1',t:'Revisar nominata da Sessão Solene',ev:'Sessão Solene',due:'Hoje',pri:'Alta'},{id:'t2',t:'Confirmar presença das autoridades',ev:'Recepção',due:'Amanhã',pri:'Alta'},{id:'t3',t:'Aprovar arte do convite',ev:'Sessão Solene',due:'Hoje',pri:'Média'},{id:'t4',t:'Conferir estrutura do auditório',ev:'Exposição',due:'Em 3 dias',pri:'Média'},{id:'t5',t:'Designar guia da visita',ev:'Visita guiada',due:'Em 4 dias',pri:'Baixa',done:1}];
+T.forEach((t,i)=>t.w=['Você','Rafael T.','Você','Camila A.','Bruno L.'][i]);
+const PPL=['Você','Marina S.','Rafael T.','Camila A.','Bruno L.','Júlia M.','Equipe'];
+const onDay=(e,d)=>{const a=new Date(e.d),b=new Date(e.de||e.d);a.setHours(0,0,0,0);b.setHours(0,0,0,0);return d>=a&&d<=b},fmtr=e=>{const f=x=>x.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});return e.de&&f(e.d)!==f(e.de)?f(e.d)+' a '+f(e.de):fmt(e.d)};
+const A=[['Roteiro da Sessão Solene atualizado por Marina S.','há 12 min'],['Visita guiada confirmada por Bruno L.','há 1 h'],['Tarefa concluída: Designar guia da visita','há 3 h'],['Modelo de convite revisado por Rafael T.','ontem']];
+const N=[{t:'Nova tarefa atribuída: Revisar nominata',w:'há 10 min',u:1},{t:'Prazo se aproxima: Arte do convite',w:'há 1 h',u:1},{t:'Solicitação de aprovação pendente',w:'ontem',u:1},{t:'Visita guiada confirmada',w:'ontem',u:0}];
+const S={role:'',route:'dashboard',cat:'all',day:null,first:1,in:0,lf:null,fc:'all',fs:'all',fw:'all',vw:'mes',mo:null};
+const live=e=>!['Cancelado','Concluído'].includes(e.st),same=(a,b)=>a.toDateString()===b.toDateString();
+const fmt=d=>d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' às '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+function toast(m){const d=document.createElement('div');d.className='ts';d.setAttribute('role','status');d.textContent=m;$('#ts').appendChild(d);setTimeout(()=>d.remove(),3400)}
+function can(){if(S.role==='Leitor'){toast('Perfil Leitor: somente consulta. Na versão real, o servidor e o banco também bloqueiam essa ação.');return false}return true}
+function act(t){A.unshift([t,'agora']);A.length=Math.min(A.length,5)}
+function ov(h){if(!$('#ov').innerHTML)S.lf=document.activeElement;$('#ov').innerHTML=h;const f=$('#ov input,#ov button');f&&f.focus()}
+function closeOv(){$('#ov').innerHTML='';S.lf&&S.lf.focus&&S.lf.focus();S.lf=null}
+function closeSb(){$('#sb').classList.remove('op')}
+function bell(){const n=N.filter(x=>x.u).length;$('#nb').textContent=n;$('#nb').hidden=!n}
+function refresh(){if(S.route==='dashboard'&&$('#kp')){kpis();agenda();tasks();feed()}else if(['agenda','tarefas','eventos'].includes(S.route))rr()}
+const evRow=e=>`<button class="ev" data-ev="${e.id}"><i style="background:${CAT[e.c][1]}"></i><span><b>${esc(e.t)}</b><small>${fmtr(e)} · ${esc(e.loc)}</small></span><em class="pill">${e.st}</em></button>`;
+function kpis(){const w=new Date(day0);w.setDate(w.getDate()+7);const n=new Date();
+ const v=[['Atividades da semana',E.filter(e=>live(e)&&(e.de||e.d)>=day0&&e.d<w).length,'cal','#397DCC'],['Próximos eventos',E.filter(e=>live(e)&&(e.de||e.d)>=n&&['cer','exp','vis'].includes(e.c)).length,'spark','#B8914F'],['Tarefas pendentes',T.filter(t=>!['Concluído','Cancelado'].includes(ts(t))).length,'check','#D9822B'],['Demandas em andamento',E.filter(e=>live(e)&&e.c==='cv').length,'folder','#8A6BD1'],['Realizados no mês',E.filter(e=>e.st==='Concluído'&&e.d.getMonth()===n.getMonth()).length,'check','#2FA37A'],['Aguardando aprovação',E.filter(e=>e.st==='Aguardando aprovação').length,'shield','#D4503F']];
+ $('#kp').innerHTML=v.map(([l,c,i,k])=>`<div class="card k"><div class="ci" style="background:${k}">${ic(i)}</div><b>${c}</b><span class="mu">${l}</span></div>`).join('')}
+function agenda(){const ds=[...Array(7)].map((_,i)=>at(i,0));
+ const f=E.filter(e=>live(e)&&(e.de||e.d)>=day0&&(S.cat==='all'||e.c===S.cat)&&(!S.day||onDay(e,S.day))).sort((a,b)=>a.d-b.d).slice(0,6);
+ $('#ag').innerHTML=`<div class="wk">${ds.map(d=>{const on=S.day&&same(S.day,d);return `<button class="dy${on?' on':''}" aria-pressed="${!!on}" data-day="${d.getTime()}">${d.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')}<b>${d.getDate()}</b><div class="dt">${E.filter(e=>live(e)&&onDay(e,d)).slice(0,3).map(e=>`<i style="background:${CAT[e.c][1]}"></i>`).join('')}</div></button>`}).join('')}</div>
+ <div class="ch"><button class="cp${S.cat==='all'?' on':''}" data-cat="all">Todas</button>${Object.entries(CAT).map(([k,[n,c]])=>`<button class="cp${S.cat===k?' on':''}" data-cat="${k}"><i style="background:${c}"></i>${n}</button>`).join('')}</div>
+ ${f.length?f.map(evRow).join(''):'<p class="mu" style="text-align:center;padding:22px 0">Nenhuma atividade neste filtro. Limpe o dia ou a categoria, ou crie uma nova atividade.</p>'}`}
+function tasks(){$('#tk').innerHTML=T.filter(t=>(window.DCS_DEMO_NOTIFY?.isMine(t.w)||t.w==='Você')&&ts(t)!=='Cancelado').slice(0,6).map(t=>`<button class="tk${t.done?' dn':''}" role="checkbox" aria-checked="${!!t.done}" data-tk="${t.id}"><span class="cb">${t.done?TICK:''}</span><span><b>${esc(t.t)}</b><small class="mu" style="display:block">${t.ev} · ${t.due} · ${esc(window.DCS_TEAMS?window.DCS_TEAMS.groupForTask(t):t.team||"DCS")} · <span style="color:${PRI[t.pri]}">●</span> ${t.pri}</small></span></button>`).join('')}
+function feed(){$('#fd').innerHTML=A.map(a=>`<div class="fd"><i></i><span>${esc(a[0])}<br><small class="mu">${a[1]}</small></span></div>`).join('')}
+function dash(){const h=new Date().getHours(),g=h<12?'Bom dia':h<18?'Boa tarde':'Boa noite';
+ const Q=[['Nova atividade','plus','data-new'],['Agenda geral','cal','data-go="agenda"'],['Gestão de eventos','spark','data-go="eventos"'],['Documentos','folder','data-go="documentos"'],['Procedimentos','book','data-go="conhecimento"'],['Autoridades SP','users','data-go="autoridades"'],['Exposições','spark','data-qc="exp"'],['Visitas guiadas','users','data-qc="vis"']];
+ const I=[['Funções internas do HUB',window.DCS_BACKEND?.enabled?'Banco conectado':'Prévia ativa','s2'],['Autoridades SP','Pendente','s0'],['Outlook e Planner (Graph)','Desabilitada','s1'],['SharePoint e OneDrive','Desabilitada','s1']];
+ const PB=[['Como preparar uma nominata','Cerimonial · há 2 dias'],['Primeiros passos na DCS','Integração · há 1 semana'],['Fluxo de aprovação de artes','Comunicação visual · há 2 semanas']];
+ return `<div class="hd"><div><h1>${g}! Bem-vindo à Central de Operações.</h1><p>Acompanhe as atividades, organize os eventos e acesse os recursos da Divisão.</p></div><div class="hd"><span class="pill">${new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</span><button class="btn pri" data-new>${ic('plus')}Nova atividade</button></div></div>
+ <div class="kp" id="kp"></div>
+ <div class="gr"><div class="cw"><section class="card p"><h2>Agenda integrada</h2><div id="ag"></div></section>
+ <section class="card p"><h2>Acesso rápido</h2><div class="qa">${Q.map(q=>`<button class="q" ${q[2]}>${ic(q[1])}${q[0]}</button>`).join('')}</div></section>
+ <section class="card p"><h2>Publicações internas</h2>${PB.map(p=>`<button class="tk" data-go="conhecimento">${ic('book')}<span><b>${p[0]}</b><small class="mu" style="display:block">${p[1]} · exemplo</small></span></button>`).join('')}</section></div>
+ <div class="cw"><section class="card p"><h2>Minhas tarefas</h2><div id="tk"></div></section><section class="card p"><h2>Atividades recentes</h2><div id="fd"></div></section>
+ <section class="card p"><h2>Integrações</h2>${I.map(i=>`<div class="it"><span>${i[0]}</span><span class="${i[2]}">● ${i[1]}</span></div>`).join('')}<p class="mu" style="margin:8px 0 0">Nenhuma integração externa está conectada nesta prévia.</p></section></div></div>`}
+function stub(r){const n=NAV.find(x=>x[0]===r),d=DESC[r];return `<section class="card st"><div class="mk">${ic(n[2])}</div><h1 style="font-size:26px">${n[1]}</h1><p>${d[1]}</p><p><span class="pill">${d[0]} · em desenvolvimento</span></p><button class="btn pri" data-go="dashboard">Voltar ao dashboard</button></section>`}
+function paint(){$('#view').innerHTML=dash();kpis();agenda();tasks();feed()}
+function route(){const h=location.hash.slice(1),articleId=h.startsWith('materia/')?decodeURIComponent(h.slice(8)):null,r=articleId?'conhecimento':NAV.some(n=>n[0]===h)?h:'dashboard';S.route=r;
+ $$('.nv[data-go]').forEach(b=>{const on=b.dataset.go===r;b.classList.toggle('on',on);on?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current')});
+ $('#bc').innerHTML='DCS HUB / <b>'+NAV.find(n=>n[0]===r)[1]+'</b>';closeSb();const v=$('#view');
+ v.classList.remove('re');if(r!=='eventos')S.ev=null;if(r==='agenda'||r==='tarefas'||r==='eventos'){page();return}if(r==='admin'&&window.DCS_ADMIN){window.DCS_ADMIN.render();return}if(r==='espacos'&&window.DCS_VENUES){window.DCS_VENUES.render();return}if(r==='solicitantes'&&window.DCS_REQUESTERS){window.DCS_REQUESTERS.render();return}if(r==='equipes'&&window.DCS_TEAMS){window.DCS_TEAMS.refresh();return}if(articleId&&window.DCS_KNOWLEDGE){window.DCS_KNOWLEDGE.renderArticlePage(articleId);return}if((r==='documentos'||r==='conhecimento')&&window.DCS_KNOWLEDGE){window.DCS_KNOWLEDGE.render(r);return}if(r!=='dashboard'){v.innerHTML=stub(r);return}
+ if(S.first){S.first=0;v.innerHTML='<div class="sk" style="height:76px;width:62%"></div><div class="kp">'+'<div class="sk"></div>'.repeat(6)+'</div><div class="gr"><div class="sk" style="height:380px"></div><div class="sk" style="height:380px"></div></div>';setTimeout(()=>S.in&&S.route==='dashboard'&&paint(),650)}else paint()}
+function drIn(e){const d=e.chk.filter(c=>c.d).length,pc=e.chk.length?Math.round(d/e.chk.length*100):0,c=CAT[e.c],mayClose=!window.DCS_BACKEND?.enabled||apr(),mayReschedule=!window.DCS_BACKEND?.enabled||DCS_BACKEND.canReschedule(e);
+ return `<div style="display:flex;justify-content:space-between;align-items:center"><span class="pill" style="background:${c[1]}26">${c[0]}</span><button class="ib" data-close aria-label="Fechar painel">${ic('x')}</button></div><h2 style="font-size:23px;margin:10px 0 6px">${esc(e.t)}</h2><p class="mu" style="margin:0 0 8px">${fmtr(e)} · ${esc(e.loc)}</p><p style="margin:0"><span class="pill">${e.st}</span> ${e.who.map(w=>`<span class="pill">${esc(w)}</span>`).join(' ')}</p>
+ <h3>Checklist do modelo · ${pc}%</h3><div class="pg"><i style="width:${pc}%"></i></div>${e.chk.map((x,i)=>`<button class="tk${x.d?' dn':''}" role="checkbox" aria-checked="${x.d}" data-chk="${e.id}:${i}"><span class="cb">${x.d?TICK:''}</span><b>${esc(x.x)}</b></button>`).join('')}
+ <h3>Histórico</h3>${e.hist.map(h=>`<div class="fd"><i></i><span>${esc(h)}</span></div>`).join('')}
+ <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px">${!live(e)?'':e.st==='Pendente'?(apr()?`<button class="btn pri" data-ok="${e.id}">Confirmar e distribuir tarefas</button>`:'<span class="mu" style="align-self:center">Aguardando confirmação de um Gestor</span>'):(mayClose?`<button class="btn pri" data-st="${e.id}:Concluído">Concluir</button>`:'')}${live(e)?`${mayReschedule?`<button class="btn" data-rs="${e.id}">Reagendar</button>`:''}${mayClose?`<button class="btn" data-st="${e.id}:Cancelado">Cancelar atividade</button>`:''}`:''}</div><button class="btn" style="margin-top:10px" data-wk="${e.id}">Abrir área do evento</button>`}
+function openEv(id){const e=E.find(x=>x.id===id);e&&ov(`<div class="bk" data-close></div><aside class="card dr" role="dialog" aria-modal="true" aria-label="Detalhes da atividade">${drIn(e)}</aside>`)}
+function openNew(dt){if(!can())return;if(window.DCS_EVENTFLOW){window.DCS_EVENTFLOW.openCreate(dt).catch(e=>toast(e.message));return;}const p=n=>String(n).padStart(2,'0'),t=dt||at(1,0);
+ ov(`<div class="bk" data-close></div><form class="card md" id="nf" role="dialog" aria-modal="true" aria-label="Nova atividade"><h2>Nova atividade</h2><label>Título<input class="fi" name="t" required maxlength="120"></label><label>Categoria<select class="fi" name="c">${Object.entries(CAT).map(([k,v])=>`<option value="${k}">${v[0]}</option>`).join('')}</select></label>
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label>Data<input class="fi" type="date" name="d" required value="${t.getFullYear()}-${p(t.getMonth()+1)}-${p(t.getDate())}"></label><label>Hora<input class="fi" type="time" name="h" required value="10:00"></label></div>
+ <label>Término (opcional, para exposições e eventos de vários dias)<input class="fi" type="date" name="e"></label>${window.DCS_VENUES?window.DCS_VENUES.selectMarkup():"<p>Carregando espaços da ALESP…</p>"}<p class="mu">O checklist da categoria é criado uma única vez, sem duplicar itens se a atividade for editada depois.</p><div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px"><button type="button" class="btn" data-close>Cancelar</button><button class="btn pri">Criar atividade</button></div></form>`)}
+let pi=0,pr=[];
+function openPal(){ov(`<div class="bk" data-close></div><div class="card pal" role="dialog" aria-modal="true" aria-label="Pesquisa global"><input id="pq" placeholder="Buscar páginas, eventos e tarefas…" autocomplete="off" aria-label="Pesquisar"><div id="pl" role="listbox"></div></div>`);palr('')}
+function palr(q){const all=[...NAV.map(n=>({t:n[1],k:'Página',i:n[2],go:n[0]})),{t:'Nova atividade',k:'Ação',i:'plus',nw:1},...E.map(e=>({t:e.t,k:'Evento',i:'cal',ev:e.id})),...T.map(t=>({t:t.t,k:'Tarefa',i:'check',go:'tarefas'}))];pr=all.filter(x=>nm(x.t).includes(nm(q))).slice(0,8);pi=0;palp()}
+function palp(){$('#pl').innerHTML=pr.length?pr.map((x,i)=>`<button class="pi${i===pi?' on':''}" role="option" aria-selected="${i===pi}" data-pi="${i}">${ic(x.i)}<span>${esc(x.t)}</span><em>${x.k}</em></button>`).join(''):'<p class="mu" style="padding:22px;text-align:center">Nada encontrado. Tente outro termo.</p>'}
+function palgo(i){const x=pr[i];if(!x)return;closeOv();if(x.go)location.hash=x.go;else if(x.nw)openNew();else openEv(x.ev)}
+function openNotif(){ov(`<div class="bk" style="background:none;backdrop-filter:none" data-close></div><div class="card dd" role="dialog" aria-label="Notificações"><div class="hd" style="padding:4px 8px 6px;align-items:center"><h2>Notificações</h2><button class="btn" style="height:30px" data-readall>Marcar como lidas</button></div>${N.map(n=>`<div class="fd" style="padding:8px"><i style="background:${n.u?'var(--acc)':'var(--bd)'}"></i><span>${esc(n.t)}<br><small class="mu">${n.w}</small></span></div>`).join('')}</div>`)}
+function theme(t){document.documentElement.dataset.theme=t;try{localStorage.setItem('dcs-theme',t)}catch(e){}$('#th').innerHTML=ic(t==='dark'?'sun':'moon')}
+document.addEventListener('click',e=>{const g=k=>e.target.closest('['+k+']');let x;
+ if(x=g('data-go'))location.hash=x.dataset.go;
+ else if(x=g('data-ev'))openEv(x.dataset.ev);
+ else if(g('data-new'))openNew();
+ else if(g('data-pal'))openPal();
+ else if(x=g('data-pi'))palgo(+x.dataset.pi);
+ else if(x=g('data-cat')){S.cat=x.dataset.cat;agenda()}
+ else if(x=g('data-qc')){S.cat=x.dataset.qc;S.day=null;agenda();$('#ag').scrollIntoView({block:'center'})}
+ else if(x=g('data-day')){const d=new Date(+x.dataset.day);S.day=S.day&&same(S.day,d)?null:d;agenda()}
+ else if(x=g('data-tk')){if(!can())return;if(window.DCS_BACKEND?.enabled){const t=T.find(y=>y.id===x.dataset.tk);DCS_BACKEND.run(()=>DCS_BACKEND.taskStatus(t.id,t.done?'Pendente':'Concluído'));return;}const t=T.find(y=>y.id===x.dataset.tk);t.done=t.done?0:1;t.s=t.done?'Concluído':'Pendente';if(t.done){act('Tarefa concluída: '+t.t);toast('Tarefa concluída')}refresh()}
+ else if(x=g('data-chk')){if(!can())return;if(window.DCS_BACKEND?.enabled){const[i,n]=x.dataset.chk.split(':');DCS_BACKEND.run(()=>DCS_BACKEND.toggleChecklist(i,+n,true));return;}const[i,n]=x.dataset.chk.split(':'),ev=E.find(y=>y.id===i);ev.chk[n].d=!ev.chk[n].d;$('.dr').innerHTML=drIn(ev)}
+ else if(x=g('data-st')){if(!can())return;if(window.DCS_BACKEND?.enabled){const[i,s]=x.dataset.st.split(':');DCS_BACKEND.run(()=>DCS_BACKEND.changeEventStatus(i,s));return;}const[i,s]=x.dataset.st.split(':'),ev=E.find(y=>y.id===i);ev.st=s;ev.hist.unshift('Status alterado para “'+s+'” por Servidor Demo, agora');act(ev.t+' — '+s.toLowerCase());closeOv();toast('Atividade '+(s==='Concluído'?'concluída':'cancelada'));refresh()}
+ else if(g('data-readall')){if(window.DCS_BACKEND?.enabled){DCS_BACKEND.run(()=>DCS_BACKEND.markNotificationsRead().then(()=>openNotif()));return;}N.forEach(n=>n.u=0);window.DCS_DEMO_NOTIFY?.markRead();bell();openNotif()}
+ else if(x=g('data-vw')){S.vw=x.dataset.vw;rr()}
+ else if(x=g('data-mo')){const k=+x.dataset.mo;S.mo=k?new Date(S.mo.getFullYear(),S.mo.getMonth()+k,1):new Date(day0.getFullYear(),day0.getMonth(),1);rr()}
+ else if(x=g('data-nd'))openNew(new Date(+x.dataset.nd))
+ else if(x=g('data-wk')){closeOv();S.ev=x.dataset.wk;S.tb='geral';if(S.route==='eventos')rr();else location.hash='eventos'}
+ else if(g('data-evb')){S.ev=null;rr()}
+ else if(x=g('data-tb')){S.tb=x.dataset.tb;rr()}
+ else if(x=g('data-rs'))openRs(x.dataset.rs)
+ else if(x=g('data-nt'))openNt(x.dataset.nt)
+ else if(x=g('data-ck')){if(!can())return;if(window.DCS_BACKEND?.enabled){const[i,n]=x.dataset.ck.split(':');DCS_BACKEND.run(()=>DCS_BACKEND.toggleChecklist(i,+n));return;}const[i,n]=x.dataset.ck.split(':'),ev=E.find(y=>y.id===i);ev.chk[n].d=!ev.chk[n].d;rr()}
+ else if(g('data-ics'))openIcs()
+ else if(g('data-cp')){const t=$('#ics');t.select();let ok=0;try{ok=document.execCommand('copy')}catch(e){}toast(ok?'Conteúdo copiado':'Selecione o texto e use Ctrl+C')}
+ else if(x=g('data-ok')){if(!can())return;if(window.DCS_BACKEND?.enabled){DCS_BACKEND.run(()=>DCS_BACKEND.approve(x.dataset.ok));return;}if(!apr()){toast('Somente Gestor ou Administrador confirma atividades.');return}const ev=E.find(y=>y.id===x.dataset.ok),n=gen(ev);ev.st='Confirmado';ev.hist.unshift('Confirmado por Servidor Demo, '+n+' tarefas geradas');act('Atividade confirmada: '+ev.t);toast(n?n+' tarefas geradas pelo modelo':'Confirmada; as tarefas do modelo já existiam');const dr=$('.dr');dr&&(dr.innerHTML=drIn(ev));refresh()}
+ else if(g('data-close'))closeOv()});
+document.addEventListener('input',e=>{if(e.target.id==='pq')palr(e.target.value)});
+document.addEventListener('submit',e=>{if(e.target.id!=='nf')return;e.preventDefault();if(window.DCS_BACKEND?.enabled){DCS_BACKEND.run(()=>DCS_BACKEND.createEvent(new FormData(e.target)));return;}const f=new FormData(e.target),[y,m,d]=f.get('d').split('-'),[h,mi]=f.get('h').split(':');
+ const venue=window.DCS_VENUES?.get(f.get('venue_id'));if(!venue||!venue.active){toast('Selecione um espaço ativo cadastrado da ALESP.');return;}const ev=mk(f.get('t').trim(),f.get('c'),new Date(+y,m-1,+d,+h,+mi),venue.name,['Você'],'Pendente');ev.venue_id=venue.id;ev.hist=['Criado por Servidor Demo, agora'];const en=f.get('e');if(en){const[y2,m2,d2]=en.split('-');ev.de=new Date(+y2,m2-1,+d2,18,0);if(ev.de<ev.d){toast('O término deve ser igual ou posterior ao início.');return}}E.push(ev);act('Nova atividade criada: '+ev.t);closeOv();toast('Atividade criada com o modelo “'+CAT[ev.c][0]+'”');refresh()});
+addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();S.in&&openPal();return}
+ if(e.key==='Escape'){closeOv();closeSb();return}
+ if($('#pq')){if(e.key==='ArrowDown'){e.preventDefault();pi=Math.min(pi+1,pr.length-1);palp()}else if(e.key==='ArrowUp'){e.preventDefault();pi=Math.max(pi-1,0);palp()}else if(e.key==='Enter'){e.preventDefault();palgo(pi)}}});
+const apr=()=>['Administrador','Gestor'].includes(S.role),ts=t=>t.s||(t.done?'Concluído':'Pendente'),ST=['Pendente','Em andamento','Aguardando aprovação','Concluído','Cancelado'];
+function page(){$('#view').innerHTML=S.route==='agenda'?agPage():S.route==='eventos'?evPage():kbPage()}
+function rr(){$('#view').classList.add('re');page()}
+function gen(ev){let n=0;ev.chk.forEach((c,i)=>{const k=ev.id+':'+i;if(c.d||c.applicable===false||!c.assignee_label||c.assignee_label==='Equipe'||T.some(t=>t.k===k))return;const task={id:'g'+k,k,t:c.x,ev:ev.t.split(' — ')[0],due:c.due_at?c.due_at.split('-').reverse().join('/'):ev.d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}),pri:'Média',s:'Pendente',eid:ev.id,w:c.assignee_label||'Equipe',team:c.team||ev.team||'DCS'};T.unshift(task);window.DCS_DEMO_NOTIFY?.assigned(task,task.w);n++});return n}
+function ics(){const z=d=>d.toISOString().replace(/[-:]/g,'').replace(/\.\d+/,''),x=s=>s.replace(/([,;\\])/g,'\\$1');return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//DCS HUB//PT-BR//','X-WR-CALNAME:DCS HUB',...E.filter(e=>e.st==='Confirmado'||e.st==='Concluído').flatMap(e=>['BEGIN:VEVENT','UID:'+e.id+'@dcs-hub','DTSTAMP:'+z(new Date()),'DTSTART:'+z(e.d),'DTEND:'+z(e.de||new Date(+e.d+36e5)),'SUMMARY:'+x(e.t),'LOCATION:'+x(e.loc),'END:VEVENT']),'END:VCALENDAR'].join('\r\n')}
+function openIcs(){const n=E.filter(e=>e.st==='Confirmado'||e.st==='Concluído').length;ov(`<div class="bk" data-close></div><div class="card md" role="dialog" aria-modal="true" aria-label="Exportar agenda"><h2>Exportar para o Outlook</h2><p class="mu">${n} atividades confirmadas ou concluídas. Atividades pendentes não são exportadas.</p><textarea class="fi" id="ics" readonly style="height:150px;padding:10px;font:12px monospace">${esc(ics())}</textarea><p class="pl">O feed assinável por link com token, que o Outlook atualiza sozinho, exige o servidor e ainda não existe. Por enquanto, copie o conteúdo e salve como arquivo .ics.</p><div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px"><button class="btn" data-close>Fechar</button><button class="btn pri" data-cp>Copiar conteúdo</button></div></div>`)}
+function agPage(){if(!S.mo)S.mo=new Date(day0.getFullYear(),day0.getMonth(),1);
+ const f=E.filter(e=>(S.fc==='all'||e.c===S.fc)&&(S.fs==='all'||e.st===S.fs)&&(S.fw==='all'||e.who.includes(S.fw))),who=[...new Set(E.flatMap(e=>e.who))];
+ const sel=(k,o,l)=>`<select class="fi" style="width:auto;margin:0;height:34px" data-f="${k}" aria-label="${l}"><option value="all">${l}: todos</option>${o.map(v=>`<option value="${v[0]}"${S[k]===v[0]?' selected':''}>${v[1]}</option>`).join('')}</select>`;
+ let body;if(S.vw==='mes'){const s=new Date(S.mo);s.setDate(1-s.getDay());
+  body=`<div class="mg">${['dom','seg','ter','qua','qui','sex','sáb'].map(w=>`<small class="mu" style="text-align:center">${w}</small>`).join('')}${[...Array(42)].map((_,i)=>{const d=new Date(s.getFullYear(),s.getMonth(),s.getDate()+i),es=f.filter(e=>onDay(e,d)).sort((a,b)=>a.d-b.d);
+   return `<div class="mc${d.getMonth()!==S.mo.getMonth()?' ot':''}${same(d,day0)?' td':''}"><button class="dn" data-nd="${d.getTime()}" aria-label="Criar atividade em ${d.toLocaleDateString('pt-BR')}">${d.getDate()}</button>${es.slice(0,3).map(e=>`<button class="mch" data-ev="${e.id}" title="${esc(e.t)}" style="--c:${CAT[e.c][1]}">${esc(e.t)}</button>`).join('')}${es.length>3?`<small class="mu">+${es.length-3} mais</small>`:''}</div>`}).join('')}</div>`}
+ else{const l=[...f].sort((a,b)=>a.d-b.d);body=l.length?l.map(evRow).join(''):'<p class="mu" style="text-align:center;padding:22px 0">Nenhuma atividade neste filtro. Limpe os filtros ou crie uma nova atividade.</p>'}
+ return `<div class="hd"><div><h1>Agenda integrada</h1><p>Uma única agenda para a DCS e o Cerimonial. Atividades novas aguardam confirmação de um Gestor.</p></div><div class="hd"><button class="btn" data-ics>Exportar .ics</button><button class="btn pri" data-new>${ic('plus')}Nova atividade</button></div></div>
+ <section class="card p"><div class="hd" style="align-items:center;margin-bottom:12px"><div style="display:flex;gap:6px;align-items:center">${S.vw==='mes'?`<button class="ib" data-mo="-1" aria-label="Mês anterior">${ic('chev')}</button><h2 style="min-width:150px;text-align:center;text-transform:capitalize">${S.mo.toLocaleDateString('pt-BR',{month:'long',year:'numeric'})}</h2><button class="ib" data-mo="1" aria-label="Próximo mês"><span style="display:grid;transform:rotate(180deg)">${ic('chev')}</span></button><button class="btn" style="height:34px" data-mo="0">Hoje</button>`:'<h2>Lista cronológica</h2>'}</div><div class="ch" style="margin:0"><button class="cp${S.vw==='mes'?' on':''}" data-vw="mes">Mês</button><button class="cp${S.vw==='lista'?' on':''}" data-vw="lista">Lista</button></div></div>
+ <div class="ch">${sel('fc',Object.entries(CAT).map(([k,v])=>[k,v[0]]),'Categoria')}${sel('fs',ST.filter(x=>x!=='Em andamento').map(x=>[x==='Concluído'||x==='Cancelado'?x:x==='Pendente'?x:x,x]).concat([['Confirmado','Confirmado']]),'Status')}${sel('fw',who.map(x=>[x,x]),'Responsável')}</div>${body}</section>`}
+function kbPage(){return `<div class="hd"><div><h1>Tarefas</h1><p>Quadro da equipe. Confirmar uma atividade gera as tarefas do modelo, sem duplicar.</p></div><div class="hd">${window.DCS_TEAMS?window.DCS_TEAMS.filterHtml(S.tg||"all"):""}<select class="fi" style="width:auto;margin:0;height:38px" data-f="tw" aria-label="Filtrar por responsável"><option value="all">Responsável: todos</option>${PPL.map(p=>`<option${S.tw===p?' selected':''}>${p}</option>`).join('')}</select><button class="btn pri" data-nt="">${ic('plus')}Nova tarefa</button></div></div><div class="kb">${ST.map(s=>{const l=T.filter(t=>ts(t)===s&&(!S.tw||S.tw==='all'||t.w===S.tw)&&(!S.tg||S.tg==='all'||(window.DCS_TEAMS?window.DCS_TEAMS.groupForTask(t):t.team)===S.tg));return `<section class="card kc" aria-label="${s}"><h3 style="margin:0 0 4px">${s} <span class="mu">${l.length}</span></h3>${l.map(t=>`<div class="kt"><b style="font-weight:500">${esc(t.t)}</b><small class="mu" style="display:block;margin:2px 0 8px">${esc(t.ev)} · ${t.due} · <span style="color:${PRI[t.pri]}">●</span> ${t.pri}${t.k?' · gerada pelo modelo':''}</small><select class="fi" style="height:30px;margin:0 0 6px;font-size:12px" data-as="${t.id}" aria-label="Responsável pela tarefa">${window.DCS_TEAMS?window.DCS_TEAMS.membersOptions(window.DCS_TEAMS.groupForTask(t),t.w):PPL.map(p=>`<option${t.w===p?' selected':''}>${p}</option>`).join('')}</select><select class="fi" style="height:30px;margin:0;font-size:12px" data-mv="${t.id}" aria-label="Mover tarefa"><option>Mover para…</option>${ST.filter(x=>x!==s).map(x=>`<option>${x}</option>`).join('')}</select></div>`).join('')||'<p class="mu">Nenhuma tarefa aqui.</p>'}</section>`}).join('')}</div>`}
+const pct=e=>e.chk.length?Math.round(e.chk.filter(c=>c.d).length/e.chk.length*100):0;
+function evPage(){const e=E.find(x=>x.id===S.ev);return e?evWork(e):evList()}
+function evList(){const l=E.filter(e=>e.st!=='Cancelado').sort((a,b)=>a.d-b.d);return `<div class="hd"><div><h1>Gestão de eventos</h1><p>Cada evento tem sua área de trabalho, com checklist, tarefas e histórico.</p></div><button class="btn pri" data-new>${ic('plus')}Nova atividade</button></div><div class="kp" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr))">${l.map(e=>`<button class="card k" style="text-align:left;border-top:3px solid ${CAT[e.c][1]}" data-wk="${e.id}"><span class="pill">${CAT[e.c][0]}</span><h3 style="margin:10px 0 4px;font-size:16px">${esc(e.t)}</h3><small class="mu">${fmtr(e)} · ${esc(e.loc)}</small><div class="pg"><i style="width:${pct(e)}%"></i></div><small class="mu">${pct(e)}% do checklist · ${e.st}</small></button>`).join('')}</div>`}
+function evWork(e){const tb=S.tb||'geral',c=CAT[e.c],tl=T.filter(t=>t.eid===e.id),tabs=[['geral','Visão geral'],...((e.kind==='reuniao'||e.c==='reu')?[['meeting','Pauta e reunião']]:[]),['chk','Checklist'],['tar','Tarefas'],['his','Histórico'],['docs','Documentos']],it=(a,b)=>`<div class="it"><span>${a}</span><span>${b}</span></div>`;let b;
+ if(tb==='chk')b=window.DCS_EVENTFLOW?window.DCS_EVENTFLOW.checklistHtml(e):e.chk.map((x,i)=>`<button class="tk${x.d?' dn':''}" role="checkbox" aria-checked="${x.d}" data-ck="${e.id}:${i}"><span class="cb">${x.d?TICK:''}</span><b>${esc(x.x)}</b></button>`).join('');
+ else if(tb==='meeting')b=window.DCS_EVENTFLOW?window.DCS_EVENTFLOW.meetingHtml(e):'<p class="mu">Ficha indisponível.</p>';
+ else if(tb==='tar')b='<div class="hd" style="margin:13px 0"><h3>Trabalho atribuído</h3><button class="btn pri" data-nt="'+esc(e.id)+'">+ Tarefa para uma pessoa</button></div>'+(tl.length?tl.map(t=>it(esc(t.t),esc(t.w||'Equipe')+' · '+ts(t))).join(''):'<p class="mu">As tarefas do checklist são geradas após confirmação do gestor. Você também pode criar uma tarefa manual para uma pessoa agora.</p>');
+ else if(tb==='docs')b=window.DCS_KNOWLEDGE?window.DCS_KNOWLEDGE.eventDocsHtml(e):'<p class="mu">Biblioteca indisponível.</p>';
+  else if(tb==='his')b=e.hist.map(h=>`<div class="fd"><i></i><span>${esc(h)}</span></div>`).join('');
+ else b=it('Data e horário',fmtr(e))+it('Local',esc(e.loc))+it('Responsáveis',e.who.map(esc).join(', '))+it('Categoria',c[0])+it('Checklist',pct(e)+'%')+(window.DCS_EVENTFLOW?window.DCS_EVENTFLOW.extraHtml(e):'');
+ return `<div class="hd"><div><button class="btn" style="height:32px;margin-bottom:10px" data-evb>${ic('chev')}Todos os eventos</button><h1 style="font-size:26px">${esc(e.t)}</h1><p><span class="pill">${e.st}</span></p></div><div class="hd">${live(e)?`<button class="btn" data-nt="${e.id}">Nova tarefa</button><button class="btn" data-rs="${e.id}">Reagendar</button>`:''}${e.st==='Pendente'&&apr()?`<button class="btn pri" data-ok="${e.id}">Confirmar e distribuir tarefas</button>`:''}</div></div><section class="card p"><div class="ch" role="tablist">${tabs.map(t=>`<button class="cp${tb===t[0]?' on':''}" role="tab" aria-selected="${tb===t[0]}" data-tb="${t[0]}">${t[1]}</button>`).join('')}</div>${b}<p class="mu" style="margin:14px 0 0">Referências de documentos já disponíveis. Integração Microsoft 365 e nominatas automáticas permanecem na Fase 4.</p></section>`}
+function openRs(id){if(!can())return;const e=E.find(x=>x.id===id),p=n=>String(n).padStart(2,'0'),d=e.d;ov(`<div class="bk" data-close></div><form class="card md" id="rf" data-id="${id}" role="dialog" aria-modal="true" aria-label="Reagendar atividade"><h2>Reagendar</h2><p class="mu">${esc(e.t)}</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label>Nova data<input class="fi" type="date" name="d" required value="${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}"></label><label>Nova hora<input class="fi" type="time" name="h" required value="${p(d.getHours())}:${p(d.getMinutes())}"></label></div><label>Motivo<input class="fi" name="m" maxlength="120"></label><div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px"><button type="button" class="btn" data-close>Cancelar</button><button class="btn pri">Reagendar</button></div></form>`)}
+function openNt(eid){if(!can())return;ov(`<div class="bk" data-close></div><form class="card md" id="tf" role="dialog" aria-modal="true" aria-label="Nova tarefa"><h2>Nova tarefa</h2><label>Título<input class="fi" name="t" required maxlength="120"></label>${window.DCS_TEAMS?window.DCS_TEAMS.taskFormHtml():"<label>Responsável<select class='fi' name='w'><option>Você</option></select></label>"}<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label>Prazo<input class="fi" type="date" name="d" required></label><label>Prioridade<select class="fi" name="p"><option>Média</option><option>Alta</option><option>Baixa</option></select></label></div><label>Evento vinculado<select class="fi" name="v"><option value="">Nenhum</option>${E.filter(live).map(e=>`<option value="${e.id}"${e.id===eid?' selected':''}>${esc(e.t)}</option>`).join('')}</select></label><div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px"><button type="button" class="btn" data-close>Cancelar</button><button class="btn pri">Criar tarefa</button></div></form>`)}
+document.addEventListener('submit',e=>{if(e.target.id!=='tf')return;e.preventDefault();if(window.DCS_BACKEND?.enabled){DCS_BACKEND.run(()=>DCS_BACKEND.createTask(new FormData(e.target)));return;}const f=new FormData(e.target),[y,m,d]=f.get('d').split('-'),ev=E.find(x=>x.id===f.get('v')),w=window.DCS_TEAMS?.normalizeAssignee(f.get('w'))||f.get('w'),k={id:'n'+(++seq),t:f.get('t').trim(),ev:ev?ev.t.split(' — ')[0]:'Avulsa',eid:ev&&ev.id,due:d+'/'+m,pri:f.get('p'),s:'Pendente',team:f.get('team')||'DCS',w};T.unshift(k);act('Tarefa criada para '+w+': '+k.t);if(window.DCS_DEMO_NOTIFY){DCS_DEMO_NOTIFY.assigned(k,w);}else if(w==='Você'){N.unshift({t:'Nova tarefa atribuída: '+k.t,w:'agora',u:1});bell()}closeOv();toast('Tarefa criada para '+w);refresh()});
+document.addEventListener('submit',e=>{if(e.target.id!=='rf')return;e.preventDefault();if(window.DCS_BACKEND?.enabled){DCS_BACKEND.run(()=>DCS_BACKEND.reschedule(new FormData(e.target),e.target.dataset.id));return;}const f=new FormData(e.target),ev=E.find(x=>x.id===e.target.dataset.id),[y,m,d]=f.get('d').split('-'),[h,mi]=f.get('h').split(':'),old=fmt(ev.d),mo=f.get('m').trim();const nd=new Date(+y,m-1,+d,+h,+mi);if(ev.de)ev.de=new Date(+ev.de+(nd-ev.d));ev.d=nd;ev.hist.unshift('Reagendado de '+old+' para '+fmt(ev.d)+' por Servidor Demo'+(mo?'. Motivo: '+mo:''));act('Reagendado: '+ev.t+', '+fmt(ev.d));closeOv();toast('Atividade reagendada');refresh()});
+document.addEventListener('change',e=>{const t=e.target;if(t.dataset.f){S[t.dataset.f]=t.value;rr();const f=$('[data-f="'+t.dataset.f+'"]');f&&f.focus()}else if(t.dataset.as){if(!can()){rr();return}if(window.DCS_BACKEND?.enabled){DCS_BACKEND.run(()=>DCS_BACKEND.assignTask(t.dataset.as,t.value));return;}const k=T.find(y=>y.id===t.dataset.as);k.w=window.DCS_TEAMS?.normalizeAssignee(t.value)||t.value;k.team=window.DCS_TEAMS?.getTeam(k.w)||k.team||'DCS';act('Tarefa atribuída a '+t.value+': '+k.t);if(window.DCS_DEMO_NOTIFY){DCS_DEMO_NOTIFY.assigned(k,k.w);}else if(t.value==='Você'){N.unshift({t:'Nova tarefa atribuída: '+k.t,w:'agora',u:1});bell()}toast('Tarefa atribuída a '+t.value);rr()}else if(t.dataset.mv){if(!ST.includes(t.value))return;if(!can()){rr();return}if(window.DCS_BACKEND?.enabled){DCS_BACKEND.run(()=>DCS_BACKEND.taskStatus(t.dataset.mv,t.value));return;}const k=T.find(y=>y.id===t.dataset.mv);k.s=t.value;k.done=t.value==='Concluído'?1:0;act('Tarefa movida para “'+t.value+'”: '+k.t);toast('Tarefa movida para “'+t.value+'”');rr()}});
+addEventListener('hashchange',()=>S.in&&route());
+$('#nav').innerHTML=NAV.map(([k,l,i])=>`<button class="nv" data-go="${k}" title="${l}">${ic(i)}<span class="tx">${l}</span></button>`).join('');
+$('#cli').innerHTML=ic('chev');$('#mb').innerHTML=ic('menu');$('#si').innerHTML=ic('search');$('#bi').innerHTML=ic('bell');$('#lo').innerHTML=ic('out');
+$('#cl').onclick=()=>$('#app').classList.toggle('cl');$('#mb').onclick=()=>$('#sb').classList.add('op');$('#scrim').onclick=closeSb;
+$('#nbtn').onclick=openNotif;$('#th').onclick=()=>theme(document.documentElement.dataset.theme==='dark'?'light':'dark');
+$('#lo').onclick=()=>{if(window.DCS_BACKEND?.enabled){DCS_BACKEND.run(()=>DCS_BACKEND.logout());return;}window.DCS_DEMO_AUTH?.logout();};
+$('#lf').onsubmit=e=>{e.preventDefault();if(window.DCS_BACKEND?.enabled){DCS_BACKEND.run(()=>DCS_BACKEND.login());return;}window.DCS_DEMO_AUTH?.login();};
+let t0;try{t0=localStorage.getItem('dcs-theme')}catch(e){}
+theme(t0||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'));
+function createFlowDemo(data){
+ const start=new Date(data.start_date+'T'+data.start_time);
+ const end=new Date(data.end_date+'T'+data.end_time);
+ if(!(end>start))throw Error('Data final inválida');
+ const ev=mk(data.title,data.category,start,data.venue_name,['Equipe'], 'Pendente');
+ ev.de=end;ev.kind=data.kind;ev.venue_id=data.venue_id;ev.requester_id=data.requester_id;
+ ev.requester_name=data.requester_name;ev.team=data.team;ev.briefing=data.briefing;
+ ev.chk=data.tasks.map(x=>({x:x.title,section:x.section,applicable:x.applicable,d:false,
+  assignee_label:x.assignee_label,team:x.team,due_at:x.due_at,priority:x.priority}));
+ ev.hist.unshift('Solicitante: '+data.requester_name+' · Modelo: '+data.kind);
+ E.unshift(ev);act('Novo evento registrado: '+data.title);S.ev=ev.id;S.tb='geral';refresh();return ev;
+}
+window.DCS_BRIDGE={E,T,PPL,A,N,S,route,refresh,rr,openEv,closeOv,toast,bell,createFlowDemo,generateDemoTasks:gen};
+</script></body></html>
