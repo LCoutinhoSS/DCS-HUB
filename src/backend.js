@@ -76,6 +76,7 @@ export const backend={
   enabled:configured,
   async initialize(){
     if(!configured)return;
+    window.DCS_KNOWLEDGE?.reset();
     const box=$('#rl')?.closest('label');if(box)box.hidden=true;
     const note=$('.lc .pl');if(note)note.textContent='Acesso real via Supabase Auth. Apenas contas ativadas pela administração podem entrar. Não há seleção de perfil de demonstração.';
     const mail=$('#lf input[type=email]');if(mail)mail.required=true;
@@ -87,6 +88,7 @@ export const backend={
   },
   async login(){
     try {
+      window.DCS_KNOWLEDGE?.reset();
       const email=$('#lf input[type=email]').value.trim();
       const password=$('#lf input[type=password]').value;
       if(!email||!password)throw new Error('Informe e-mail institucional e senha');
@@ -96,7 +98,7 @@ export const backend={
       await loadAll();enterApp();
     }catch(e){await supabase.auth.signOut();profile=null;alertError(e);}
   },
-  async logout(){check(await supabase.auth.signOut());profile=null;showLogin();bridge().toast('Sessão encerrada');},
+  async logout(){check(await supabase.auth.signOut());profile=null;window.DCS_KNOWLEDGE?.reset();showLogin();bridge().toast('Sessão encerrada');},
   async reload(){await loadAll();bridge().refresh();},
   async createEvent(form){
     ensureUser();
@@ -151,6 +153,48 @@ export const backend={
       p_event_id:id,p_start_at:newStart.toISOString(),p_end_at:newEnd.toISOString(),p_reason:form.get('m')||''
     }));
     bridge().closeOv();await this.reload();bridge().toast('Período reagendado e registrado no histórico');
+  },
+  async listDocuments(){
+    ensureUser();
+    return check(await supabase.from('documents')
+      .select('id,title,kind,provider,reference_url,description,tags,event_id,task_id,created_by,created_at,updated_at')
+      .order('updated_at',{ascending:false}));
+  },
+  async createDocument(data){
+    ensureUser();
+    return check(await supabase.from('documents').insert(data).select('id').single());
+  },
+  async updateDocument(id,data){
+    ensureUser();
+    return check(await supabase.from('documents').update(data).eq('id',id).select('id').single());
+  },
+  async deleteDocument(id){
+    ensureUser();
+    return check(await supabase.from('documents').delete().eq('id',id).select('id').single());
+  },
+  async listArticles(){
+    ensureUser();
+    return check(await supabase.from('knowledge_articles')
+      .select('id,title,summary,body,category,status,tags,event_id,author_id,version,created_at,updated_at')
+      .order('updated_at',{ascending:false}));
+  },
+  async createArticle(data){
+    ensureUser();
+    return check(await supabase.from('knowledge_articles').insert(data).select('id').single());
+  },
+  async updateArticle(id,data){
+    ensureUser();
+    return check(await supabase.from('knowledge_articles').update(data).eq('id',id).select('id').single());
+  },
+  async deleteArticle(id){
+    ensureUser();
+    return check(await supabase.from('knowledge_articles').delete().eq('id',id).select('id').single());
+  },
+  async listArticleRevisions(id){
+    ensureUser();
+    return check(await supabase.from('knowledge_article_revisions')
+      .select('id,article_id,version,title,summary,body,category,status,created_at')
+      .eq('article_id',id).order('version',{ascending:false}));
   },
   currentUserId(){return profile?.id||null;},
   async listAdminProfiles(){
