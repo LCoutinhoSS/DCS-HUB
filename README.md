@@ -1,4 +1,4 @@
-# DCS HUB · v0.4 — operações e administração de usuários
+# DCS HUB · v0.5 — operações, administração, documentos e conhecimento
 
 **Projeto de desenvolvimento independente; não modifica nem acessa a produção do Autoridades SP.**
 
@@ -17,7 +17,9 @@ Esta versão parte do HTML do DCS HUB fornecido pelo usuário e preserva o desen
 | Reagendamento | Em memória | RPC de reagendamento com motivo no histórico |
 | Histórico | Em memória | Geração no banco por gatilhos (triggers) |
 | Administração de usuários | Diretório e alterações fictícios | Perfis reais, ativação/desativação e auditoria protegida por RLS |
-| Arquivos Microsoft 365 | Não | Somente estrutura de metadados; **sem integração real** |
+| Biblioteca de documentos | Metadados fictícios e referências editáveis | CRUD de links SharePoint/OneDrive, tags e vínculos a eventos/tarefas, com RLS |
+| Wiki DCS | Artigos fictícios, rascunhos, busca e edição | Artigos persistentes, versões por gatilhos e RLS para rascunhos |
+| Arquivos Microsoft 365 | Apenas links de demonstração; sem acesso real | Somente referências aos arquivos e suas permissões existentes; **sem Graph, upload ou cópia** |
 | Autoridades SP | Não | Somente estrutura de referência; **sem integração real** |
 
 **Importante:** a autenticação Supabase **não é o login Microsoft institucional (SSO)**. O SSO via Microsoft Entra ID depende da autorização da TI e entra em outra etapa. Esta versão é uma base de teste, **não uma aplicação liberada para uso institucional com dados reais**.
@@ -33,6 +35,7 @@ Abra `demo.html` no navegador ou a prévia pública em https://lcoutinhoss.githu
    - `supabase/migrations/202611180001_core.sql`
    - `supabase/migrations/202611180002_templates.sql`
    - `supabase/migrations/202611180003_admin_users.sql`
+   - `supabase/migrations/202611180004_knowledge.sql`
 3. Em **Authentication → Users**, crie manualmente uma conta de teste com e-mail e senha (para ambiente de teste). O gatilho cria em `profiles` uma conta inicialmente `reader` e `active = false`.
 4. Faça a liberação inicial dessa conta no SQL Editor, **substituindo** o endereço de exemplo pelo endereço verificado e que você controla:
 
@@ -139,8 +142,8 @@ Autoridades SP → INATIVO (futuro conector somente-leitura)
 ### Observações de segurança e limitações conhecidas
 
 - A autenticação é funcional **somente após** configurar Supabase Auth e aplicar as migrações. Na prévia, não existe validação de senha.
-- A tabela `event_history` é somente leitura para os clientes; os gatilhos registram alterações, mas **ainda não há auditoria de todas as operações em documentos/usuários**.
-- Tabelas `documents` e `event_authorities` estão preparadas, mas suas telas e fluxos CRUD pertencem às fases posteriores. Nenhuma ligação real ao Autoridades SP foi realizada.
+- A tabela `event_history` é somente leitura para os clientes. A gestão de usuários conta com auditoria específica e a Wiki registra versões, mas **ainda não há auditoria completa de todas as operações em documentos**.
+- A tabela `documents` já tem interface de **referências externas**, vinculadas a eventos e tarefas; não existe upload no HUB. A tabela `event_authorities` está preparada para fase posterior. Nenhuma ligação real ao Autoridades SP foi realizada.
 - O feed `.ics` atual é exportação manual e **não** assinatura atualizada automaticamente.
 - Não existe envio real de notificações, e-mail, integração Graph ou armazenamento de arquivos nesta etapa.
 - A agenda está ajustada ao fuso do navegador do operador; validar suporte a fuso fixo `America/Sao_Paulo` antes de produção.
@@ -150,21 +153,25 @@ Autoridades SP → INATIVO (futuro conector somente-leitura)
 ## Arquivos principais
 
 - `index.html`: interface original com pontos de integração opcionais para Supabase.
-- `demo.html`: cópia integral da prévia original, para experimentar sem instalação.
-- `src/backend.js`: autenticação real, leitura/gravação, alteração de responsável, aprovação, checklist, reagendamento.
+- `demo.html`: interface demonstrativa em memória para experimentar sem instalação.
+- `src/backend.js`: autenticação e acesso Supabase, eventos, tarefas, administração, documentos e artigos versionados.
 - `src/model.js`: modelo de dados, períodos e conversões para a interface.
+- `src/knowledge.js` e `src/knowledge.css`: biblioteca, wiki, versões e vínculos.
+- `src/admin.js` e `src/admin.css`: administração de usuários.
 - `supabase/migrations/202611180001_core.sql`: esquema, relacionamentos, segurança, RLS, gatilhos, operações atômicas.
 - `supabase/migrations/202611180002_templates.sql`: modelos de checklist por categoria.
+- `supabase/migrations/202611180003_admin_users.sql`: gestão de perfis e auditoria.
+- `supabase/migrations/202611180004_knowledge.sql`: índice documental, Wiki e RLS de artigos e revisões.
 - `supabase/tests_security.sql`: consulta de conferência de RLS.
 - `tests/*.test.js`: testes automatizados de lógica e integridade estática.
 - `.env.example`, `.gitignore`, `package.json`: configuração local/segredos e build.
 
 ## Próxima etapa proposta
 
-Homologar esta base num Supabase **separado**, testar a tela de **administração de usuários e permissões** com contas distintas, permitir editar dados de eventos e tarefas com validação de campos, e então avançar para documentos e biblioteca SharePoint. Nenhuma alteração será feita na branch `main` do Autoridades SP sem autorização explícita.
+Homologar em um Supabase **separado**, testar administração, biblioteca e RLS com contas distintas, depois avançar para fluxo de aprovação documental e a integração Microsoft Graph mediante autorização da TI. Detalhes em [docs/CONHECIMENTO.md](docs/CONHECIMENTO.md). Nenhuma alteração será feita na branch `main` do Autoridades SP sem autorização explícita.
 
 ---
 
 ## 7. Publicar no GitHub sem tocar no Autoridades SP
 
-Para criar o repositório **independente e privado** `dcs-hub`, instalar a CI e, opcionalmente, publicar **somente a prévia demonstrativa** no GitHub Pages, siga [`docs/GITHUB.md`](docs/GITHUB.md). Os arquivos `.github/workflows/ci.yml` e `deploy-demo.yml` estão preparados. O deploy de produção, o Microsoft 365 e o Autoridades SP **não** são ativados por esse procedimento.
+O repositório [DCS-HUB](https://github.com/LCoutinhoSS/DCS-HUB) é **público** e hospeda uma **prévia demonstrativa** no GitHub Pages. Os workflows de CI e do site estão em `.github/workflows/`. **Não utilize dados reais na prévia.** O deploy de produção, o Microsoft 365 e o Autoridades SP **não** são ativados por esse procedimento.
