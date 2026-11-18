@@ -1,0 +1,43 @@
+/* DCS HUB · Administração v0.4 (compatível com a demo estática) */
+.admin-shell{display:flex;flex-direction:column;gap:16px}
+.admin-hero{padding:23px 25px;background:linear-gradient(120deg,rgba(35,75,115,.96),rgba(18,43,69,.96));color:#fff;position:relative;overflow:hidden}
+.admin-hero:after{content:"";position:absolute;width:260px;height:260px;right:-80px;top:-110px;border:1px solid rgba(197,163,106,.48);border-radius:50%;box-shadow:0 0 0 32px rgba(197,163,106,.06),0 0 0 65px rgba(197,163,106,.035);pointer-events:none}
+.admin-hero h1{color:#fff;position:relative;z-index:1}
+.admin-hero p{max-width:600px;color:#d7e5f6;margin:7px 0 0;position:relative;z-index:1}
+.admin-kicker{font-size:11px;letter-spacing:.16em;font-weight:600;text-transform:uppercase;color:#e7c38b;margin-bottom:8px}
+.admin-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.admin-stat{padding:17px 19px;min-height:105px}
+.admin-stat small{display:block;color:var(--mu);font-size:12px}
+.admin-stat strong{display:block;font:600 30px/1.25 Fraunces,Georgia,serif;margin:8px 0 0}
+.admin-toolbar{padding:16px 18px}
+.admin-toolbar-main{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.admin-search{height:39px;border:1px solid var(--bd);border-radius:10px;background:var(--gl2);padding:0 13px;min-width:220px;flex:1;max-width:425px}
+.admin-filters{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}
+.admin-table-wrap{overflow:auto;border-radius:12px}
+.admin-table{width:100%;border-collapse:separate;border-spacing:0;min-width:690px}
+.admin-table th{text-align:left;color:var(--mu);font-size:11px;text-transform:uppercase;letter-spacing:.065em;font-weight:600;border-bottom:1px solid var(--bd);padding:12px 10px}
+.admin-table td{border-bottom:1px solid var(--bd);padding:13px 10px;vertical-align:middle}
+.admin-table tr:last-child td{border-bottom:0}
+.admin-person{display:flex;gap:11px;align-items:center}
+.admin-initials{width:36px;height:36px;border-radius:11px;background:var(--hv);color:var(--acc);display:grid;place-items:center;font-weight:700;flex-shrink:0}
+.admin-person strong{display:block;font-size:13px}
+.admin-person small{color:var(--mu);font-size:11.5px}
+.admin-state{display:inline-flex;gap:6px;align-items:center;font-size:11.5px;padding:4px 10px;border-radius:99px;background:rgba(47,163,122,.12);color:var(--ok)}
+.admin-state.pending{color:var(--wa);background:rgba(217,130,43,.13)}
+.admin-state i{width:6px;height:6px;border-radius:50%;background:currentColor}
+.admin-two-col{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.85fr);gap:14px}
+.admin-audit{display:flex;flex-direction:column;gap:0}
+.admin-audit-item{display:flex;gap:10px;padding:12px 0;border-bottom:1px solid var(--bd)}
+.admin-audit-item:last-child{border-bottom:0}
+.admin-audit-dot{width:8px;height:8px;background:var(--gold);border-radius:50%;margin-top:6px;flex-shrink:0}
+.admin-role-line{display:flex;gap:9px;padding:10px 0;border-bottom:1px solid var(--bd)}
+.admin-role-line:last-child{border-bottom:0}
+.admin-role-icon{width:30px;height:30px;border-radius:9px;background:var(--hv);display:grid;place-items:center;flex-shrink:0;color:var(--acc)}
+.admin-empty{text-align:center;padding:25px 12px;color:var(--mu)}
+.admin-hint{margin-top:12px;padding:12px 14px;border-radius:12px;background:var(--hv);color:var(--mu);font-size:12px}
+.admin-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.admin-form-grid label:first-child{grid-column:1/-1}
+.admin-edit-modal{max-height:94vh;overflow:auto}
+.admin-busy{opacity:.55;pointer-events:none}
+@media(max-width:1000px){.admin-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-two-col{grid-template-columns:1fr}}
+@media(max-width:540px){.admin-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-hero{padding:18px}.admin-toolbar-main{align-items:stretch}.admin-search{max-width:none;width:100%}.admin-form-grid{grid-template-columns:1fr}}
