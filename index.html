@@ -86,12 +86,52 @@ label{display:block;font-size:12px;color:var(--mu);margin-top:12px}
 .kb{display:grid;grid-template-columns:repeat(5,minmax(230px,1fr));gap:12px;overflow:auto;padding-bottom:6px;align-items:start}.kc{padding:12px;display:flex;flex-direction:column;gap:8px}.kt{padding:10px;border-radius:12px;border:1px solid var(--bd);background:var(--gl2)}
 @media(max-width:600px){.mc{min-height:58px}.mch{font-size:0;height:6px;padding:0;border:0;background:var(--c);border-radius:3px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
-</style><link rel="stylesheet" href="./src/admin.css"><link rel="stylesheet" href="./src/knowledge.css"></head><body>
-<div id="login" class="lg"><form id="lf" class="card lc"><div class="lo" style="padding:0 0 18px"><span class="mk">D</span>DCS HUB</div><h1 style="font-size:25px">Central Inteligente de Operações</h1><p class="mu">Divisão de Comunicação Social · Assembleia Legislativa do Estado de São Paulo</p>
-<label>E-mail institucional<input class="fi" type="email" placeholder="nome@instituicao.gov.br" autocomplete="username"></label><label>Senha<input class="fi" type="password" autocomplete="current-password"></label>
-<label>Perfil de demonstração<select class="fi" id="rl"><option>Administrador</option><option>Gestor</option><option>Servidor DCS</option><option selected>Servidor Cerimonial</option><option>Leitor</option></select></label>
-<button class="btn pri" style="width:100%;justify-content:center;margin-top:18px;height:42px">Entrar</button>
-<p class="pl" style="margin-top:14px">Prévia visual com dados demonstrativos. A autenticação real (Supabase Auth com RLS) ainda não está conectada: nada é enviado nem validado.</p></form></div>
+</style><link rel="stylesheet" href="./src/admin.css"><link rel="stylesheet" href="./src/knowledge.css"><link rel="stylesheet" href="./src/auth.css"></head><body>
+<div id="login" class="lg auth-login">
+ <div class="auth-shell">
+  <aside class="auth-brand">
+   <div class="auth-identity"><span class="mk">D</span><span>DCS HUB</span></div>
+   <div class="auth-overline">Central de Operações · DCS / Cerimonial</div>
+   <h1>Conectando pessoas,<br><em>organizando cada detalhe.</em></h1>
+   <p>Uma experiência única para planejar eventos, administrar exposições, acompanhar tarefas e reunir o conhecimento institucional.</p>
+   <div class="auth-features">
+    <div class="auth-feature"><b>01 · Agenda unificada</b><small>Eventos, visitas e exposições</small></div>
+    <div class="auth-feature"><b>02 · Trabalho em equipe</b><small>Tarefas e acompanhamento</small></div>
+    <div class="auth-feature"><b>03 · Acervo central</b><small>Documentos e procedimentos</small></div>
+    <div class="auth-feature"><b>04 · Gestão inteligente</b><small>Perfis e histórico de ações</small></div>
+   </div>
+   <p class="auth-brand-foot">PROTÓTIPO DE HOMOLOGAÇÃO · DIVISÃO DE COMUNICAÇÃO SOCIAL · ALESP<br>Plataforma independente; não integra serviços institucionais nesta demonstração.</p>
+  </aside>
+  <div class="auth-panel">
+   <form id="lf" class="lc auth-form">
+    <span class="auth-eyebrow">Acesso à plataforma</span>
+    <h2>Bem-vindo ao DCS HUB.</h2>
+    <p class="auth-lead">Identifique-se para entrar no ambiente de apresentação e explorar os recursos da plataforma.</p>
+    <label for="auth-email">E-mail de acesso
+      <input id="auth-email" class="fi" type="email" required placeholder="nome@instituicao.gov.br" autocomplete="username" maxlength="254">
+    </label>
+    <div class="auth-password-row">
+      <label for="auth-pass">Senha
+        <input id="auth-pass" class="fi" type="password" required autocomplete="current-password" placeholder="Digite sua senha">
+      </label>
+      <button id="auth-toggle" type="button" class="auth-show" aria-label="Mostrar senha">Mostrar</button>
+    </div>
+    <label class="auth-demo-only" for="rl">Conta de treinamento
+      <select class="fi" id="rl">
+       <option selected>Administrador</option><option>Gestor</option><option>Servidor DCS</option><option>Servidor Cerimonial</option><option>Leitor</option>
+      </select>
+    </label>
+    <p id="auth-error" role="alert" aria-live="polite" style="color:var(--rd);font-size:12px;margin:10px 0 0" hidden></p>
+    <button class="btn pri auth-submit" type="submit">Entrar no DCS HUB <span aria-hidden="true">→</span></button>
+    <div class="auth-demo-credentials auth-demo-only">
+     <strong>Credenciais para apresentar à equipe</strong>
+     <p>Selecione uma conta acima e use a senha <code>DCSdemo2026!</code>. Cada conta entra com o perfil correspondente. Todos os acessos são fictícios.</p>
+    </div>
+    <p class="pl auth-legal">Modo de treinamento em site público. A validação ocorre somente neste navegador e <b>não é autenticação institucional</b>. Nunca insira senhas ou dados reais.</p>
+   </form>
+  </div>
+ </div>
+</div>
 <div id="app" hidden><aside class="card sb" id="sb"><div class="lo"><span class="mk">D</span><span class="tx">DCS HUB</span></div><nav id="nav" aria-label="Navegação principal"></nav><div class="pl"><span class="tx">Prévia com dados demonstrativos. Perfil: <b id="pf"></b></span></div><button class="nv" id="cl"><span id="cli"></span><span class="tx">Recolher menu</span></button></aside>
 <main><header class="card top"><button class="ib mb" id="mb" aria-label="Abrir menu"></button><div class="bc" id="bc"></div>
 <button class="sr" data-pal aria-label="Pesquisa global, atalho Ctrl+K"><span id="si"></span><span>Pesquisar…</span><kbd>Ctrl K</kbd></button>
@@ -246,17 +286,26 @@ $('#nav').innerHTML=NAV.map(([k,l,i])=>`<button class="nv" data-go="${k}" title=
 $('#cli').innerHTML=ic('chev');$('#mb').innerHTML=ic('menu');$('#si').innerHTML=ic('search');$('#bi').innerHTML=ic('bell');$('#lo').innerHTML=ic('out');
 $('#cl').onclick=()=>$('#app').classList.toggle('cl');$('#mb').onclick=()=>$('#sb').classList.add('op');$('#scrim').onclick=closeSb;
 $('#nbtn').onclick=openNotif;$('#th').onclick=()=>theme(document.documentElement.dataset.theme==='dark'?'light':'dark');
-$('#lo').onclick=()=>{if(window.DCS_BACKEND?.enabled){DCS_BACKEND.run(()=>DCS_BACKEND.logout());return;}S.in=0;S.first=1;closeOv();$('#app').hidden=true;$('#login').hidden=false};
-$('#lf').onsubmit=e=>{e.preventDefault();if(window.DCS_BACKEND?.enabled){DCS_BACKEND.run(()=>DCS_BACKEND.login());return;}S.role=$('#rl').value;S.in=1;$('#ur').textContent=S.role;$('#pf').textContent=S.role;$('#login').hidden=true;$('#app').hidden=false;bell();route()};
+$('#lo').onclick=()=>{if(window.DCS_BACKEND?.enabled){DCS_BACKEND.run(()=>DCS_BACKEND.logout());return;}window.DCS_DEMO_AUTH?.logout();};
+$('#lf').onsubmit=e=>{e.preventDefault();if(window.DCS_BACKEND?.enabled){DCS_BACKEND.run(()=>DCS_BACKEND.login());return;}window.DCS_DEMO_AUTH?.login();};
 let t0;try{t0=localStorage.getItem('dcs-theme')}catch(e){}
 theme(t0||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'));
 window.DCS_BRIDGE={E,T,PPL,A,N,S,route,refresh,rr,openEv,closeOv,toast,bell};
 </script>
 <script type="module">
-  // GitHub Pages publica somente a prévia demonstrativa estática.
-  // No ambiente Vite, o código de backend é empacotado normalmente.
-  if (!location.hostname.endsWith('.github.io')) {
-    import('./src/backend.js');
+  // No GitHub Pages o acesso é SOMENTE demonstrativo e client-side.
+  // O modo real requer Vite + Supabase Auth + políticas RLS no banco próprio.
+  try {
+    if (location.hostname.endsWith('.github.io')) {
+      await import('./src/demo-auth.js');
+    } else {
+      const { backend } = await import('./src/backend.js');
+      if (!backend.enabled) await import('./src/demo-auth.js');
+    }
+  } catch (err) {
+    console.error('[DCS HUB] Falha ao iniciar autenticação', err);
+    const alert = document.querySelector('#auth-error');
+    if (alert) { alert.hidden = false; alert.textContent = 'Não foi possível iniciar o acesso. Atualize a página.'; }
   }
 </script>
 <script type="module" src="./src/admin.js"></script><script type="module" src="./src/knowledge.js"></script></body></html>
