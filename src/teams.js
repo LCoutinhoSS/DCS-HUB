@@ -8,7 +8,7 @@ const demo=[
  {id:'demo-cer',full_name:'Bruno Lima',label:'Bruno L.',department:'Cerimonial',role:'ceremonial',active:true},
  {id:'demo-cv',full_name:'Júlia Martins',label:'Júlia M.',department:'DCS',role:'dcs',active:true}
 ];
-let people=null;
+let people=null,demoOverride=null;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const real=()=>!!window.DCS_BACKEND?.enabled;
 const bridge=()=>window.DCS_BRIDGE;
@@ -18,7 +18,7 @@ function demoMe(){
  const role=bridge()?.S.role;
  return role==='Administrador'?'Marina S.':role==='Gestor'?'Rafael T.':role==='Servidor DCS'?'Camila A.':role==='Servidor Cerimonial'?'Bruno L.':role==='Leitor'?'Júlia M.':'Marina S.';
 }
-function demoMembers(){return demo.map(p=>({...p,label:p.label===demoMe()?'Você':p.label}));}
+function demoMembers(){const source=demoOverride||demo;return source.map(p=>({...p,label:(p.label||demo.find(x=>x.id===p.id)?.label||p.full_name?.split(' ')[0]||'Equipe')===demoMe()?'Você':(p.label||demo.find(x=>x.id===p.id)?.label||p.full_name?.split(' ')[0]||'Equipe')}));}
 async function load(){
  if(real()){
   people=await window.DCS_BACKEND.listTeamProfiles();
@@ -87,5 +87,6 @@ document.addEventListener('change',e=>{
   if(responsible)responsible.innerHTML=membersOptions(e.target.value,'Equipe');
  }
 });
-window.DCS_TEAMS={load,list,assignable,groupOptions,membersOptions,groupForTask,defaultTeam,taskFormHtml,filterHtml,render,refresh,getTeam};
+function setDemoMembers(rows){if(real())return;demoOverride=rows.map(p=>({...p,label:demo.find(x=>x.id===p.id)?.label||p.full_name?.split(' ')[0]||'Equipe'}));}
+window.DCS_TEAMS={load,list,assignable,groupOptions,membersOptions,groupForTask,defaultTeam,taskFormHtml,filterHtml,render,refresh,getTeam,setDemoMembers};
 })();
