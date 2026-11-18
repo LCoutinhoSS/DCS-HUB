@@ -18,7 +18,7 @@ function demoMe(){
  const role=bridge()?.S.role;
  return role==='Administrador'?'Marina S.':role==='Gestor'?'Rafael T.':role==='Servidor DCS'?'Camila A.':role==='Servidor Cerimonial'?'Bruno L.':role==='Leitor'?'Júlia M.':'Marina S.';
 }
-function demoMembers(){const source=demoOverride||demo;return source.map(p=>({...p,label:(p.label||demo.find(x=>x.id===p.id)?.label||p.full_name?.split(' ')[0]||'Equipe')===demoMe()?'Você':(p.label||demo.find(x=>x.id===p.id)?.label||p.full_name?.split(' ')[0]||'Equipe')}));}
+function demoMembers(){const source=demoOverride||demo;return source.map(p=>({...p,label:p.label||demo.find(x=>x.id===p.id)?.label||p.full_name?.split(' ')[0]||'Equipe'}));}
 async function load(){
  if(real()){
   people=await window.DCS_BACKEND.listTeamProfiles();
@@ -41,7 +41,7 @@ function assignable(team){
 function membersOptions(team,selected='Equipe'){
  const members=assignable(team);
  return '<option value="Equipe"'+(selected==='Equipe'?' selected':'')+'>Equipe (sem responsável individual)</option>'+members.map(p=>
-  '<option value="'+esc(p.label)+'"'+(selected===p.label?' selected':'')+'>'+esc(p.full_name)+(p.label==='Você'?' (você)':'')+'</option>').join('');
+  '<option value="'+esc(p.label)+'"'+(selected===p.label?' selected':'')+'>'+esc(p.full_name)+((p.label==='Você'||(!real()&&p.label===demoMe()))?' (você)':'')+'</option>').join('');
 }
 function groupOptions(selected='DCS'){
  return [['DCS','Comunicação Social (DCS)'],['Cerimonial','Cerimonial']].map(([id,label])=>'<option value="'+id+'"'+(selected===id?' selected':'')+'>'+label+'</option>').join('');
@@ -51,6 +51,7 @@ function groupForTask(task){
  const person=list().find(x=>x.label===task.w);
  return person?.department||'DCS';
 }
+function normalizeAssignee(label){return !real()&&label==='Você'?demoMe():label;}
 function defaultTeam(){return deptFromRole(bridge()?.S.role);}
 function taskFormHtml(){
  const team=defaultTeam();
@@ -88,5 +89,5 @@ document.addEventListener('change',e=>{
  }
 });
 function setDemoMembers(rows){if(real())return;demoOverride=rows.map(p=>({...p,label:demo.find(x=>x.id===p.id)?.label||p.full_name?.split(' ')[0]||'Equipe'}));}
-window.DCS_TEAMS={load,list,assignable,groupOptions,membersOptions,groupForTask,defaultTeam,taskFormHtml,filterHtml,render,refresh,getTeam,setDemoMembers};
+window.DCS_TEAMS={load,list,assignable,groupOptions,membersOptions,groupForTask,defaultTeam,taskFormHtml,filterHtml,render,refresh,getTeam,setDemoMembers,normalizeAssignee};
 })();
