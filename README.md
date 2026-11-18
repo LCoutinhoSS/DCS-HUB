@@ -1,4 +1,4 @@
-# DCS HUB · v0.6 — protótipo com acesso demonstrativo, operações e conhecimento
+# DCS HUB · v0.7 — editorial, espaços ALESP, equipes e notificações internas
 
 **Projeto de desenvolvimento independente; não modifica nem acessa a produção do Autoridades SP.**
 
@@ -19,6 +19,10 @@ Esta versão parte do HTML do DCS HUB fornecido pelo usuário e preserva o desen
 | Administração de usuários | Diretório e alterações fictícios | Perfis reais, ativação/desativação e auditoria protegida por RLS |
 | Biblioteca de documentos | Metadados fictícios e referências editáveis | CRUD de links SharePoint/OneDrive, tags e vínculos a eventos/tarefas, com RLS |
 | Wiki DCS | Artigos fictícios, rascunhos, busca e edição | Artigos persistentes, versões por gatilhos e RLS para rascunhos |
+| Revista interna | Capa, galeria, fotos locais temporárias e créditos | Fotos em bucket privado do Supabase após migração 005 |
+| Espaços ALESP | Seletor obrigatório e administração fictícia do catálogo | Catálogo padronizado, locais inativos e permissões de administrador |
+| Equipes DCS/Cerimonial | Separação de pessoas e tarefas por grupo | Perfis vinculados a grupo com validação na atribuição |
+| Notificações | Simulação de aviso por perfil, na mesma aba | Aviso interno persistido ao destinatário; sem e-mail ou Outlook |
 | Arquivos Microsoft 365 | Apenas links de demonstração; sem acesso real | Somente referências aos arquivos e suas permissões existentes; **sem Graph, upload ou cópia** |
 | Autoridades SP | Não | Somente estrutura de referência; **sem integração real** |
 
@@ -36,6 +40,7 @@ Abra a prévia pública em https://lcoutinhoss.github.io/DCS-HUB/ ou `demo.html`
    - `supabase/migrations/202611180002_templates.sql`
    - `supabase/migrations/202611180003_admin_users.sql`
    - `supabase/migrations/202611180004_knowledge.sql`
+   - `supabase/migrations/202611180005_venues_teams_editorial.sql`
 3. Em **Authentication → Users**, crie manualmente uma conta de teste com e-mail e senha (para ambiente de teste). O gatilho cria em `profiles` uma conta inicialmente `reader` e `active = false`.
 4. Faça a liberação inicial dessa conta no SQL Editor, **substituindo** o endereço de exemplo pelo endereço verificado e que você controla:
 
@@ -156,6 +161,7 @@ Autoridades SP → INATIVO (futuro conector somente-leitura)
 - `demo.html`: interface demonstrativa em memória para experimentar sem instalação.
 - `src/backend.js`: autenticação e acesso Supabase, eventos, tarefas, administração, documentos e artigos versionados.
 - `src/demo-auth.js` e `src/auth.css`: portal demonstrativo com contas fictícias, sessão temporária e restauração da apresentação.
+- `src/venues.js`, `src/teams.js`, `src/demo-notifications.js`, `src/operations.css`: catálogo ALESP, grupos, avisos de treinamento e visual editorial.
 - `src/model.js`: modelo de dados, períodos e conversões para a interface.
 - `src/knowledge.js` e `src/knowledge.css`: biblioteca, wiki, versões e vínculos.
 - `src/admin.js` e `src/admin.css`: administração de usuários.
@@ -166,6 +172,12 @@ Autoridades SP → INATIVO (futuro conector somente-leitura)
 - `supabase/tests_security.sql`: consulta de conferência de RLS.
 - `tests/*.test.js`: testes automatizados de lógica e integridade estática.
 - `.env.example`, `.gitignore`, `package.json`: configuração local/segredos e build.
+
+## Atualização 0.7
+
+O DCS HUB agora possui artigos com estrutura jornalística, fotos de capa e galeria; catálogo de 20 espaços ALESP (com edição por Administrador); equipes DCS e Cerimonial; e uma camada de avisos internos de tarefas, pronta para ativação em banco isolado. Leia [docs/OPERACOES_07.md](docs/OPERACOES_07.md) para as fontes e limites da demonstração.
+
+**Importante:** não há reservas de espaços automáticas, e-mails, Outlook/Teams nem compartilhamento de notificações entre computadores na versão pública. A única instância Supabase conectada é do Autoridades SP; não aplicamos migrações nela.
 
 ## Próxima etapa proposta
 
