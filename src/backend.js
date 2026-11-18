@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import {ROLE_LABEL,EVENT_STATUS_CODE,TASK_STATUS_CODE,PRIORITY_CODE,eventPeriod,localDatetime,toUiEvent,toUiTask,describeHistory} from './model.js';
 
 const url=import.meta.env.VITE_SUPABASE_URL;
-const key=import.meta.env.VITE_SUPABASE_ANON_KEY;
+const key=import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY;
 const configured=Boolean(url && key && /^https:\/\//.test(url));
 const supabase=configured?createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true}}):null;
 const $=s=>document.querySelector(s);
@@ -30,7 +30,7 @@ async function getProfile() {
   return row;
 }
 function labelFor(id){return id ? (labelById.get(id)||'Equipe'):'Equipe';}
-function idFor(label){if(label==='Equipe')return null;const id=idByLabel.get(label);if(!id)throw new Error('Selecione um responsável válido');return id;}
+function idFor(label){if(label==='Equipe')return null;if(label==='Você')return profile?.id||null;const id=idByLabel.get(label);if(!id)throw new Error('Selecione um responsável válido');return id;}
 
 async function loadAll() {
   ensureUser();
@@ -85,6 +85,8 @@ export const backend={
     if(!configured)return;
     document.documentElement.dataset.authMode='real';
     window.DCS_KNOWLEDGE?.reset();
+    window.DCS_VENUES?.reset();
+    window.DCS_REQUESTERS?.reset();
     const box=$('#rl')?.closest('label');if(box)box.hidden=true;
     const note=$('.lc .pl');if(note)note.textContent='Acesso real via Supabase Auth. Apenas contas ativadas pela administração podem entrar. Não há seleção de perfil de demonstração.';
     const mail=$('#lf input[type=email]');if(mail)mail.required=true;
@@ -106,7 +108,7 @@ export const backend={
       await loadAll();enterApp();
     }catch(e){await supabase.auth.signOut();profile=null;alertError(e);}
   },
-  async logout(){if(notificationPoll)clearInterval(notificationPoll);notificationPoll=null;check(await supabase.auth.signOut());profile=null;window.DCS_KNOWLEDGE?.reset();window.DCS_VENUES?.reset();showLogin();bridge().toast('Sessão encerrada');},
+  async logout(){if(notificationPoll)clearInterval(notificationPoll);notificationPoll=null;check(await supabase.auth.signOut());profile=null;profiles=[];labelById=new Map();idByLabel=new Map();window.DCS_KNOWLEDGE?.reset();window.DCS_VENUES?.reset();window.DCS_REQUESTERS?.reset();bridge().E.splice(0);bridge().T.splice(0);bridge().N.splice(0);showLogin();bridge().toast('Sessão encerrada');},
   async reload(){await loadAll();bridge().refresh();},
   async createEvent(form){
     ensureUser();
