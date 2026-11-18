@@ -31,6 +31,16 @@ grant select on public.profile_admin_audit to authenticated;
 -- Elimina atualização direta de perfis: alterações apenas pela função atômica e auditável.
 revoke update(role,department,active,full_name) on table public.profiles from authenticated;
 
+-- Usuários comuns consultam colegas ATIVOS para atribuição de tarefas.
+-- Perfis pendentes/inativos são visíveis apenas a si mesmos e a administradores ativos.
+drop policy if exists profiles_read on public.profiles;
+create policy profiles_read on public.profiles for select to authenticated
+  using (
+    id=(select auth.uid()) or
+    ((select public.is_member()) and (active or (select public.is_admin())))
+  );
+
+
 create function public.admin_update_profile(
   p_profile_id uuid,
   p_full_name text,
