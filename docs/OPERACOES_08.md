@@ -1,14 +1,14 @@
 # DCS HUB v0.8 — Solicitantes, eventos, modelos ALESP e matérias
 
-**Estado:** protótipo GitHub Pages com dados fictícios e código de backend separado, ainda não homologado. O login público continua demonstrativo. **O Supabase BUSCA AUTORIDADE / Autoridades SP não foi alterado.**
+**Estado:** a demonstração na raiz continua fictícia. A rota **/homologacao/** usa o mesmo Supabase e Auth do Autoridades SP, mas com perfis e tabelas próprias do HUB. As migrações 001–007 já foram instaladas no projeto BUSCA AUTORIDADE e verificadas, sem alterar as estruturas originais de autoridades/perfis. **Falta testar login interativo e colaboração com contas autorizadas.**
 
 ## 1. Solicitante não é responsável
 
-O novo campo **Solicitante** do evento vem de um catálogo próprio com 94 parlamentares da **20ª Legislatura (2023–2027)**, capturado como referência para 18/11/2026 no portal oficial https://www.al.sp.gov.br/deputado/dados/. A lista de eleitos para a 21ª Legislatura (posse em 2027) **não substitui** os deputados em exercício antes da posse.
+O novo campo **Solicitante** tem 94 deputados estaduais da **20ª Legislatura (2023–2027)**, agora consultados **diretamente na tabela `public.autoridades` do Autoridades SP**, sem duplicação de nomes. O vínculo e a fotografia histórica do nome são registrados no evento. A lista de eleitos para 2027 não substitui os deputados em exercício antes da posse.
 
 O administrador pode acrescentar **setores/órgãos e outros solicitantes**, editar e inativar registros. O nome fica armazenado também como fotografia histórica do pedido. Sem exclusão física de solicitantes associados a eventos. O usuário seleciona por lista, sem escrever a grafia manualmente.
 
-A lista é uma **cópia de referência**, não uma sincronização automática com a ALESP ou com o projeto Autoridades SP. Antes de implantar, validar titularidade, suplências e mudanças de legislatura.
+A lista agora vem do **mesmo banco do Autoridades SP** e reflete suas atualizações ao recarregar. Não é sincronização direta com o site da ALESP: validar titularidade, suplências e mudanças de legislatura na aplicação de origem.
 
 ## 2. Assistente de criação de eventos (quatro passos)
 
@@ -49,17 +49,15 @@ As matérias agora têm endereço próprio no frontend, por exemplo **#materia/<
 
 Editar uma matéria ainda ocorre em formulário; não há workflow completo de revisão editorial, programação de publicação ou aprovação por editor. Na demonstração, fotos são temporárias. Em ambiente real, a mídia precisa de armazenamento privado, autorização de uso das fotografias e controle de acesso.
 
-## 5. Backend preparado — ainda não instalado
+## 5. Banco compartilhado e acesso de homologação
 
-A migração **supabase/migrations/202611180006_requesters_eventflow.sql** acrescenta:
-- Tabela de solicitantes com 94 deputados e cadastro administrativo, protegida por RLS.
-- Campos próprios no evento para tipo, solicitante, snapshot, equipe e ficha operacional.
-- Planejamento do checklist com fase, aplicabilidade, pessoa, equipe, prazo e prioridade.
-- Função atômica **create_planned_event** para salvar evento + checklist com verificações de autorização.
-- Confirmação que gera tarefas somente para itens atribuídos; evita duplicar tarefas de origem.
-- Função de delegação posterior de etapa, que pode atualizar/criar tarefa e acionar a notificação interna.
+As sete migrações estão **aplicadas** no Supabase existente. A tabela de deputados **não foi duplicada** e a tabela `public.perfis_usuarios` permanece independente dos perfis `public.profiles` do DCS HUB. O site real usa o mesmo login Supabase, mas requer a ativação de permissão específica no HUB.
 
-**Não executar no Supabase BUSCA AUTORIDADE.** Criar um projeto isolado DCS HUB, aplicar migrações 001–006 e homologar autenticação, RLS e os fluxos com contas distintas. Este arquivo ainda não foi aplicado num banco real.
+Para acessar: https://lcoutinhoss.github.io/DCS-HUB/homologacao/
+
+O primeiro administrador DCS precisa ter autorização `administracao` no Autoridades SP. Todos os demais começam como `reader` inativo no HUB. Nenhuma conta DCS foi criada automaticamente na aplicação inicial. Veja [BANCO_COMPARTILHADO.md](BANCO_COMPARTILHADO.md).
+
+**Segurança:** a versão de homologação permanece disponível pela internet e deve conter somente dados de teste até validação com contas reais e autorização da TI. A demonstração na raiz não compartilha dados.
 
 ## 6. Recomendações críticas para próximas versões
 
