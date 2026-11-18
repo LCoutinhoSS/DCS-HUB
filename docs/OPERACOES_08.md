@@ -35,6 +35,10 @@ Os títulos e as etapas foram **adaptados das planilhas fornecidas**, priorizand
 | Recepção de Comitivas e Autoridades | Recepção de autoridades | Comitiva, idioma, protocolo, segurança, fotógrafo, livro de honra |
 | Velório | Velório | Familiares, câmara ardente, coroas de flores, fluxo de público, pós-evento |
 
+### Complemento da Sessão Solene (segunda aba)
+
+A planilha de Sessão Solene tem **duas abas**. Além da reunião preparatória, foram incorporadas etapas da aba **CheckList Planejamento**: impressões, roteiro, nominatas, honrarias, salas de apoio, recepção, precedência, distribuição de rádios, execução, devolução de materiais e avaliação pós-evento. O modelo atual oferece **73 itens**, divididos em fases recolhíveis; as equipes DCS/Cerimonial e o responsável podem ser definidos individualmente. Os dados de homenagem do arquivo de exemplo foram excluídos.
+
 A planilha de **Velório** contém referências a caminhos internos de documentos da rede, omitidas do protótipo. O texto explicativo da planilha de **Recepção** contém referências à Câmara Municipal de São Paulo que precisam ser revistas por equipe técnica antes de oficializar o procedimento. Alguns checklists mencionam documentos pessoais e placas de veículos; **não guardá-los em campos livres do site público**. O banco institucional deverá prever acesso mínimo, retenção e LGPD.
 
 As categorias **Exposição**, **Visita guiada**, **Comunicação visual** e **Reunião** receberam versões iniciais enxutas, **não extraídas dessas cinco planilhas**. Validar com cada unidade antes de usar como padrão oficial.
