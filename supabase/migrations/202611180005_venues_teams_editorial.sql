@@ -143,7 +143,8 @@ with check ((select public.is_member()) and recipient_id=(select auth.uid()));
 -- Trigger cria as mensagens; ninguém pode criar notificações manualmente pela API.
 
 revoke all on public.venues,public.task_notifications from public,anon,authenticated;
-grant select,insert,update on public.venues to authenticated;
+grant select,insert on public.venues to authenticated;
+grant update(name,kind,authority,active) on public.venues to authenticated;
 grant select,update(read_at) on public.task_notifications to authenticated;
 revoke all on function public.notify_task_assignment(),public.validate_event_venue(),public.validate_task_team()
  from public,anon,authenticated;
@@ -169,7 +170,14 @@ insert into storage.buckets (id,name,public,file_size_limit,allowed_mime_types)
 values('dcs-editorial','dcs-editorial',false,5242880,array['image/jpeg','image/png','image/webp'])
 on conflict (id) do nothing;
 create policy dcs_editorial_read on storage.objects for select to authenticated
- using (bucket_id='dcs-editorial' and (select public.is_member()));
+ using (
+  bucket_id='dcs-editorial' and (select public.is_member())
+  and exists (
+    select 1 from public.knowledge_articles a
+    where a.id::text=(storage.foldername(name))[2]
+      and (a.status='published' or a.author_id=(select auth.uid()) or (select public.is_manager()))
+  )
+ );
 create policy dcs_editorial_insert on storage.objects for insert to authenticated
  with check (
   bucket_id='dcs-editorial' and (select public.is_editor())
