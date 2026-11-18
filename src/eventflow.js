@@ -24,16 +24,24 @@ function meetingFields(){
 function checklistRows(kind){
  const tasks=ck().items(kind);
  const sections=[...new Set(tasks.map(t=>t.section))];
- const team=$('#event-wizard-form')?.elements?.namedItem('team')?.value||window.DCS_TEAMS?.defaultTeam()||'DCS';
- const options=window.DCS_TEAMS?.membersOptions(team)||'<option value="Equipe">Atribuir depois</option>';
- return '<div class="flow-assign-header"><b>'+tasks.length+' itens do modelo</b><span>Não marque tarefas não aplicáveis</span></div>'+
- sections.map(section=>'<section class="flow-checklist-group"><h3>'+esc(section)+' <small>'+tasks.filter(t=>t.section===section).length+' itens</small></h3>'+
- tasks.filter(t=>t.section===section).map(item=>
- '<div class="flow-checklist-item"><label class="flow-item-title"><input type="checkbox" name="inc_'+item.id+'"'+(item.optional?'':' checked')+'><span>'+esc(item.title)+
- (item.optional?'<small class="flow-optional">Condicional · selecione se necessário</small>':'')+'</span></label>'+
- '<div class="flow-row-controls"><select class="fi" name="who_'+item.id+'" aria-label="Responsável: '+esc(item.title)+'">'+options+'</select>'+
- '<input class="fi" name="due_'+item.id+'" type="date" aria-label="Prazo: '+esc(item.title)+'"></div></div>').join('')+
- '</section>').join('');
+ const defaultTeam=$('#event-wizard-form')?.elements?.namedItem('team')?.value||window.DCS_TEAMS?.defaultTeam()||'DCS';
+ return '<div class="flow-assign-header"><b>'+tasks.length+' itens do modelo</b><span>Abra uma etapa e atribua somente os itens necessários</span></div>'+
+ sections.map((section,sectionIndex)=>{
+  const sectionTasks=tasks.filter(t=>t.section===section);
+  return '<details class="flow-checklist-group"'+(sectionIndex===0?' open':'')+'><summary><b>'+esc(section)+'</b><small>'+sectionTasks.length+' itens · expandir/recolher</small></summary>'+
+  sectionTasks.map(item=>{
+   const id=esc(item.id);
+   const people=window.DCS_TEAMS?.membersOptions(defaultTeam)||'<option value="Equipe">Equipe (sem pessoa)</option>';
+   const teamOptions=window.DCS_TEAMS?.groupOptions(defaultTeam)||'<option value="DCS">DCS</option><option value="Cerimonial">Cerimonial</option>';
+   return '<div class="flow-checklist-item" data-flow-row="'+id+'"><label class="flow-item-title">'+
+     '<input type="checkbox" name="inc_'+id+'"'+(item.optional?'':' checked')+'><span>'+esc(item.title)+
+     (item.optional?'<small class="flow-optional">Condicional · selecione apenas se necessário</small>':'')+'</span></label>'+
+     '<div class="flow-row-controls">'+
+     '<select class="fi" name="team_'+id+'" data-flow-item-team aria-label="Equipe: '+esc(item.title)+'">'+teamOptions+'</select>'+
+     '<select class="fi" name="who_'+id+'" data-flow-person aria-label="Responsável: '+esc(item.title)+'">'+people+'</select>'+
+     '<input class="fi" name="due_'+id+'" type="date" aria-label="Prazo: '+esc(item.title)+'"></div></div>';
+  }).join('')+'</details>';
+ }).join('');
 }
 function createMarkup(date){
  const d=date instanceof Date?date:new Date(Date.now()+86400000);
@@ -113,9 +121,11 @@ function collect(){
  const tasks=ck().items(kind).map(x=>{
   const label=String(f.get('who_'+x.id)||'Equipe');
   const normalized=window.DCS_TEAMS?.normalizeAssignee(label)||label;
-  const resolved=window.DCS_TEAMS?.list().find(p=>p.label===normalized);
+  const itemTeam=f.get('team_'+x.id)==='Cerimonial'?'Cerimonial':'DCS';
+  const resolved=window.DCS_TEAMS?.list().find(p=>p.label===normalized&&p.active&&p.department===itemTeam);
+  if(normalized!=='Equipe'&&!resolved)throw new Error('Responsável incompatível com a equipe na etapa: '+x.title);
   return {title:x.title,section:x.section,position:Number(x.id.split('-').pop()),applicable:!!f.get('inc_'+x.id),
-   assignee_label:resolved?.label||'Equipe',team:resolved?.department||team,due_at:f.get('due_'+x.id)||null,priority:'medium'};
+   assignee_label:resolved?.label||'Equipe',team:itemTeam,due_at:f.get('due_'+x.id)||null,priority:'medium'};
  });
  const briefing={
   contact:String(f.get('contact')||''),description:String(f.get('description')||''),
@@ -265,7 +275,11 @@ document.addEventListener('click',e=>{
 document.addEventListener('change',e=>{
  if(e.target.id==='flow-kind')updateKind();
  if(e.target.id==='flow-delegation-team'){const sel=$('#flow-delegation-person');if(sel)sel.innerHTML=window.DCS_TEAMS?.membersOptions(e.target.value,'Equipe')||'<option>Equipe</option>';}
- if(e.target.name==='team'&&e.target.closest('#event-wizard-form')){const list=$('#flow-task-list');if(list)list.innerHTML=checklistRows($('#flow-kind').value);}
+ if(e.target.hasAttribute('data-flow-item-team')){
+  const row=e.target.closest('[data-flow-row]'),responsible=row?.querySelector('[data-flow-person]');
+  if(responsible)responsible.innerHTML=window.DCS_TEAMS?.membersOptions(e.target.value,'Equipe')||'<option value="Equipe">Equipe</option>';
+ }
+ // Alterar a equipe organizadora não descarta as atribuições já preenchidas.
  if(e.target.id==='requester-select'){} // Seleção padronizada validada em salvar.
 });
 document.addEventListener('submit',e=>{
