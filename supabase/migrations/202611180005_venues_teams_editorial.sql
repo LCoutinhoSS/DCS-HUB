@@ -66,6 +66,19 @@ $$;
 create trigger enforce_venue before insert or update on public.events
 for each row execute function public.validate_event_venue();
 
+-- Se o administrador corrigir o nome oficial, atualizar os vínculos existentes.
+create function public.sync_venue_event_names()
+returns trigger language plpgsql security definer set search_path='' as $
+begin
+ if new.name is distinct from old.name then
+  update public.events set location=new.name where venue_id=new.id;
+ end if;
+ return new;
+end;
+$;
+create trigger sync_venue_name after update of name on public.venues
+for each row execute function public.sync_venue_event_names();
+
 alter table public.tasks add column team text
  check (team in ('DCS','Cerimonial'));
 update public.tasks t set team=coalesce(
@@ -98,6 +111,25 @@ end;
 $$;
 create trigger enforce_task_team before insert or update on public.tasks
 for each row execute function public.validate_task_team();
+
+-- Alterar equipe de servidor atualiza o agrupamento de suas tarefas em aberto.
+-- Desativar uma conta não apaga tarefas; elas voltam à fila da equipe, sem responsável.
+create function public.sync_profile_task_assignments()
+returns trigger language plpgsql security definer set search_path='' as $
+begin
+ if new.active=false or new.role='reader' then
+  update public.tasks set assignee_id=null
+  where assignee_id=new.id and status not in ('completed','canceled');
+ elsif new.department is distinct from old.department then
+  update public.tasks set team=new.department
+  where assignee_id=new.id;
+ end if;
+ return new;
+end;
+$;
+create trigger sync_profile_assignment
+after update of department,active,role on public.profiles
+for each row execute function public.sync_profile_task_assignments();
 
 create table public.task_notifications (
  id uuid primary key default gen_random_uuid(),
@@ -146,7 +178,7 @@ revoke all on public.venues,public.task_notifications from public,anon,authentic
 grant select,insert on public.venues to authenticated;
 grant update(name,kind,authority,active) on public.venues to authenticated;
 grant select,update(read_at) on public.task_notifications to authenticated;
-revoke all on function public.notify_task_assignment(),public.validate_event_venue(),public.validate_task_team()
+revoke all on function public.notify_task_assignment(),public.validate_event_venue(),public.validate_task_team(),public.sync_venue_event_names(),public.sync_profile_task_assignments()
  from public,anon,authenticated;
 
 alter table public.knowledge_articles add column media jsonb not null default '[]'::jsonb;
