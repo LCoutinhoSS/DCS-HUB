@@ -58,7 +58,7 @@ function paint(){
  '<p class="mu">'+rows.length+' solicitantes encontrados</p><div class="venue-list">'+rows.map(x=>
  '<div class="venue-row"><div><b>'+esc(x.name)+'</b><small>'+esc(x.kind==='deputado'?'Deputado(a) estadual':x.kind==='setor'?'Setor/órgão':'Outro')+' · '+esc(x.source||'Cadastro administrativo')+'</small></div>'+
  '<div class="hub-actions">'+(x.active?'<span class="hub-tag">Ativo</span>':'<span class="hub-tag">Inativo</span>')+
- (admin()?'<button class="btn" data-req-edit="'+esc(x.id)+'">Gerenciar</button>':'')+'</div></div>').join('')+'</div>'+
+ (admin()&&(!real()||x.id.startsWith('c:'))?'<button class="btn" data-req-edit="'+esc(x.id)+'">Gerenciar</button>':x.id.startsWith('a:')?'<small class="mu">Atualizado no Autoridades SP</small>':'')+'</div></div>').join('')+'</div>'+
  '<p class="hub-note">Lista parlamentar: <a href="https://www.al.sp.gov.br/deputado/dados/" target="_blank" rel="noopener noreferrer">portal oficial da ALESP</a>. São deputados da 20ª Legislatura (2023–2027), não os eleitos que tomarão posse em 2027. A lista precisa de revisão periódica.</p></section></div>';
 }
 async function render(){
@@ -68,6 +68,7 @@ async function render(){
 }
 function edit(id){
  if(!admin())return;
+ if(real()&&id?.startsWith('a:')){bridge().toast('Edite os deputados no Autoridades SP');return;}
  const old=get(id)||{name:'',kind:'outro',source:'Cadastro administrativo',active:true};
  document.querySelector('#ov').innerHTML='<div class="bk" data-close></div><form class="card md" id="req-form" role="dialog" aria-modal="true" aria-label="Solicitante">'+
  '<h2>'+(id?'Editar solicitante':'Novo solicitante')+'</h2><input type="hidden" name="id" value="'+esc(id||'')+'">'+
@@ -82,7 +83,7 @@ async function save(form){
  const f=new FormData(form),id=f.get('id')||null;
  const name=String(f.get('name')||'').trim().slice(0,160);
  const kind=String(f.get('kind')),source=String(f.get('source')||'').trim().slice(0,160);
- if(name.length<2||!['deputado','setor','outro'].includes(kind))throw new Error('Nome/tipo inválido');
+ if(name.length<2||!(real()?['setor','outro']:['deputado','setor','outro']).includes(kind))throw new Error('Nome/tipo inválido. Deputados oficiais são geridos no Autoridades SP');
  if(list().some(x=>x.id!==id&&x.name.toLocaleLowerCase('pt-BR')===name.toLocaleLowerCase('pt-BR')))throw new Error('Já cadastrado');
  const data={name,kind,source:source||'Cadastro administrativo',active:f.has('active')};
  if(real()){if(id)await window.DCS_BACKEND.updateRequester(id,data);else await window.DCS_BACKEND.createRequester(data);await load(true);}
