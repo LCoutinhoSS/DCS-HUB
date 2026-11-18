@@ -61,6 +61,7 @@ async function loadAll() {
   data.N.splice(0,data.N.length,...notifications.map(n=>({id:n.id,t:n.title,w:new Date(n.created_at).toLocaleString('pt-BR'),u:!n.read_at})));
   data.bell();
   window.DCS_TEAMS?.load().catch(e=>console.warn('[DCS HUB] Não foi possível carregar a equipe:',e));
+  window.DCS_REQUESTERS?.load().catch(e=>console.warn('[DCS HUB] Não foi possível carregar solicitantes:',e));
   window.DCS_VENUES?.load().catch(e=>console.warn('[DCS HUB] Não foi possível carregar espaços:',e));
   return {events:events.length,tasks:tasks.length};
 }
@@ -210,6 +211,42 @@ export const backend={
     return check(await supabase.from('knowledge_article_revisions')
       .select('id,article_id,version,title,summary,body,category,status,media,created_at')
       .eq('article_id',id).order('version',{ascending:false}));
+  },
+  async listRequesters(){
+    ensureUser();
+    return check(await supabase.from('event_requesters')
+      .select('id,name,kind,source,active,created_at,updated_at').order('name'));
+  },
+  async createRequester(data){
+    ensureUser();
+    if(profile.role!=='admin')throw new Error('Somente administrador gerencia solicitantes');
+    return check(await supabase.from('event_requesters').insert(data).select('id').single());
+  },
+  async updateRequester(id,data){
+    ensureUser();
+    if(profile.role!=='admin')throw new Error('Somente administrador gerencia solicitantes');
+    return check(await supabase.from('event_requesters').update(data).eq('id',id).select('id').single());
+  },
+  async createFlowEvent(data){
+    ensureUser();
+    const kindInfo=window.DCS_CHECKLISTS?.find(data.kind);
+    if(!kindInfo||kindInfo[2]!==data.category)throw new Error('Tipo de evento não reconhecido');
+    const start=localDatetime(data.start_date,data.start_time);
+    const end=localDatetime(data.end_date,data.end_time);
+    if(end<=start)throw new Error('O horário final precisa ser posterior ao início');
+    const checklist=data.tasks.map(t=>({
+      title:t.title,section:t.section,applicable:t.applicable,team:t.team,
+      assignee_id:idFor(t.assignee_label),due_at:t.due_at||null,priority:t.priority||'medium'
+    }));
+    const eventId=check(await supabase.rpc('create_planned_event',{
+      p_title:data.title,p_kind:data.kind,p_category:data.category,
+      p_requester:data.requester_id,p_venue:data.venue_id,p_team:data.team,
+      p_start:start.toISOString(),p_end:end.toISOString(),
+      p_briefing:data.briefing,p_items:checklist
+    }));
+    await this.reload();
+    bridge().toast('Evento planejado. As tarefas do modelo serão enviadas após confirmação do gestor.');
+    return eventId;
   },
   async listVenues(){
     ensureUser();
