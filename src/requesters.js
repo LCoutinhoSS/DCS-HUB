@@ -73,7 +73,7 @@ function edit(id){
  document.querySelector('#ov').innerHTML='<div class="bk" data-close></div><form class="card md" id="req-form" role="dialog" aria-modal="true" aria-label="Solicitante">'+
  '<h2>'+(id?'Editar solicitante':'Novo solicitante')+'</h2><input type="hidden" name="id" value="'+esc(id||'')+'">'+
  '<label>Nome completo ou denominação<input class="fi" name="name" required maxlength="160" value="'+esc(old.name)+'"></label>'+
- '<label>Tipo<select class="fi" name="kind">'+[['deputado','Deputado(a) estadual'],['setor','Setor/órgão'],['outro','Outro solicitante']].map(([k,l])=>'<option value="'+k+'"'+(k===old.kind?' selected':'')+'>'+l+'</option>').join('')+'</select></label>'+
+ '<label>Tipo<select class="fi" name="kind">'+(real()?[['setor','Setor/órgão'],['outro','Outro solicitante']]:[['deputado','Deputado(a) estadual'],['setor','Setor/órgão'],['outro','Outro solicitante']]).map(([k,l])=>'<option value="'+k+'"'+(k===old.kind?' selected':'')+'>'+l+'</option>').join('')+'</select></label>'+
  '<label>Origem ou referência<input class="fi" name="source" maxlength="160" value="'+esc(old.source||'Cadastro administrativo')+'"></label>'+
  '<label style="display:flex;align-items:center;gap:8px"><input type="checkbox" name="active"'+(old.active?' checked':'')+'> Disponível para novos eventos</label>'+
  '<p class="hub-note">Desativar impede novas seleções, mas mantém o solicitante nos eventos antigos.</p><div class="hub-actions" style="justify-content:flex-end"><button class="btn" type="button" data-close>Cancelar</button><button class="btn pri">Salvar</button></div></form>';
