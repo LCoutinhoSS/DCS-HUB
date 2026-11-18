@@ -184,7 +184,7 @@ function meetingHtml(ev){
  row('Participantes',b.attendees)+row('Recursos',b.resources)+'</div>'+
  '<h3>Pauta</h3><p class="flow-pre">'+esc(b.agenda_text||'Pauta não preenchida')+'</p>'+
  '<h3>Decisões e encaminhamentos</h3><p class="flow-pre">'+esc(b.decisions||'A registrar após a reunião')+'</p>'+
- '<div class="hub-actions"><button class="btn" data-flow-meeting-edit="'+esc(ev.id)+'">Editar pauta e decisões</button><button class="btn pri" data-nt="'+esc(ev.id)+'">+ Tarefa para encaminhamento</button></div></div>';
+ '<div class="hub-actions">'+(B().S.role==='Leitor'?'':'<button class="btn" data-flow-meeting-edit="'+esc(ev.id)+'">Editar pauta e decisões</button><button class="btn pri" data-nt="'+esc(ev.id)+'">+ Tarefa para encaminhamento</button>')+'</div></div>';
 }
 function checklistHtml(ev){
  const cklist=ev.chk||[],sections=[...new Set(cklist.map(x=>x.section||'Etapas'))];
@@ -222,7 +222,11 @@ async function submitDelegation(form){
  if(live())await window.DCS_BACKEND.delegateChecklistItem(id,index,label,team,data.get('due'));
  else{
   item.assignee_label=label;item.team=team;item.due_at=data.get('due')||null;item.applicable=true;
-  if(ev.st==='Confirmado')B().generateDemoTasks(ev);
+  if(ev.st==='Confirmado'){
+   const found=B().T.find(t=>t.k===ev.id+':'+index);
+   if(found){const previous=found.w;found.w=label;found.team=team;found.due=String(data.get('due')||'').split('-').reverse().join('/')||found.due;if(previous!==label&&label!=='Equipe')window.DCS_DEMO_NOTIFY?.assigned(found,label);}
+   else B().generateDemoTasks(ev);
+  }
   B().rr();
  }
  B().closeOv();B().toast('Etapa delegada'+(live()?' no banco':' na demonstração'));
