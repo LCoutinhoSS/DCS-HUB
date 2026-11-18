@@ -295,23 +295,34 @@ function openArticleForm(id,eventId){
  '<button type="button" class="btn" data-close>Cancelar</button><button class="btn pri" type="submit">Salvar artigo</button></div></form>');
 }
 function showArticle(id){
- const a=state.articles.find(x=>x.id===id);if(!a)return;
- if(a.status==='draft'&&!isManager()&&!isOwn(a))return;
- const photos=articleMedia(a),cover=photos[0],src=mediaSource(cover);
- const gallery=photos.slice(1).map(editorialFig).join('');
- const header='<div class="editorial-reader-hero">'+(src?'<img src="'+esc(src)+'" alt="'+esc(cover.caption||'Foto de capa')+'">':'<div class="editorial-noimage">DCS · Publicação Interna</div>')+'</div>';
- const buttons=(canManage(a)?'<button class="btn" data-k-revisions="'+esc(id)+'">Versões</button><button class="btn" data-k-edit-article="'+esc(id)+'">Editar matéria</button>':'')+
- '<button class="btn pri" data-close>Fechar</button>';
- $('#ov').innerHTML='<div class="bk" data-close></div><article class="card editorial-reader" role="dialog" aria-modal="true" aria-label="Ler matéria: '+esc(a.title)+'">'+
- header+'<div class="editorial-reader-inner"><div class="editorial-category">'+esc(label(LABEL_CATEGORY,a.category))+'</div>'+
- '<h1>'+esc(a.title)+'</h1><p class="editorial-subhead">'+esc(a.summary||'')+'</p>'+
- '<div class="editorial-byline">DCS HUB · '+esc(humanDate(a.updated_at))+' · '+(a.status==='published'?'Publicada':'Rascunho')+' · Edição '+Number(a.version||1)+'</div>'+
- (cover?.caption||cover?.credit?'<p class="editorial-form-hint">Capa: '+esc(cover.caption||'')+(cover.credit?' · Foto: '+esc(cover.credit):'')+'</p>':'')+
- '<div class="editorial-body">'+editorialText(a.body)+'</div>'+
- (gallery?'<div class="editorial-media-grid">'+gallery+'</div>':'')+
- '<div class="hub-tags" style="margin:16px 0">'+tags(a.tags)+'</div>'+
- '<div class="hub-actions" style="justify-content:flex-end;flex-wrap:wrap;margin-top:20px">'+buttons+'</div></div></article>';
- const control=$('#ov [data-close]');if(control)control.focus?.();
+ location.hash='materia/'+encodeURIComponent(id);
+}
+async function renderArticlePage(id){
+ const root=$('#view');if(!root)return;
+ root.innerHTML='<section class="card p">Abrindo matéria…</section>';
+ try{await ensureData();}
+ catch(e){root.innerHTML='<section class="card p"><h2>Erro na matéria</h2><p>'+esc(e.message)+'</p></section>';return;}
+ if(decodeURIComponent(location.hash.slice(8))!==id)return;
+ const a=state.articles.find(x=>x.id===id);
+ if(!a||(a.status==='draft'&&!isManager()&&!isOwn(a))){
+  root.innerHTML='<section class="card p"><button class="btn" data-k-back>← Voltar</button><h2>Matéria indisponível</h2><p>Conteúdo removido ou acesso negado.</p></section>';return;
+ }
+ const media=articleMedia(a),cover=media[0],src=mediaSource(cover);
+ const related=visibleArticles().filter(x=>x.id!==id&&x.category===a.category).slice(0,4);
+ const hero='<div class="article-page-hero">'+(src?'<img src="'+esc(src)+'" alt="'+esc(cover.caption||'Foto de capa')+'">':'<div class="article-page-hero-fallback">DCS · Jornal Interno</div>')+'</div>'+
+ ((cover?.caption||cover?.credit)?'<div class="article-page-figure-caption">'+esc(cover.caption||'')+(cover.credit?' · Foto: '+esc(cover.credit):'')+'</div>':'');
+ root.innerHTML='<div class="article-page-wrap"><div class="article-page-actions"><button class="btn" data-k-back>← Voltar à Wiki DCS</button>'+
+ '<div class="hub-actions">'+(canManage(a)?'<button class="btn" data-k-revisions="'+esc(id)+'">Versões</button><button class="btn pri" data-k-edit-article="'+esc(id)+'">Editar matéria</button>':'')+'</div></div>'+
+ '<div class="article-layout"><article class="card article-standalone">'+hero+
+ '<div class="article-standalone-body"><div class="article-page-kicker">'+esc(label(LABEL_CATEGORY,a.category))+' · '+esc(a.status==='published'?'Publicada':'Rascunho')+'</div>'+
+ '<h1>'+esc(a.title)+'</h1><p class="article-page-deck">'+esc(a.summary||'')+'</p>'+
+ '<div class="article-page-byline">Redação DCS HUB · '+esc(humanDate(a.updated_at))+' · Versão '+Number(a.version||1)+'</div>'+
+ '<div class="article-page-copy">'+editorialText(a.body)+'</div>'+
+ '<div class="editorial-media-grid" style="margin:26px 0">'+media.slice(1).map(editorialFig).join('')+'</div>'+
+ '<div class="hub-tags" style="margin-top:25px">'+tags(a.tags)+'</div></div></article>'+
+ '<aside class="card article-page-aside"><h3>Leia também</h3><p class="mu">Conteúdo da mesma editoria</p><div class="article-page-related">'+
+ (related.length?related.map(x=>'<button data-k-read="'+esc(x.id)+'"><b>'+esc(x.title)+'</b><small>'+esc(humanDate(x.updated_at))+'</small></button>').join(''):'<p class="mu">Sem outras matérias.</p>')+
+ '</div><p class="hub-note" style="margin-top:18px">Protótipo público com dados fictícios.</p></aside></div></div>';
 }
 async function showRevisions(id){
  const a=state.articles.find(x=>x.id===id);if(!a||!canManage(a))return;
@@ -452,8 +463,9 @@ async function remove(type,id){
  });
 }
 document.addEventListener('click',e=>{
- const node=e.target.closest('[data-k-nav],[data-k-add],[data-k-add-event-doc],[data-k-edit-doc],[data-k-edit-article],[data-k-open-doc],[data-k-read],[data-k-revisions],[data-k-show-revision],[data-k-delete-doc],[data-k-delete-article],[data-k-confirm-remove],[data-k-refresh]');
+ const node=e.target.closest('[data-k-back],[data-k-nav],[data-k-add],[data-k-add-event-doc],[data-k-edit-doc],[data-k-edit-article],[data-k-open-doc],[data-k-read],[data-k-revisions],[data-k-show-revision],[data-k-delete-doc],[data-k-delete-article],[data-k-confirm-remove],[data-k-refresh]');
  if(!node||!bridge()?.S?.in)return;
+ if(node.hasAttribute('data-k-back')){location.hash='conhecimento';return;}
  if(node.dataset.kNav){location.hash=node.dataset.kNav;return;}
  if(node.dataset.kRefresh){state.loaded=false;state.error=null;if(bridge().S.route==='eventos'){ensureData().then(()=>bridge().rr()).catch(err=>bridge().toast('Erro: '+err.message));}else render(bridge().S.route);return;}
  if(node.dataset.kAdd){if(node.dataset.kAdd==='doc')openDocForm(null,null);else openArticleForm(null,null);return;}
@@ -492,5 +504,5 @@ document.addEventListener('submit',e=>{
  if(e.target.id==='k-doc-form'){e.preventDefault();saveDocument(e.target);}
  if(e.target.id==='k-article-form'){e.preventDefault();saveArticle(e.target);}
 });
-window.DCS_KNOWLEDGE={render,eventDocsHtml,ensureData,reset};
+window.DCS_KNOWLEDGE={render,renderArticlePage,eventDocsHtml,ensureData,reset};
 })();
