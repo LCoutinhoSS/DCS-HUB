@@ -152,6 +152,30 @@ export const backend={
     }));
     bridge().closeOv();await this.reload();bridge().toast('Período reagendado e registrado no histórico');
   },
+  currentUserId(){return profile?.id||null;},
+  async listAdminProfiles(){
+    if(!profile?.active||profile.role!=='admin')throw new Error('Acesso restrito ao Administrador');
+    return check(await supabase.from('profiles')
+      .select('id,full_name,email,role,department,active,created_at')
+      .order('full_name',{ascending:true}));
+  },
+  async listAdminAudit(){
+    if(!profile?.active||profile.role!=='admin')throw new Error('Acesso restrito ao Administrador');
+    return check(await supabase.from('profile_admin_audit')
+      .select('id,actor_id,target_name,old_role,new_role,old_active,new_active,created_at')
+      .order('created_at',{ascending:false}).limit(40));
+  },
+  async updateAdminProfile(data){
+    if(!profile?.active||profile.role!=='admin')throw new Error('Acesso restrito ao Administrador');
+    if(data.id===profile.id)throw new Error('Não é permitido modificar o próprio perfil');
+    return check(await supabase.rpc('admin_update_profile',{
+      p_profile_id:data.id,
+      p_full_name:data.full_name,
+      p_role:data.role,
+      p_department:data.department,
+      p_active:data.active
+    }));
+  },
   canReschedule(e){return profile?.role==='admin'||profile?.role==='manager'||(e.createdBy===profile?.id && e.st==='Pendente');},
   error:alertError,
   run:safeRun
