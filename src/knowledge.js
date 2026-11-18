@@ -118,7 +118,7 @@ function demoSeed(){
  ['Fluxo ilustrativo de exposição — EXEMPLO','exposicoes','Etapas de recebimento, montagem e encerramento.','MATERIAL ILUSTRATIVO.\n\nRegistre o período completo de início e término da exposição. A agenda do HUB deve exibir cada dia do intervalo.\n\nAtribua responsáveis pela montagem, atendimento e desmontagem.',['EXEMPLO','Exposições']],
  ['Orientação em revisão — EXEMPLO','visitas','Rascunho fictício que não aparece para leitores.','RASCUNHO DE TREINAMENTO.\n\nEste texto foi criado para simular um artigo ainda não publicado.',['EXEMPLO','Rascunho']]
  ];
- state.articles=articleData.map((x,i)=>({id:'demo-art-'+i,title:x[0],category:x[1],summary:x[2],body:x[3],tags:x[4],status:i===3?'draft':'published',event_id:null,author_id:'demo-other',version:1,created_at:date,updated_at:date}));
+ state.articles=articleData.map((x,i)=>({id:'demo-art-'+i,title:x[0],category:x[1],summary:x[2],body:x[3],tags:x[4],status:i===3?'draft':'published',event_id:null,author_id:'demo-other',version:1,media:i===0?[{url:'https://www3.al.sp.gov.br/repositorio/noticia/N-07-2026/fg366742.jpg',caption:'Sede da Assembleia Legislativa do Estado de São Paulo — fotografia pública de referência.',credit:'Agência ALESP (imagem de referência)'}]:[],created_at:date,updated_at:date}));
  state.revisions={};
  state.articles.forEach(x=>{state.revisions[x.id]=[{id:'rev-'+x.id,article_id:x.id,version:1,title:x.title,body:x.body,summary:x.summary,status:x.status,category:x.category,created_at:date}]});
 }
@@ -372,21 +372,67 @@ function saveArticle(form){
  if(!isEditor())return;
  const d=new FormData(form),id=String(d.get('id')||'');
  const title=String(d.get('title')||'').trim(),body=String(d.get('body')||'').trim();
- if(title.length<3||title.length>160||body.length<10||body.length>30000){bridge().toast('Preencha título e texto nos limites indicados');return;}
+ if(title.length<3||title.length>160||body.length<10||body.length>30000){
+  bridge().toast('Preencha título e texto nos limites indicados');return;
+ }
  const category=String(d.get('category')),status=String(d.get('status'));
  if(!LABEL_CATEGORY[category]||!['draft','published'].includes(status))return;
+ const old=state.articles.find(x=>x.id===id);
+ if(old&&!canManage(old))return;
+ const existing=articleMedia(old).filter((m,i)=>d.getAll('keep_image').includes(String(i)))
+  .map(m=>({...(m.path?{path:m.path}:{}),...(m.url?{url:m.url}:{}),caption:m.caption||'',credit:m.credit||''}));
+ const remote=[],uploads=[];
+ for(let i=0;i<3;i++){
+  const imageUrl=String(d.get('image_url_'+i)||'').trim();
+  const file=d.get('image_file_'+i);
+  const caption=String(d.get('image_caption_'+i)||'').trim().slice(0,220);
+  const credit=String(d.get('image_credit_'+i)||'').trim().slice(0,120);
+  if(file&&file.size>0&&imageUrl){bridge().toast('Escolha arquivo OU URL para cada fotografia');return;}
+  if(imageUrl){
+   let url;
+   try{url=new URL(imageUrl);if(url.protocol!=='https:'||url.username||url.password)throw Error();}
+   catch(e){bridge().toast('Use URL HTTPS pública válida para a fotografia '+(i+1));return;}
+   remote.push({url:url.toString(),caption,credit});
+  }
+  if(file&&file.size>0){
+   if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>(isLive()?5:2)*1024*1024){
+    bridge().toast('Foto '+(i+1)+': JPG, PNG ou WebP de até '+(isLive()?'5':'2')+' MB');return;
+   }
+   uploads.push({file,caption,credit});
+  }
+ }
+ if(existing.length+remote.length+uploads.length>6){bridge().toast('Máximo de seis imagens por matéria');return;}
  const payload={title,body,category,status,summary:String(d.get('summary')||'').slice(0,350),
  event_id:d.get('event_id')||null,tags:tagList(d.get('tags'))};
- const old=state.articles.find(x=>x.id===id);if(old&&!canManage(old))return;
  act(async()=>{
   if(isLive()){
-   if(id)await window.DCS_BACKEND.updateArticle(id,payload);
-   else await window.DCS_BACKEND.createArticle(payload);
+   let articleId=id;
+   const initialMedia=[...existing,...remote];
+   if(articleId){
+    await window.DCS_BACKEND.updateArticle(articleId,{...payload,media:initialMedia});
+   }else{
+    const created=await window.DCS_BACKEND.createArticle({...payload,media:initialMedia});
+    articleId=created.id;
+   }
+   if(uploads.length){
+    const files=[];
+    for(const item of uploads){
+     const saved=await window.DCS_BACKEND.uploadArticlePhoto(articleId,item.file);
+     files.push({path:saved.path,caption:item.caption,credit:item.credit});
+    }
+    await window.DCS_BACKEND.updateArticle(articleId,{media:[...initialMedia,...files]});
+   }
   }else{
+   const files=[];
+   for(const item of uploads){
+    files.push({url:await fileAsImageData(item.file),caption:item.caption,credit:item.credit});
+   }
+   const media=[...existing,...remote,...files];
    let next=old;
-   if(!next){next={...payload,id:'demo-art-new-'+(++state.seq),author_id:'demo-me',version:1,created_at:now(),updated_at:now()};
-     state.articles.unshift(next);}
-   else Object.assign(next,payload,{version:next.version+1,updated_at:now()});
+   if(!next){
+    next={...payload,media,id:'demo-art-new-'+(++state.seq),author_id:'demo-me',version:1,created_at:now(),updated_at:now()};
+    state.articles.unshift(next);
+   }else Object.assign(next,payload,{media,version:next.version+1,updated_at:now()});
    (state.revisions[next.id]||(state.revisions[next.id]=[])).push({...next,article_id:next.id,created_at:now()});
   }
  });
