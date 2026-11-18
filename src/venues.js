@@ -86,7 +86,7 @@ async function save(form){
   if(id)await window.DCS_BACKEND.updateVenue(id,data);
   else await window.DCS_BACKEND.createVenue(data);
   await load(true);
- }else if(id){Object.assign(get(id),data);}
+ }else if(id){const item=get(id),previous=item.name;Object.assign(item,data);if(previous!==data.name){window.DCS_BRIDGE?.E?.filter(ev=>ev.venue_id===id).forEach(ev=>{ev.loc=data.name;});}}
  else items.push({id:'novo-'+Date.now(),...data,created_at:new Date().toISOString()});
  window.DCS_BRIDGE.closeOv();paint();window.DCS_BRIDGE.toast('Catálogo de espaços atualizado'+(real()?' no banco':' na demonstração'));
 }
