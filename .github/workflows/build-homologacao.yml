@@ -1,0 +1,63 @@
+name: Gerar homologacao DCS HUB (login Supabase real)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'index.html'
+      - 'package.json'
+      - 'vite.config.js'
+      - '.github/workflows/build-homologacao.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dcs-build-homologacao
+  cancel-in-progress: false
+
+jobs:
+  build-homologacao:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar codigo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar dependencias
+        run: npm install --no-audit --no-fund
+      - name: Compilar frontend com login real
+        env:
+          VITE_DCS_MODE: homologacao
+          VITE_SUPABASE_URL: https://xigupkwcxfqiofxrvion.supabase.co
+          # A chave publica e exposta ao browser por definicao. Nunca inserir secret/service_role.
+          VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_AuGtLTpkXtkEY1w_fQXSkQ_jV70SzUO
+        run: |
+          test "$VITE_DCS_MODE" = homologacao
+          case "$VITE_SUPABASE_PUBLISHABLE_KEY" in sb_publishable_*) ;; *) exit 1;; esac
+          npm run build
+          test -s dist/index.html
+          test -d dist/assets
+      - name: Verificar isolamento do build
+        run: |
+          grep -q 'assets/' dist/index.html
+          ! grep -q 'src/backend.js' dist/index.html
+          test -e index.html
+      - name: Publicar somente a rota /homologacao/
+        run: |
+          rm -rf homologacao
+          mkdir -p homologacao
+          cp -R dist/. homologacao/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A homologacao
+          if ! git diff --cached --quiet; then
+            git commit -m "build(homologacao): atualizar frontend com login real [skip ci]"
+            git push origin HEAD:main
+          fi
