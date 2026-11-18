@@ -1,0 +1,79 @@
+/* DCS HUB 0.8 · fluxos de operação, edição e matéria em página inteira */
+.flow-sheet{position:fixed;z-index:115;top:50%;left:50%;transform:translate(-50%,-50%);
+ width:min(970px,96vw);max-height:94vh;overflow:auto;background:var(--gl2);padding:0;border-radius:22px}
+.flow-top{display:flex;justify-content:space-between;gap:15px;padding:24px 28px 16px;align-items:flex-start}
+.flow-top h2{font:600 27px Fraunces,Georgia,serif;margin:7px 0}
+.flow-top p{font-size:12px;color:var(--mu);margin:0}
+.flow-progress{display:flex;gap:7px;padding:0 24px 17px;border-bottom:1px solid var(--bd);overflow:auto}
+.flow-step{display:flex;align-items:center;gap:7px;padding:8px 9px;font-size:11px;color:var(--mu);border-radius:9px;flex:1;white-space:nowrap;text-align:left}
+.flow-step span{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--hv);font-weight:800;flex:none}
+.flow-step.active{color:var(--tx);background:var(--hv);font-weight:700}
+.flow-step.done span{background:rgba(47,163,122,.14);color:var(--ok)}
+.flow-form{padding:23px 28px 25px}
+.flow-pane{animation:in .18s ease-out}
+.flow-section-title{font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--acc);margin:0 0 16px}
+.flow-pane>label,.flow-meeting>label{display:block;font-size:12px;font-weight:600;margin:0 0 14px}
+.flow-pane .fi{display:block;margin-top:6px;width:100%;min-height:40px;border-radius:10px}
+.flow-pane textarea.fi{min-height:84px;padding:10px;resize:vertical}
+.flow-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.flow-grid label{display:block;font-size:12px;font-weight:600;margin-bottom:13px}
+.flow-meeting{border-top:1px solid var(--bd);margin:18px 0 12px;padding-top:18px}
+.flow-subheading{display:flex;flex-direction:column;gap:4px;margin-bottom:14px}
+.flow-subheading b{font-size:16px}
+.flow-subheading small{color:var(--mu);font-size:11px}
+.flow-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 0 0;margin-top:18px;border-top:1px solid var(--bd)}
+.flow-current{font-size:12px;color:var(--mu);margin-left:auto}
+.flow-checklist-group{padding:12px 0;border-bottom:1px solid var(--bd)}
+.flow-checklist-group h3{font-size:15px;margin:0 0 10px;display:flex;align-items:center;gap:10px}
+.flow-checklist-group h3 small{color:var(--mu);font-size:11px;font-weight:400}
+.flow-checklist-item{padding:12px 13px;background:var(--gl2);border:1px solid var(--bd);border-radius:11px;margin:8px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.flow-item-title{font-size:12.5px;line-height:1.5;display:flex;gap:9px;align-items:flex-start;flex:1}
+.flow-item-title>input{margin-top:5px}
+.flow-optional{display:block;font-size:10px;color:var(--wa);font-weight:500;margin-top:3px}
+.flow-row-controls{display:flex;gap:7px;min-width:305px;max-width:365px;flex:1}
+.flow-row-controls .fi{margin:0;min-height:34px;font-size:11px}
+.flow-row-controls select{max-width:55%}
+.flow-row-controls input[type=date]{max-width:45%}
+.flow-assign-header{display:flex;justify-content:space-between;gap:10px;font-size:12px;padding:8px 0}
+.flow-assign-header span{color:var(--mu)}
+.flow-review-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.flow-review-grid>div{padding:12px;border:1px solid var(--bd);border-radius:10px;background:var(--gl2)}
+.flow-review-grid small{display:block;font-size:11px;color:var(--mu)}
+.flow-review-grid strong{display:block;font-size:13px;margin-top:4px;word-break:break-word}
+.flow-review-consent{display:flex!important;align-items:flex-start;gap:9px;margin:18px 0!important}
+.flow-review-consent>input{margin-top:4px}
+.flow-event-info{padding:8px 0;display:flex;flex-direction:column;gap:12px}
+.flow-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.flow-detail{border:1px solid var(--bd);border-radius:11px;padding:13px;background:var(--gl2);overflow-wrap:anywhere}
+.flow-detail small{display:block;color:var(--mu);font-size:11px;letter-spacing:.01em;margin-bottom:6px}
+.flow-detail b{font-weight:650;font-size:13px}
+.flow-detail p{font-size:13px;margin:0;white-space:pre-wrap;line-height:1.6}
+.flow-pre{white-space:pre-wrap;background:var(--gl2);padding:14px;border-radius:12px;border:1px solid var(--bd);font-size:13px;line-height:1.6}
+.flow-event-info>.flow-checklist-group{padding:10px}
+.flow-event-info .flow-checklist-item{align-items:center}
+.flow-event-info .flow-checklist-item .tk{flex:1;text-align:left;min-width:0}
+.flow-event-info .flow-checklist-item small{font-size:10px;color:var(--mu);max-width:155px;line-height:1.45}
+.article-page-wrap{width:min(1140px,100%);margin:0 auto;padding:8px 0 60px}
+.article-page-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}
+.article-layout{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:16px;align-items:start}
+.article-standalone{padding:0;overflow:hidden;min-width:0;background:var(--gl2)}
+.article-page-hero{height:clamp(210px,40vh,430px);background:linear-gradient(120deg,#1a4168,#132d4c);position:relative;overflow:hidden}
+.article-page-hero img{display:block;width:100%;height:100%;object-fit:cover}
+.article-page-hero-fallback{display:grid;place-items:center;height:100%;font:600 39px Fraunces,serif;color:#dec597;text-align:center;padding:35px}
+.article-page-figure-caption{font-size:11px;color:var(--mu);padding:8px 30px}
+.article-standalone-body{padding:28px clamp(20px,5vw,55px) 45px}
+.article-page-kicker{font-weight:800;color:var(--acc);font-size:10px;letter-spacing:.18em;text-transform:uppercase}
+.article-standalone h1{font:600 clamp(30px,4.5vw,51px)/1.09 Fraunces,Georgia,serif;letter-spacing:-.04em;margin:10px 0 17px}
+.article-page-deck{font-size:17px;line-height:1.6;color:var(--mu);margin-bottom:20px}
+.article-page-byline{font-size:11px;color:var(--mu);border-bottom:1px solid var(--bd);padding:0 0 17px;margin-bottom:25px}
+.article-page-copy{font-size:16px;line-height:1.9;max-width:700px;margin:auto;overflow-wrap:anywhere}
+.article-page-copy h2{font:600 29px Fraunces,serif;margin:34px 0 12px}
+.article-page-copy h3{font:600 21px Fraunces,serif;margin:30px 0 12px}
+.article-page-copy p{margin:0 0 23px}
+.article-page-aside{position:sticky;top:0;padding:17px}
+.article-page-aside h3{margin-top:0}
+.article-page-related{display:flex;flex-direction:column;gap:8px;margin-top:13px}
+.article-page-related button{background:var(--hv);text-align:left;padding:12px;border-radius:10px;font-size:12px}
+.article-page-related button small{display:block;color:var(--mu);margin-top:3px}
+@media(max-width:930px){.article-layout{grid-template-columns:1fr}.article-page-aside{position:static}}
+@media(max-width:720px){.flow-sheet{width:100vw;max-height:100vh;height:100vh;border-radius:0}.flow-top{padding:17px}.flow-progress{padding:0 12px 10px}.flow-step{flex-direction:column;min-width:80px;font-size:10px}.flow-form{padding:15px}.flow-grid,.flow-review-grid,.flow-detail-grid{grid-template-columns:1fr}.flow-checklist-item{flex-direction:column}.flow-row-controls{min-width:0;width:100%;max-width:none}.article-standalone-body{padding:24px 18px 35px}.article-page-figure-caption{padding:8px 18px}}
