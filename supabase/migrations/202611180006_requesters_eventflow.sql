@@ -153,7 +153,7 @@ begin
    coalesce(ec.team,v.team,'DCS'),auth.uid(),
    coalesce(ec.due_at,(v.start_at at time zone 'America/Sao_Paulo')::date),
    ec.priority,'pending',ec.id
- from public.event_checklist ec where ec.event_id=p_event_id and ec.applicable and not ec.completed
+ from public.event_checklist ec where ec.event_id=p_event_id and ec.applicable and not ec.completed and ec.assignee_id is not null
  on conflict (source_checklist_id) do nothing;
  get diagnostics inserted_count=row_count;
  return inserted_count;
