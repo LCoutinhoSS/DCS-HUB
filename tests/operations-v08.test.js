@@ -27,6 +27,47 @@ test('modelos seguem cinco checklists reais distintos, com tarefas e etapas',()=
  assert.doesNotMatch(checklists,/Alsrv006|vol1|João Batista Inocentini|Ana Carolina Oliveira/);
 });
 
+test('Sessão Solene incorpora a segunda aba operacional e não expõe caminhos de rede',()=>{
+ const window={};
+ vm.runInNewContext(checklists,{window,console});
+ const rows=window.DCS_CHECKLISTS.items('sessao_solene');
+ assert.ok(rows.length>=65,'reunião preparatória + planejamento operacional');
+ assert.ok(rows.length<=80,'limite transacional do banco');
+ assert.ok(rows.some(x=>x.section==='Pré-evento: impressões e materiais'));
+ assert.ok(rows.some(x=>x.section==='Execução: receptivo'));
+ assert.ok(rows.some(x=>x.section==='Pós-evento'));
+ const tasks=rows.map(x=>x.title).join('|');
+ assert.match(tasks,/rádios/i);
+ assert.match(tasks,/honraria/i);
+ assert.match(tasks,/Revisar script com o deputado solicitante/);
+ assert.match(tasks,/Reunião de avaliação pós-evento/i);
+ assert.doesNotMatch(tasks,/Alsrv006|vol1|RG:\s*\d|CPF:\s*\d/);
+});
+
+test('cada etapa pode ter equipe, responsável e prazo próprios',()=>{
+ const window={DCS_BRIDGE:{S:{in:0},toast(){}},DCS_REQUESTERS:{get:()=>({id:'r1',name:'Deputado Teste',active:true})},
+  DCS_VENUES:{get:()=>({id:'v1',name:'Plenário JK',active:true})},
+  DCS_TEAMS:{normalizeAssignee:x=>x,list:()=>[{label:'Bruno L.',active:true,department:'Cerimonial'},{label:'Camila A.',active:true,department:'DCS'}]}};
+ const listeners=[];
+ const form={map:{kind:'reuniao',t:'Reunião de alinhamento',requester_id:'r1',venue_id:'v1',team:'DCS',
+  d:'2026-11-20',h:'10:00',e:'2026-11-20',end_h:'11:30',
+  'team_reuniao-1':'Cerimonial','who_reuniao-1':'Bruno L.','inc_reuniao-1':'on','due_reuniao-1':'2026-11-19',
+  'team_reuniao-2':'DCS','who_reuniao-2':'Camila A.','inc_reuniao-2':'on'}};
+ const document={querySelector:q=>q==='#event-wizard-form'?form:null,addEventListener:(type,cb)=>listeners.push([type,cb])};
+ const FormData=class{constructor(f){this.map=f.map;}get(k){return this.map[k]??null;}};
+ vm.runInNewContext(checklists,{window,console});
+ vm.runInNewContext(flow,{window,document,FormData,Date,location:{hash:''},console});
+ const event=window.DCS_EVENTFLOW.collect();
+ const a=event.tasks.find(x=>x.title.includes('DEFINIR OBJETIVO'));
+ const b=event.tasks.find(x=>x.title.includes('CONFIRMAR PARTICIPANTES'));
+ assert.equal(a.team,'Cerimonial');assert.equal(a.assignee_label,'Bruno L.');
+ assert.equal(a.due_at,'2026-11-19');assert.equal(a.applicable,true);
+ assert.equal(b.team,'DCS');assert.equal(b.assignee_label,'Camila A.');
+ assert.match(flow,/data-flow-item-team/);
+ assert.match(flow,/flow-checklist-group/);
+ assert.match(flow,/<details/);
+});
+
 test('catálogo inicial tem exatamente 94 deputados em exercício e permite outros tipos',async()=>{
  const window={};
  const doc={addEventListener(){}};
