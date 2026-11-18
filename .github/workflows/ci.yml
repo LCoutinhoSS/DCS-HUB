@@ -27,7 +27,12 @@ jobs:
       - name: Gerar build
         run: npm run build
       - name: Verificar arquivos da build
-        run: test -s dist/index.html
+        run: |
+          test -s dist/index.html
+          test -d dist/assets
+          ! grep -q 'src/knowledge.js' dist/index.html
+          ! grep -q 'src/admin.js' dist/index.html
+          find dist/assets -type f -name '*.js' | grep -q .
       - name: Salvar build como artefato privado
         uses: actions/upload-artifact@v4
         with:
