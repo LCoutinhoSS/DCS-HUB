@@ -49,7 +49,7 @@ export function toUiTask(row,eventById,labelFor) {
   const date=row.due_at ? row.due_at.split('-').reverse().join('/') : 'Sem prazo';
   return {id:row.id,t:row.title,eid:row.event_id,ev:name.split(' — ')[0],due:date,
     pri:PRIORITY_LABEL[row.priority]||'Média',s:TASK_STATUS_LABEL[row.status]||'Pendente',
-    w:labelFor(row.assignee_id),done:row.status==='completed'?1:0,
+    w:labelFor(row.assignee_id),team:row.team||'DCS',done:row.status==='completed'?1:0,
     k:row.source_checklist_id ? 'modelo:'+row.source_checklist_id : undefined};
 }
 export function describeHistory(row) {
