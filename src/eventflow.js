@@ -275,4 +275,6 @@ document.addEventListener('submit',e=>{
  e.preventDefault();if(validate(0)&&validate(1))save();
 });
 window.DCS_EVENTFLOW={openCreate,extraHtml,meetingHtml,checklistHtml,collect};
+// Na recuperação de uma sessão demo, o login pode iniciar antes dos módulos defer.
+if(B()?.S?.in&&location.hash)queueMicrotask(()=>B().route());
 })();
