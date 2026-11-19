@@ -18,6 +18,16 @@ O cadastro de **94 deputados estaduais** da aplicação Autoridades SP é consul
 
 **Correção de acesso — 19/11/2026:** no Autoridades SP, a tabela `public.autoridades` tem RLS de leitura, mas não concede `SELECT` direto ao papel `authenticated`. Isso causava `permission denied for table autoridades` na homologação. A migração **008** instalou a função `dcs_list_authorities`, restrita a membros ativos do HUB, que reutiliza `consultar_autoridades_seguras()` e devolve somente campos públicos/autorizados. A UI de **Autoridades SP** e o seletor de **Solicitantes** passaram a usar essa função. Os testes com perfil ativo retornaram 150 registros (94 deputados); sem perfil DCS, zero. Nenhuma permissão da tabela original foi modificada.
 
+## Atualização 0.17 — Controle compartilhado de importação manual
+
+- Na aba **Outlook / Teams**, cada evento exibe **Importação ainda não registrada**, **Importação manual declarada**, **Evento alterado desde a declaração**, ou **Evento cancelado — conferir exclusão no Outlook**.
+- Servidores podem registrar, com confirmação expressa, que **importaram manualmente** um evento no Outlook; o download do arquivo sozinho não marca o evento. A equipe visualiza data, responsável e calendário informado (opcional).
+- O banco compara título, data, horário e local da versão declarada com o evento atual. Reagendamentos e outras mudanças relevantes exigem conferência e novo registro. O botão **Atualizar situação** consulta o banco de outra conta.
+- A migração **017** adiciona tabela com RLS de leitura, gravação restrita via RPC, verificação de versão e trilha de auditoria. Não altera Autoridades SP.
+- **Importante:** isto não comprova importação no Outlook nem envia, edita ou remove eventos no Microsoft 365. A operação é registrada como **declaração manual de um servidor**.
+
+Veja [Guia de controle manual de agenda 0.17](docs/CALENDARIO_CONTROLE_017.md).
+
 ## Atualização 0.16 — Ponte com calendário Outlook / Teams (importação .ics)
 
 - **Gestão de eventos → Outlook / Teams:** nova aba com título, data, horário e local, permitindo baixar um evento confirmado ou concluído como arquivo `.ics`.

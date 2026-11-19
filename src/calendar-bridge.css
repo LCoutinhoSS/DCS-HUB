@@ -14,3 +14,23 @@
 .dcs-calendar-limit p{font-size:12px;color:var(--mu);line-height:1.65;margin:8px 0 0}
 .dcs-calendar-dialog p{line-height:1.6}
 @media(max-width:650px){.dcs-calendar-head{flex-direction:column}.dcs-calendar-info{grid-template-columns:1fr}}
+
+/* v0.17: controle de importações declaradas, sem conexão externa */
+.dcs-manual-calendar{display:flex;flex-direction:column;gap:13px;border-top:1px solid var(--bd);padding:20px 2px 5px;margin-top:4px}
+.dcs-manual-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.dcs-manual-head h3{font:600 18px Fraunces,Georgia,serif;margin:0 0 6px}
+.dcs-manual-head p{font-size:12px;color:var(--mu);line-height:1.5;margin:0}
+.dcs-manual-head .btn{flex:none}
+.dcs-manual-state{border:1px solid var(--bd);border-radius:13px;padding:14px 16px;background:var(--gl2)}
+.dcs-manual-state b{font-size:13px}
+.dcs-manual-state p{font-size:12px;line-height:1.65;color:var(--mu);margin:7px 0}
+.dcs-manual-state small{font-size:11px;color:var(--mu)}
+.dcs-manual-state.dcs-manual-warning{border-color:rgba(217,130,43,.55)}
+.dcs-manual-actions{display:flex;flex-direction:column;gap:12px;padding:12px;border-radius:12px;border:1px solid var(--bd)}
+.dcs-manual-actions>label{font-size:12px}
+.dcs-manual-actions .fi{margin-top:7px}
+.dcs-manual-confirm{display:flex;gap:9px;align-items:flex-start;line-height:1.6}
+.dcs-manual-confirm input{margin-top:4px}
+.dcs-manual-actions .btn:disabled{opacity:.5;cursor:not-allowed}
+.dcs-manual-footnote{font-size:11px;line-height:1.6;color:var(--mu);margin:0}
+@media(max-width:650px){.dcs-manual-head{flex-direction:column}.dcs-manual-actions .dcs-calendar-actions{justify-content:stretch}.dcs-manual-actions .dcs-calendar-actions .btn{width:100%}}

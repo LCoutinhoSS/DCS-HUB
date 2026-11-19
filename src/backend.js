@@ -52,9 +52,10 @@ async function loadAll() {
     supabase.from('tasks').select('*').order('created_at',{ascending:false}),
     supabase.from('event_history').select('*').order('created_at',{ascending:false}).limit(500),
     supabase.from('task_notifications').select('id,task_id,title,created_at,read_at').order('created_at',{ascending:false}).limit(100),
-    supabase.from('event_meetings').select('id,event_id,title,starts_at,duration_minutes,format,attendees,agenda,minutes,decisions,status,created_by,created_at,updated_at').order('starts_at',{ascending:false})
+    supabase.from('event_meetings').select('id,event_id,title,starts_at,duration_minutes,format,attendees,agenda,minutes,decisions,status,created_by,created_at,updated_at').order('starts_at',{ascending:false}),
+    supabase.from('event_calendar_imports').select('event_id,imported_at,imported_by,calendar_label,snapshot')
   ]);
-  const [people,events,checklist,tasks,history,notifications,meetings]=q.map(check);
+  const [people,events,checklist,tasks,history,notifications,meetings,calendarImports]=q.map(check);
   profiles=people;
   labelById=new Map();idByLabel=new Map();
   people.forEach(p=>{
@@ -72,6 +73,7 @@ async function loadAll() {
   data.A.splice(0,data.A.length,...history.slice(0,8).map(h=>[describeHistory(h),new Date(h.created_at).toLocaleString('pt-BR')]));
   data.N.splice(0,data.N.length,...notifications.map(n=>({id:n.id,task_id:n.task_id,t:n.title,w:new Date(n.created_at).toLocaleString('pt-BR'),u:!n.read_at})));
   window.DCS_MEETINGS?.setData(meetings);
+   window.DCS_CALENDAR_MANUAL?.setData(calendarImports.map(r=>({...r,actor_label:people.find(p=>p.id===r.imported_by)?.full_name||'Integrante da equipe'})));
   data.bell();
   window.DCS_TEAMS?.load().catch(e=>console.warn('[DCS HUB] Não foi possível carregar a equipe:',e));
   window.DCS_REQUESTERS?.load().catch(e=>console.warn('[DCS HUB] Não foi possível carregar solicitantes:',e));
@@ -103,7 +105,7 @@ export const backend={
     window.DCS_REQUESTERS?.reset();
     window.DCS_MEETINGS?.reset();
     window.DCS_GABINETE?.reset();
-    window.DCS_MATERIALS?.reset();
+    window.DCS_MATERIALS?.reset();window.DCS_CALENDAR_MANUAL?.reset();
     const box=$('#rl')?.closest('label');if(box)box.hidden=true;
     const note=$('.lc .pl');if(note)note.textContent='Acesso real via Supabase Auth. Apenas contas ativadas pela administração podem entrar. Não há seleção de perfil de demonstração.';
     const mail=$('#lf input[type=email]');if(mail)mail.required=true;
@@ -125,7 +127,7 @@ export const backend={
       await loadAll();enterApp();
     }catch(e){await supabase.auth.signOut();profile=null;alertError(e);}
   },
-  async logout(){if(notificationPoll)clearInterval(notificationPoll);notificationPoll=null;check(await supabase.auth.signOut());profile=null;profiles=[];labelById=new Map();idByLabel=new Map();window.DCS_KNOWLEDGE?.reset();window.DCS_VENUES?.reset();window.DCS_REQUESTERS?.reset();window.DCS_MEETINGS?.reset();window.DCS_GABINETE?.reset();window.DCS_MATERIALS?.reset();window.DCS_TASKS?.reset();bridge().E.splice(0);bridge().T.splice(0);bridge().N.splice(0);showLogin();bridge().toast('Sessão encerrada');},
+  async logout(){if(notificationPoll)clearInterval(notificationPoll);notificationPoll=null;check(await supabase.auth.signOut());profile=null;profiles=[];labelById=new Map();idByLabel=new Map();window.DCS_KNOWLEDGE?.reset();window.DCS_VENUES?.reset();window.DCS_REQUESTERS?.reset();window.DCS_MEETINGS?.reset();window.DCS_GABINETE?.reset();window.DCS_MATERIALS?.reset();window.DCS_CALENDAR_MANUAL?.reset();window.DCS_TASKS?.reset();bridge().E.splice(0);bridge().T.splice(0);bridge().N.splice(0);showLogin();bridge().toast('Sessão encerrada');},
   async reload(){await loadAll();bridge().refresh();},
   async createEvent(form){
     ensureUser();
@@ -319,6 +321,20 @@ export const backend={
     if(!Array.isArray(ids)||ids.length<1||ids.length>99)throw Error('Lista da mesa inválida');
     return check(await supabase.rpc('dcs_reorder_event_mesa',{
       p_event:eventId,p_participant_ids:ids,p_expected:expected
+    }));
+  },
+  async listCalendarImports(){
+    ensureUser();
+    const rows=check(await supabase.from('event_calendar_imports')
+      .select('event_id,imported_at,imported_by,calendar_label,snapshot'));
+    return rows.map(r=>({...r,actor_label:profiles.find(p=>p.id===r.imported_by)?.full_name||'Integrante da equipe'}));
+  },
+  async setCalendarManualImport(eventId,imported,label,expected){
+    ensureUser();
+    if(profile.role==='reader')throw new Error('Somente servidores podem registrar importações');
+    return check(await supabase.rpc('dcs_set_calendar_manual_import',{
+      p_event:eventId,p_imported:!!imported,p_calendar_label:String(label||'').trim(),
+      p_expected:expected
     }));
   },
   async listAuthorities(){

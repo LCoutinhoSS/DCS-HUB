@@ -63,6 +63,8 @@ export function describeHistory(row) {
     case 'briefing_answer_saved':return `Resposta do gabinete atualizada (${details.question_key||'pergunta'})`;
     case 'event_participant_updated':return 'Lista de pessoas e mesa atualizada';
     case 'mesa_reordered':return 'Ordem da mesa reorganizada pelo Cerimonial';
+    case 'calendar_manual_import_recorded':return 'Importação manual no Outlook declarada pela equipe';
+    case 'calendar_manual_import_cleared':return 'Registro de importação manual no Outlook desfeito';
     case 'meeting_created':return `Reunião preparada: ${details.title||''}`;
     case 'meeting_updated':return `Reunião atualizada: ${details.title||''}`;
     case 'task_created':return `Tarefa criada: ${details.title||''}`;
