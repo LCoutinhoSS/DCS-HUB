@@ -1,6 +1,6 @@
 # DCS HUB + Autoridades SP — Instância compartilhada de Supabase
 
-**Atualizado em 18/11/2026.** O usuário autorizou aproveitar o banco já existente. O projeto Supabase conectado é `BUSCA AUTORIDADE`; nesta instância, foram aplicadas, com sucesso, as sete migrações DCS HUB (`dcs_hub_001_core` a `dcs_hub_007_shared_project_onboarding`).
+**Atualizado em 18/11/2026.** O usuário autorizou aproveitar o banco já existente. O projeto Supabase conectado é `BUSCA AUTORIDADE`; nesta instância, foram aplicadas, com sucesso, as oito migrações DCS HUB (`dcs_hub_001_core` a `dcs_hub_008_authorities_secure_bridge`).
 
 ## Arquitetura realmente implementada
 
@@ -24,6 +24,16 @@ Os nomes das tabelas DCS são exclusivos e verificados no banco. **Não** criamo
 - As sete migrações constam no histórico do Supabase e as tabelas DCS verificadas estão com RLS habilitada.
 
 A consulta a deputados reflete a tabela de origem sem cópia: atualizações no Autoridades SP aparecem na lista DCS após recarregar. Os eventos guardam ID de origem e **snapshot do nome** utilizado no momento do pedido, para não perder o histórico ao mudar um nome.
+
+## Correção de permissões e integração — 19/11/2026
+
+**Erro encontrado:** `permission denied for table autoridades` na página de homologação. A tabela original `public.autoridades` tem uma política RLS de leitura, mas o papel `authenticated` não tinha `GRANT SELECT`. Essa arquitetura é intencional para proteger os campos restritos do Autoridades SP.
+
+**Solução aplicada:** migração `202611190008_dcs_authorities_bridge.sql`, que cria a RPC `public.dcs_list_authorities(p_kind)`. A função exige `auth.uid()` e `public.is_member()` (perfil DCS ativo), invoca a consulta existente `consultar_autoridades_seguras()` para respeitar os campos e alterações manuais autorizados pelo Autoridades SP e devolve somente ID, nome, categoria, cargo, órgão, município, partido, e-mail, status de verificação e data de atualização. Não retorna telefones restritos ou observações internas.
+
+**Uso:** tanto a página **Autoridades SP** quanto o campo **Solicitante** dos eventos usam a mesma RPC: sem `p_kind` traz todas as autoridades; com `p_kind='deputado_estadual'` traz os deputados. A tabela `autoridades` permanece sem permissão SQL de leitura direta para `authenticated` e `anon`; a RPC só pode ser executada pelo papel `authenticated` e verifica o perfil DCS internamente.
+
+**Testes no banco:** perfil DCS ativo → 150 autoridades, 94 deputados; filtro de deputados → 94; usuário sem perfil DCS → zero; execução RPC por `anon` → negada. A tabela original segue com 150 registros e 6 perfis do Autoridades SP.
 
 ## Onde entrar
 
