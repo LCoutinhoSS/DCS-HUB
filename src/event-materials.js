@@ -17,7 +17,7 @@ function reset(){state.clear();inflight.clear();editor=null;busy=false;}
 function isEditor(){return B()?.S?.role!=='Leitor';}
 function canApprove(){return ['Administrador','Gestor','Servidor Cerimonial'].includes(B()?.S?.role);}
 function eventFor(id){return B()?.E?.find(e=>e.id===id);}
-function canOperate(ev){return isEditor()&&!!ev&&!['Cancelado','Concluído'].includes(ev.st);}
+function canOperate(ev){return isEditor()&&!!ev&&ev.st!=='Cancelado';}
 const fmt=d=>{try{return new Date(d).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});}catch(_){return 'A confirmar';}};
 function latestSourceTime(ev){
  const data=window.DCS_GABINETE?.getData?.(ev.id)||{answers:[],participants:[]};
@@ -119,7 +119,7 @@ function editView(ev){
  '<section class="material-review"><h3>Conferência do Cerimonial</h3>'+
  '<p>Somente Servidor Cerimonial, Gestor ou Administrador pode aprovar a versão para exportação. Se o briefing for alterado, o documento precisa passar por nova revisão.</p>'+
  (rec?'<p><b>Versão '+rec.version+'</b> · '+esc(rec.approved_at?'Aprovação anterior: '+fmt(rec.approved_at):'Ainda sem aprovação')+'</p>':'<p>Salve um rascunho para iniciar a conferência.</p>')+
- (rec&&canApprove()&&canOperate(ev)&&!approved?
+ (rec&&canApprove()&&canOperate(ev)&&!approved&&!warning?
   '<label class="material-confirm"><input type="checkbox" id="material-review-check"> Conferi os dados, as pendências, a composição da mesa e autorizo a exportação desta versão como documento revisado.</label>'+
   '<button class="btn pri" data-material-approve="'+esc(kind)+'" type="button">Aprovar versão '+rec.version+'</button>':'')+
  (rec&&approved?'<p class="materials-approved-note">Esta versão está aprovada. Se editar ou regerar, a aprovação precisará ser refeita.</p>':'')+
@@ -200,7 +200,7 @@ async function exportDoc(evId,kind){
  if(!rec||status(rec,ev).key!=='approved')throw Error('A versão precisa estar aprovada e atualizada');
  // Não usa o rascunho local: sempre consulta a versão aprovada e atual no backend.
  const blocks=real()?await window.DCS_BACKEND.exportEventMaterial(evId,kind):rec.blocks;
- const file=window.DCS_DOCX.create(blocks,{status:'approved'});
+ const file=window.DCS_DOCX.create(blocks,{status:'approved',version:rec.version,reviewedAt:rec.approved_at});
  window.DCS_DOCX.download(file,window.DCS_DOCX.filename(kind,ev.t));
  B().toast('Documento Word editável gerado');
 }
