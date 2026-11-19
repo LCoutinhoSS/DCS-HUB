@@ -196,12 +196,28 @@ function renderParticipants(ev){
  const waiting=info(ev.id);if(waiting)return waiting;
  const people=(current(ev.id).participants||[]).filter(p=>p.active!==false).sort((a,b)=>{const pa=a.participation==='mesa'?(a.protocol_order||999):1000,pb=b.participation==='mesa'?(b.protocol_order||999):1000;return pa-pb||a.full_name.localeCompare(b.full_name,'pt-BR');});
  const counters=Object.entries(roles).map(([k,v])=>[k,v,people.filter(p=>p.participation===k).length]).filter(x=>x[2]);
+ const mesa=people.filter(p=>p.participation==='mesa'&&p.invitation_status!=='declined');
+ const orderValues=mesa.map(p=>p.protocol_order).filter(Boolean);
+ const repeated=orderValues.filter((n,i)=>orderValues.indexOf(n)!==i);
+ const unresolved=mesa.filter(p=>p.invitation_status!=='confirmed'||!p.protocol_order||!p.honorific?.trim()||!p.role_title?.trim()).length+repeated.length;
+ const orderHtml='<section class="gab-protocol-panel"><div class="gab-protocol-head"><div><h3>Ordem de mesa para nominatas e prismas</h3>'+
+ '<p>A ordem é definida pelo Cerimonial, não automaticamente pelo cadastro de autoridades.</p></div>'+
+ '<span class="gab-status '+(unresolved?'gab-status-to_confirm':'gab-status-confirmed')+'">'+
+ (unresolved?unresolved+' ajuste(s) pendente(s)':'Mesa pronta para conferência')+'</span></div>'+
+ (mesa.length?'<div class="gab-protocol-list">'+mesa.map(p=>'<div class="gab-protocol-row">'+
+ '<span class="gab-protocol-num">'+esc(p.protocol_order||'—')+'</span><div><b>'+esc(p.full_name)+'</b>'+
+ '<small>'+esc([p.honorific,p.role_title].filter(Boolean).join(' · ')||'Tratamento/cargo a confirmar')+
+ ' · '+esc(p.invitation_status==='confirmed'?'Presença confirmada':'Presença a confirmar')+'</small></div>'+
+ (editable(ev)?'<button class="btn" data-person-edit="'+esc(p.id)+'" data-person-event="'+esc(ev.id)+'">Ajustar</button>':'')+
+ '</div>').join('')+'</div>':'<p class="gab-hint">Nenhuma pessoa foi indicada para a mesa.</p>')+
+ '</section>';
+
  return '<div class="gab-shell"><div class="gab-head"><div><div class="hub-kicker">Pessoas vinculadas ao evento</div><h2>Participantes e composição da mesa</h2>'+
  '<p>Registre nomes e cargos informados pelo gabinete. Uma pessoa pode ser convidada mesmo sem constar no Diretório de Autoridades SP.</p></div>'+
  '<div class="hub-actions"><button class="btn" data-gab-refresh="'+esc(ev.id)+'">Atualizar dados</button>'+
  (editable(ev)?'<button class="btn pri" data-person-add="'+esc(ev.id)+'">+ Adicionar pessoa</button>':'')+'</div></div>'+
  '<div class="hub-note">O <b>Diretório de autoridades</b> serve para consultar ou vincular registros conhecidos. Aqui é onde você informa quem ocupará a mesa, falará, será homenageado ou participará da comitiva. A situação de presença é registrada individualmente.</div>'+
- '<div class="gab-participant-summary">'+(counters.length?counters.map(x=>'<span>'+esc(x[1])+': <b>'+x[2]+'</b></span>').join(''):'<span>Ainda não há participantes cadastrados.</span>')+'</div>'+
+ orderHtml+'<div class="gab-participant-summary">'+(counters.length?counters.map(x=>'<span>'+esc(x[1])+': <b>'+x[2]+'</b></span>').join(''):'<span>Ainda não há participantes cadastrados.</span>')+'</div>'+
  (people.length?'<div class="gab-people">'+people.map(p=>
   '<article class="gab-person"><div><span class="gab-status gab-status-'+esc(p.invitation_status)+'">'+esc(presenceLabel[p.invitation_status]||p.invitation_status)+'</span>'+
   '<h3>'+esc(p.full_name)+'</h3><p>'+esc([p.honorific,p.role_title,p.organization].filter(Boolean).join(' · ')||'Cargo a confirmar')+'</p>'+
