@@ -9,7 +9,7 @@ Sistema web para agenda, eventos, checklist operacional, gestão de tarefas, equ
 
 ## Status — 19 de novembro de 2026
 
-As migrações 001–013 foram **aplicadas e verificadas** no projeto Supabase existente `BUSCA AUTORIDADE`. O Autoridades SP preservou 150 registros de autoridades e 6 perfis; o HUB começou com 20 espaços ALESP e **nenhum evento criado automaticamente**. As tabelas DCS usam RLS.
+As migrações 001–015 foram **aplicadas e verificadas** no projeto Supabase existente `BUSCA AUTORIDADE`. O Autoridades SP preservou 150 registros de autoridades e 6 perfis; o HUB começou com 20 espaços ALESP e **nenhum evento criado automaticamente**. As tabelas DCS usam RLS.
 
 O cadastro de **94 deputados estaduais** da aplicação Autoridades SP é consultado pela função restrita `dcs_list_authorities`, usada também pela área **Autoridades SP**. Ela respeita as regras de mascaramento existentes e não duplica nem edita a tabela original. Novos solicitantes (órgãos, setores, outros) são armazenados em `public.event_requesters`. O evento registra o vínculo à fonte e o nome de referência na data do cadastro.
 
@@ -17,6 +17,17 @@ O cadastro de **94 deputados estaduais** da aplicação Autoridades SP é consul
 
 
 **Correção de acesso — 19/11/2026:** no Autoridades SP, a tabela `public.autoridades` tem RLS de leitura, mas não concede `SELECT` direto ao papel `authenticated`. Isso causava `permission denied for table autoridades` na homologação. A migração **008** instalou a função `dcs_list_authorities`, restrita a membros ativos do HUB, que reutiliza `consultar_autoridades_seguras()` e devolve somente campos públicos/autorizados. A UI de **Autoridades SP** e o seletor de **Solicitantes** passaram a usar essa função. Os testes com perfil ativo retornaram 150 registros (94 deputados); sem perfil DCS, zero. Nenhuma permissão da tabela original foi modificada.
+
+## Atualização 0.14 — Nominatas Word e prismas PowerPoint
+
+- **Pessoas e mesa** agora tem tratamento/título, ordem protocolar manual e indicação de quem a pessoa representa. O quadro **Ordem da mesa** reúne essas informações e sinaliza o que falta confirmar.
+- **Nominata Word (.docx)** gerada com nomes, cargos, tratamentos, saudações e representações. A precedência não é inventada pelo sistema.
+- **Prismas PowerPoint (.pptx)** editáveis: uma folha vertical por pessoa confirmada da mesa, com duas faces e a superior invertida para dobra, inspirada no modelo recebido.
+- **Aprovação obrigatória:** somente Cerimonial/Gestor/Administrador valida a versão. A API bloqueia mesa incompleta, ordens repetidas, cargo/tratamento ausente, versão antiga e prismas divergentes da lista confirmada.
+- Os **arquivos originais e o brasão institucional não foram publicados** no GitHub público; os formatos precisam de validação visual de impressão com o Cerimonial.
+- Migrações **014 e 015 aplicadas**, mantendo o Autoridades SP inalterado. Testes SQL são transacionais com rollback, sem deixar dados fictícios.
+
+Leia o [manual de nominatas e prismas 0.14](docs/NOMINATAS_PRISMAS_014.md).
 
 ## Atualização 0.13 — Roteiro e Resumo da Reunião em Word
 
@@ -28,7 +39,7 @@ O cadastro de **94 deputados estaduais** da aplicação Autoridades SP é consul
 - A exportação é produzida sem CDN e sem enviar conteúdos a conversores externos. **Não publica os modelos originais da ALESP** e não representa assinatura digital.
 - Migrações **012 e 013** já aplicadas; os testes de permissões e revisão foram realizados em transações revertidas, preservando Autoridades SP e eventos existentes.
 
-O gerador de **nominatas e prismas** fica para a próxima etapa. Integração com SharePoint e calendário Outlook/Teams ainda não foi ativada. Veja o [Guia do gerador Word (0.13)](docs/GERADOR_DOCUMENTOS_013.md).
+Nominatas em Word e prismas em PowerPoint estão disponíveis na versão 0.14, com conferência obrigatória. Integração com SharePoint e calendário Outlook/Teams ainda não foi ativada. Veja o [Guia do gerador Word (0.13)](docs/GERADOR_DOCUMENTOS_013.md).
 
 ## Atualização 0.12 — Visão rápida e teste com perfil Servidor
 
@@ -105,6 +116,7 @@ A seleção de um espaço da ALESP **não é uma reserva** e a confirmação de 
 - `supabase/migrations/202611190010_task_collaboration.sql` — **já aplicada**; aceite, comentários e lembrete diário protegido.
 - `supabase/migrations/202611190011_gabinete_briefing_participants.sql` — **já aplicada**; registro compartilhado das respostas do gabinete e composição da mesa.
 - `supabase/migrations/202611190012_event_materials_review.sql` e `202611190013_material_blocks_validation.sql` — **já aplicadas**; rascunhos Word, aprovação e validação do documento.
+- `supabase/migrations/202611190014_protocol_materials.sql` e `202611190015_prismas_consistency.sql` — **já aplicadas**; ordem de mesa e validação dos prismas por participante.
 - `.github/workflows/build-homologacao.yml` — compila o login real com **chave publicável**, publica exclusivamente o caminho `/homologacao/`; o site raiz continua sendo demonstração.
 - `.github/workflows/ci.yml` — testes e build.
 
@@ -115,6 +127,7 @@ O projeto usa o **mesmo Supabase e Auth** do Autoridades SP, com isolamento **l�
 Os Supabase Advisors identificaram avisos anteriores de funções `SECURITY DEFINER` públicas no Autoridades SP e outros pontos de segurança. Eles precisam ser revisados em conjunto, sem mudanças bruscas que interrompam a aplicação existente. Antes de dados institucionais, validar também políticas de retenção, LGPD, auditoria, aprovação TI e alternativas de SSO/MFA.
 
 **Leia também:**
+- [Nominatas e prismas (0.14)](docs/NOMINATAS_PRISMAS_014.md)
 - [Gerador Word, revisão Cerimonial e exportação (0.13)](docs/GERADOR_DOCUMENTOS_013.md)
 - [Visão rápida e perfil Servidor (0.12)](docs/VISAO_RAPIDA_012.md)
 - [Ficha do Gabinete, pessoas e mesa (0.11)](docs/GABINETE_011.md)
