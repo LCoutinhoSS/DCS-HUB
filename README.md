@@ -9,7 +9,7 @@ Sistema web para agenda, eventos, checklist operacional, gestão de tarefas, equ
 
 ## Status — 19 de novembro de 2026
 
-As migrações 001–011 foram **aplicadas e verificadas** no projeto Supabase existente `BUSCA AUTORIDADE`. O Autoridades SP preservou 150 registros de autoridades e 6 perfis; o HUB começou com 20 espaços ALESP e **nenhum evento criado automaticamente**. As tabelas DCS usam RLS.
+As migrações 001–013 foram **aplicadas e verificadas** no projeto Supabase existente `BUSCA AUTORIDADE`. O Autoridades SP preservou 150 registros de autoridades e 6 perfis; o HUB começou com 20 espaços ALESP e **nenhum evento criado automaticamente**. As tabelas DCS usam RLS.
 
 O cadastro de **94 deputados estaduais** da aplicação Autoridades SP é consultado pela função restrita `dcs_list_authorities`, usada também pela área **Autoridades SP**. Ela respeita as regras de mascaramento existentes e não duplica nem edita a tabela original. Novos solicitantes (órgãos, setores, outros) são armazenados em `public.event_requesters`. O evento registra o vínculo à fonte e o nome de referência na data do cadastro.
 
@@ -18,12 +18,24 @@ O cadastro de **94 deputados estaduais** da aplicação Autoridades SP é consul
 
 **Correção de acesso — 19/11/2026:** no Autoridades SP, a tabela `public.autoridades` tem RLS de leitura, mas não concede `SELECT` direto ao papel `authenticated`. Isso causava `permission denied for table autoridades` na homologação. A migração **008** instalou a função `dcs_list_authorities`, restrita a membros ativos do HUB, que reutiliza `consultar_autoridades_seguras()` e devolve somente campos públicos/autorizados. A UI de **Autoridades SP** e o seletor de **Solicitantes** passaram a usar essa função. Os testes com perfil ativo retornaram 150 registros (94 deputados); sem perfil DCS, zero. Nenhuma permissão da tabela original foi modificada.
 
+## Atualização 0.13 — Roteiro e Resumo da Reunião em Word
+
+- Na aba **Materiais para impressão** do evento, o HUB agora prepara dois documentos a partir dos dados: **Roteiro** (sequência da cerimônia) e **Resumo da reunião** (decisões, pendências e providências).
+- São **minutas editáveis por trecho**. O editor pode corrigir, adicionar, remover ou mover trechos e salvar uma versão de rascunho no banco.
+- **Revisão controlada:** apenas Servidor Cerimonial, Gestor ou Administrador autoriza a exportação. O HUB registra identidade, data e versão; cada novo rascunho exige nova revisão.
+- **Word (.docx) editável:** gerado no navegador apenas da versão aprovada pelo servidor. Alterações no evento, briefing, participantes ou reuniões depois da revisão exigem nova aprovação.
+- Os horários intermediários, a mesa e a presença de autoridades **não são inventados**: quando faltam informações, o documento mostra **A CONFIRMAR**.
+- A exportação é produzida sem CDN e sem enviar conteúdos a conversores externos. **Não publica os modelos originais da ALESP** e não representa assinatura digital.
+- Migrações **012 e 013** já aplicadas; os testes de permissões e revisão foram realizados em transações revertidas, preservando Autoridades SP e eventos existentes.
+
+O gerador de **nominatas e prismas** fica para a próxima etapa. Integração com SharePoint e calendário Outlook/Teams ainda não foi ativada. Veja o [Guia do gerador Word (0.13)](docs/GERADOR_DOCUMENTOS_013.md).
+
 ## Atualização 0.12 — Visão rápida e teste com perfil Servidor
 
 - A primeira aba de cada evento agora é **Visão rápida**: solicitante, data/local, decisões confirmadas, pendências para retorno do gabinete, mesa/homenageados, reuniões e tarefas com prazo.
 - Os resumos são calculados das respostas e participantes existentes. **Sem resposta não significa confirmado**: o HUB diferencia informação registrada, aguardando confirmação e ausente.
 - Acesso **Copiar resumo** para compartilhar a síntese e **Atualizar** para consultar respostas gravadas por outras contas.
-- Os cinco documentos fornecidos (dois roteiros, resumo de reunião, modelo de nominatas e modelo de prismas) foram analisados como fluxos; **não foram publicados no GitHub**. A visão rápida indica onde consultar seus dados de origem; a geração dos arquivos editáveis permanece futura.
+- Os cinco documentos fornecidos (dois roteiros, resumo de reunião, modelo de nominatas e modelo de prismas) foram analisados como fluxos; **não foram publicados no GitHub**. A visão rápida indica onde consultar seus dados de origem; a geração de Roteiro e Resumo da Reunião está disponível na versão 0.13; nominatas e prismas ainda são futuros.
 - **Acesso demonstrativo de Servidor DCS** na demonstração pública: `usuario@demo.dcs-hub.invalid` · `DCSdemo2026!`. Fictício, sem banco real. Homologação real só com convite no Supabase Auth e ativação administrativa.
 - Mantidas as tabelas atuais sem nova migração ou exclusão dos dados existentes.
 
@@ -92,6 +104,7 @@ A seleção de um espaço da ALESP **não é uma reserva** e a confirmação de 
 - `supabase/migrations/202611190009_collaboration_meetings_tasks.sql` — **já aplicada**; reuniões e execução segura de tarefas/checklist.
 - `supabase/migrations/202611190010_task_collaboration.sql` — **já aplicada**; aceite, comentários e lembrete diário protegido.
 - `supabase/migrations/202611190011_gabinete_briefing_participants.sql` — **já aplicada**; registro compartilhado das respostas do gabinete e composição da mesa.
+- `supabase/migrations/202611190012_event_materials_review.sql` e `202611190013_material_blocks_validation.sql` — **já aplicadas**; rascunhos Word, aprovação e validação do documento.
 - `.github/workflows/build-homologacao.yml` — compila o login real com **chave publicável**, publica exclusivamente o caminho `/homologacao/`; o site raiz continua sendo demonstração.
 - `.github/workflows/ci.yml` — testes e build.
 
@@ -102,6 +115,7 @@ O projeto usa o **mesmo Supabase e Auth** do Autoridades SP, com isolamento **l�
 Os Supabase Advisors identificaram avisos anteriores de funções `SECURITY DEFINER` públicas no Autoridades SP e outros pontos de segurança. Eles precisam ser revisados em conjunto, sem mudanças bruscas que interrompam a aplicação existente. Antes de dados institucionais, validar também políticas de retenção, LGPD, auditoria, aprovação TI e alternativas de SSO/MFA.
 
 **Leia também:**
+- [Gerador Word, revisão Cerimonial e exportação (0.13)](docs/GERADOR_DOCUMENTOS_013.md)
 - [Visão rápida e perfil Servidor (0.12)](docs/VISAO_RAPIDA_012.md)
 - [Ficha do Gabinete, pessoas e mesa (0.11)](docs/GABINETE_011.md)
 - [Aceite, comentários e lembretes (0.10)](docs/COLABORACAO_10.md)
