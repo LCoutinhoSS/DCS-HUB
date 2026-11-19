@@ -60,6 +60,8 @@ export function describeHistory(row) {
     case 'event_status':return `Status alterado: ${EVENT_STATUS_LABEL[details.from]||details.from} → ${EVENT_STATUS_LABEL[details.to]||details.to}`;
     case 'event_rescheduled':return 'Data ou horário reagendado';
     case 'reschedule_reason':return `Motivo do reagendamento: ${details.reason||'não informado'}`;
+    case 'briefing_answer_saved':return `Resposta do gabinete atualizada (${details.question_key||'pergunta'})`;
+    case 'event_participant_updated':return 'Lista de pessoas e mesa atualizada';
     case 'meeting_created':return `Reunião preparada: ${details.title||''}`;
     case 'meeting_updated':return `Reunião atualizada: ${details.title||''}`;
     case 'task_created':return `Tarefa criada: ${details.title||''}`;
