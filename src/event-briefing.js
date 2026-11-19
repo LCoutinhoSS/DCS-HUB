@@ -113,10 +113,38 @@ function current(id){return data.get(id)||{answers:[],participants:[]};}
 function editable(ev){return B()?.S?.role!=='Leitor'&&!['Concluído','Cancelado'].includes(ev.st);}
 function refreshView(id){
  const state=B()?.S;
- if(state?.route==='eventos'&&state.ev===id&&['gabinete','participantes'].includes(state.tb))B().rr();
+ if(state?.route==='eventos'&&state.ev===id&&['geral','gabinete','participantes'].includes(state.tb))B().rr();
 }
 async function ensure(id,force=false){
- if(!live()){if(!data.has(id))data.set(id,{answers:[],participants:[]});return current(id);}
+ if(!live()){
+  if(!data.has(id)){
+   const ev=B()?.E?.find(e=>e.id===id);
+   const demo=(ev?.kind==='sessao_solene'||(!ev?.kind&&ev?.c==='cer'&&String(ev?.t||'').includes('Sessão Solene')));
+   if(demo){
+    const prepared=[
+     ['mesa','Deputado proponente e convidados institucionais: nomes ainda em confirmação','to_confirm'],
+     ['publico','Previsão inicial de 150 pessoas, distribuídas entre plenário e galeria','confirmed'],
+     ['hino','Execução do Hino Nacional: apresentação solicitada, aguardando retorno','to_confirm'],
+     ['receptivo','Equipe do Cerimonial com apoio do gabinete','confirmed'],
+     ['apresentacoes','Vídeo institucional curto, aguardando envio para avaliação','to_confirm'],
+     ['honrarias','Entrega de homenagem institucional; detalhes a confirmar','to_confirm'],
+     ['buffet','Recepção com café; local e horário a confirmar','pending']
+    ];
+    const answers=prepared.map(([question_key,answer,status])=>({event_id:id,question_key,answer,status,
+      updated_by:'demo-cer',updated_at:new Date(Date.now()-3600000).toISOString()}));
+    const participants=[
+     {id:'demo-mesa-'+id,event_id:id,full_name:'Convidada Exemplo',role_title:'Representante institucional',
+      organization:'Organização fictícia',participation:'mesa',invitation_status:'to_confirm',notes:'',
+      active:true,authority_id:null},
+     {id:'demo-homen-'+id,event_id:id,full_name:'Homenageado Exemplo',role_title:'Homenageado',
+      organization:'Demonstração',participation:'homenageado',invitation_status:'confirmed',notes:'',
+      active:true,authority_id:null}
+    ];
+    data.set(id,{answers,participants});
+   }else data.set(id,{answers:[],participants:[]});
+  }
+  return current(id);
+ }
  if(data.has(id)&&!force)return current(id);
  if(pending.has(id))return pending.get(id);
  const job=window.DCS_BACKEND.getEventBriefingData(id).then(rows=>{
@@ -274,5 +302,5 @@ document.addEventListener('click',e=>{
   }
  }
 });
-window.DCS_GABINETE={renderBriefing,renderParticipants,questions,ensure,reset};
+window.DCS_GABINETE={renderBriefing,renderParticipants,questions,ensure,getData(id){if(!live()&&!data.has(id))ensure(id);return data.get(id)||null;},reset};
 })();
