@@ -41,3 +41,26 @@ test('API, interface e banco têm validação otimista e trilha de alterações'
  assert.match(sql,/mesa_reordered/);
  assert.match(sql,/grant execute on function/);
 });
+
+test('quadro visual renderiza posição e ações apenas a usuários editores',()=>{
+ for(const role of ['Servidor Cerimonial','Leitor']){
+  const rows=[
+   {id:'p1',full_name:'Pessoa A',role_title:'Deputada',honorific:'Senhora',participation:'mesa',protocol_order:2,invitation_status:'confirmed',active:true,updated_at:'2026-11-19T12:00:00Z'},
+   {id:'p2',full_name:'Pessoa B',role_title:'Secretária',honorific:'Senhora',participation:'mesa',protocol_order:1,invitation_status:'confirmed',active:true,updated_at:'2026-11-19T12:00:00Z'}
+  ];
+  const listeners={},bridge={S:{role},E:[{id:'evt',st:'Em andamento'}],rr(){}};
+  const context={window:{
+   DCS_BRIDGE:bridge,
+   DCS_GABINETE:{
+    renderParticipants:()=>'<main><section class="gab-protocol-panel"><p>Antigo</p></section></main>',
+    getData:()=>({participants:rows})
+   }
+  },document:{addEventListener:(event,fn)=>{listeners[event]=fn;}}};
+  vm.runInNewContext(read('../src/mesa-reorder.js'),context);
+  const html=context.window.DCS_GABINETE.renderParticipants({id:'evt',st:'Em andamento'});
+  assert.ok(html.indexOf('Pessoa B')<html.indexOf('Pessoa A'));
+  assert.match(html,/Ordem da mesa para nominatas e prismas/);
+  if(role==='Leitor')assert.doesNotMatch(html,/data-mesa-dir=/);
+  else assert.match(html,/data-mesa-dir="down"/);
+ }
+});
