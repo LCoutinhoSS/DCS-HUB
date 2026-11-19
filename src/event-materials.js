@@ -8,7 +8,7 @@ const B=()=>window.DCS_BRIDGE;
 const $=q=>document.querySelector(q);
 const real=()=>!!window.DCS_BACKEND?.enabled;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const kinds={roteiro:'Roteiro do evento',resumo_reuniao:'Resumo da reunião'};
+const kinds={roteiro:'Roteiro do evento',resumo_reuniao:'Resumo da reunião',nominata:'Nominata e saudações',prismas:'Prismas da mesa (PowerPoint)'};
 const blockTypes={title:'Título',subtitle:'Subtítulo',heading:'Seção',text:'Parágrafo',bullet:'Item de lista',time:'Etapa/horário',meta:'Informação',note:'Observação'};
 const state=new Map(),inflight=new Map();
 let editor=null,busy=false;
@@ -65,11 +65,11 @@ function cards(ev){
  return '<div class="materials-grid">'+Object.entries(kinds).map(([kind,label])=>{
   const rec=get(ev.id,kind),s=status(rec,ev),isRoute=kind==='roteiro';
   return '<article class="materials-card"><div class="materials-card-top">'+
-   '<span class="materials-symbol">'+(isRoute?'01':'02')+'</span>'+
+   '<span class="materials-symbol">'+({roteiro:'01',resumo_reuniao:'02',nominata:'03',prismas:'04'}[kind]||'•')+'</span>'+
    '<span class="materials-status materials-'+s.key+'">'+esc(s.text)+'</span></div>'+
    '<h3>'+esc(label)+'</h3>'+
    '<p>'+(isRoute?'Sequência de abertura, falas, homenagens e encerramento. Horários não informados ficam a confirmar.':
-     'Decisões alinhadas com o gabinete, pendências, convidados e responsáveis pelas providências.')+'</p>'+
+     (kind==='resumo_reuniao'?'Decisões alinhadas com o gabinete, pendências e responsáveis.':kind==='nominata'?'Nomes, cargos, saudações e representações conferidas com a mesa.':'Dois lados para dobrar, somente integrantes confirmados da mesa, em PowerPoint editável.'))+'</p>'+
    (rec?'<small>Versão '+rec.version+' · salvo '+esc(fmt(rec.saved_at))+'</small>':
     '<small>Sem documento criado para este evento.</small>')+
    (rec||canOperate(ev)?'<button class="btn '+(rec?'':'pri')+'" data-material-open="'+esc(kind)+'"> '+
@@ -94,7 +94,7 @@ function blockEditor(block,i,canEdit){
 }
 function editView(ev){
  const kind=editor?.kind,rec=get(ev.id,kind);
- const allowed=canOperate(ev);
+ const allowed=canOperate(ev),isPrism=kind==='prismas';
  const approved=status(rec,ev).key==='approved';
  const warning=status(rec,ev).key==='stale';
  const visibleBlocks=editor?.blocks||[];
@@ -103,18 +103,18 @@ function editView(ev){
  '<div class="hub-actions"><span class="materials-status materials-'+status(rec,ev).key+'">'+esc(status(rec,ev).text)+'</span>'+
   (rec?'<span class="material-version">Versão '+rec.version+'</span>':'')+'</div></div>'+
  '<div class="material-doc-title"><span class="hub-kicker">Documento editável · Conferência</span><h2>'+esc(kinds[kind])+'</h2>'+
- '<p>Revise a minuta com as informações do evento. O texto continua editável; nenhum arquivo é publicado automaticamente.</p></div>'+
+ '<p>'+(isPrism?'Corrija tratamentos, cargos e ordens na ficha Pessoas e mesa. Regenere o documento antes de salvar. O PowerPoint exportado será editável.':'Revise a minuta com as informações do evento. O texto continua editável; nenhum arquivo é publicado automaticamente.')+'</p></div>'+
  (warning?'<div class="materials-warning">A Ficha do Gabinete, os participantes ou o evento mudaram após a aprovação. Gere ou revise e salve uma nova versão para obter outra autorização.</div>':'')+
  '<div class="material-actionbar">'+
- (allowed?'<button class="btn" data-material-generate="'+esc(kind)+'" type="button">Regerar a partir do HUB</button>':'')+
+ (allowed?'<button class="btn" data-material-generate="'+esc(kind)+'" type="button">Regerar a partir do HUB</button>':'')+(isPrism?'<button class="btn" data-material-people type="button">Conferir Pessoas e mesa</button>':'')+
  (allowed?'<button class="btn pri" data-material-save="'+esc(kind)+'" type="button">Salvar rascunho</button>':'')+
- (rec&&approved?'<button class="btn pri" data-material-export="'+esc(kind)+'" type="button">Baixar Word (.docx)</button>':'')+
+ (rec&&approved?'<button class="btn pri" data-material-export="'+esc(kind)+'" type="button">'+(isPrism?'Baixar PowerPoint (.pptx)':'Baixar Word (.docx)')+'</button>':'')+
  '</div>'+
  '<div class="material-paper"><div class="material-paper-kicker">DCS HUB · MINUTA DO CERIMONIAL</div>'+
  '<div class="material-paper-note">Informações preliminares permanecem como A CONFIRMAR. O usuário revisor responde pela conferência institucional.</div>'+
- '<div class="material-edit-list">'+(visibleBlocks.length?visibleBlocks.map((x,i)=>blockEditor(x,i,allowed)).join(''):'<p>Sem conteúdo. Clique em regerar.</p>')+'</div>'+
+ '<div class="material-edit-list">'+(visibleBlocks.length?visibleBlocks.map((x,i)=>blockEditor(x,i,allowed&&!isPrism)).join(''):'<p>Sem conteúdo. Clique em regerar.</p>')+'</div>'+
  '</div>'+
- (allowed?'<div class="material-actionbar"><button class="btn" data-material-add type="button">+ Adicionar trecho</button>'+
+ (allowed&&!isPrism?'<div class="material-actionbar"><button class="btn" data-material-add type="button">+ Adicionar trecho</button>'+
  '<button class="btn pri" data-material-save="'+esc(kind)+'" type="button">Salvar rascunho</button></div>':'')+
  '<section class="material-review"><h3>Conferência do Cerimonial</h3>'+
  '<p>Somente Servidor Cerimonial, Gestor ou Administrador pode aprovar a versão para exportação. Se o briefing for alterado, o documento precisa passar por nova revisão.</p>'+
@@ -158,7 +158,7 @@ async function start(evId,kind){
 }
 async function generate(evId,kind,first=false){
  const ev=eventFor(evId);if(!ev||!canOperate(ev))throw Error('Sem permissão para preparar materiais');
- if(!first&&editor?.blocks?.length&&!window.confirm('Substituir o texto em edição pelos dados atuais do HUB? Alterações ainda não salvas serão perdidas.'))return;
+ if(!first&&kind!=='prismas'&&editor?.blocks?.length&&!window.confirm('Substituir o texto em edição pelos dados atuais do HUB? Alterações ainda não salvas serão perdidas.'))return;
  const gab=await window.DCS_GABINETE.ensure(evId,true);
  if(real())await window.DCS_BACKEND.refreshMeetings();
  const meetings=window.DCS_MEETINGS?.eventMeetings?.(evId)||[];
@@ -171,7 +171,7 @@ async function generate(evId,kind,first=false){
 async function save(evId,kind){
  const ev=eventFor(evId);
  if(!canOperate(ev))throw Error('Sem permissão para salvar rascunho');
- const blocks=collect();if(blocks.length<2||blocks.length>140)throw Error('O documento precisa ter de 2 a 140 trechos');
+ const blocks=kind==='prismas'?editor.blocks.map(x=>({...x})):collect();if(blocks.length<2||blocks.length>140)throw Error('O documento precisa ter de 2 a 140 trechos');
  if(blocks.some(x=>!blockTypes[x.kind]||!x.text||x.text.length>2000))throw Error('Verifique os textos e categorias dos trechos');
  if(real())await window.DCS_BACKEND.saveEventMaterial(evId,kind,blocks);
  else{
@@ -189,6 +189,15 @@ async function approve(evId,kind){
  const ev=eventFor(evId),rec=get(evId,kind);
  if(!canApprove()||!canOperate(ev)||!rec)throw Error('Apenas Cerimonial ou gestão pode aprovar');
  if(stale(ev,rec,'saved_at'))throw Error('Dados do evento alterados depois do rascunho. Refaça a revisão');
+ if(editor?.eventId===evId&&editor.kind===kind&&JSON.stringify(collect())!==JSON.stringify(rec.blocks))throw Error('Há alterações não salvas. Salve antes de aprovar');
+ if(['nominata','prismas'].includes(kind)){
+  const data=await window.DCS_GABINETE.ensure(evId,true);
+  const mesa=window.DCS_MATERIAL_BUILDER.orderedMesa(data);
+  const confirmed=mesa.filter(p=>p.invitation_status==='confirmed');
+  if(!confirmed.length||mesa.some(p=>p.invitation_status!=='confirmed'||!p.protocol_order||!p.honorific?.trim()||!p.role_title?.trim())||
+     new Set(confirmed.map(p=>p.protocol_order)).size!==confirmed.length)
+   throw Error('Confirme a mesa e preencha tratamento, cargo e ordem sem duplicação em Pessoas e mesa');
+ }
  if(!$('#material-review-check')?.checked)throw Error('Confirme que revisou o conteúdo e as pendências');
  if(real())await window.DCS_BACKEND.approveEventMaterial(evId,kind,rec.version);
  else{rec.approved_version=rec.version;rec.approved_at=now();}
@@ -200,15 +209,19 @@ async function exportDoc(evId,kind){
  if(!rec||status(rec,ev).key!=='approved')throw Error('A versão precisa estar aprovada e atualizada');
  // Não usa o rascunho local: sempre consulta a versão aprovada e atual no backend.
  const blocks=real()?await window.DCS_BACKEND.exportEventMaterial(evId,kind):rec.blocks;
- const file=window.DCS_DOCX.create(blocks,{status:'approved',version:rec.version,reviewedAt:rec.approved_at});
- window.DCS_DOCX.download(file,window.DCS_DOCX.filename(kind,ev.t));
- B().toast('Documento Word editável gerado');
+ if(editor?.eventId===evId&&editor.kind===kind&&JSON.stringify(collect())!==JSON.stringify(rec.blocks))throw Error('Edições não salvas. Salve e aprove novamente');
+ const isPptx=kind==='prismas';
+ const file=isPptx?window.DCS_PRISMA_PPTX.create(blocks):window.DCS_DOCX.create(blocks,{status:'approved',version:rec.version,reviewedAt:rec.approved_at});
+ const name=window.DCS_DOCX.filename(isPptx?'roteiro':kind,ev.t).replace(/^Roteiro_/,isPptx?'Prismas_':'Roteiro_');
+ window.DCS_DOCX.download(file,isPptx?name.replace(/\.docx$/,'.pptx'):name);
+ B().toast(isPptx?'PowerPoint editável gerado':'Word editável gerado');
 }
 function act(action){if(busy)return;busy=true;
  Promise.resolve().then(action).catch(e=>B()?.toast('Documento: '+e.message))
  .finally(()=>{busy=false;});
 }
 document.addEventListener('click',e=>{
+ const goPeople=e.target.closest('[data-material-people]');if(goPeople){B().S.tb='participantes';B().rr();return;}
  const opening=e.target.closest('[data-material-open]');
  if(opening){const id=B()?.S.ev;act(()=>start(id,opening.dataset.materialOpen));return;}
  const back=e.target.closest('[data-material-back]');if(back){editor=null;rerender(B()?.S.ev);return;}
