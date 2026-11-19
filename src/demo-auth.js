@@ -4,6 +4,7 @@
 (function(){
 'use strict';
 const accounts=Object.freeze([
+ {email:'usuario@demo.dcs-hub.invalid',name:'Camila Andrade',role:'Servidor DCS',avatar:'CA'},
  {email:'admin@demo.dcs-hub.invalid',name:'Marina Souza',role:'Administrador',avatar:'MS'},
  {email:'gestor@demo.dcs-hub.invalid',name:'Rafael Teixeira',role:'Gestor',avatar:'RT'},
  {email:'dcs@demo.dcs-hub.invalid',name:'Camila Andrade',role:'Servidor DCS',avatar:'CA'},
@@ -86,7 +87,7 @@ function logout(){
  const login=$('#login');if(login)login.hidden=false;
  const pass=$('#lf input[type=password]');if(pass)pass.value='';
  clearError();
- const select=$('#rl');if(select){select.value='Administrador';fillAccount();}
+ const select=$('#rl');if(select){select.value='Servidor DCS';fillAccount();}
  const menu=$('#demo-reset-button');if(menu)menu.hidden=true;
  try{window.location.hash='dashboard';}catch(_){}
 }
@@ -132,7 +133,7 @@ function setup(){
  document.documentElement.dataset.authMode='preview';
  const select=$('#rl');
  if(select){
-  select.value='Administrador';
+  select.value='Servidor DCS';
   select.addEventListener('change',fillAccount);
  }
  fillAccount();
