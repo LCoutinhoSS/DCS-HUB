@@ -50,7 +50,7 @@ export function toUiTask(row,eventById,labelFor) {
   const date=row.due_at ? row.due_at.split('-').reverse().join('/') : 'Sem prazo';
   return {id:row.id,t:row.title,eid:row.event_id,ev:name.split(' — ')[0],due:date,
     pri:PRIORITY_LABEL[row.priority]||'Média',s:TASK_STATUS_LABEL[row.status]||'Pendente',
-    w:labelFor(row.assignee_id),team:row.team||'DCS',done:row.status==='completed'?1:0,
+    w:labelFor(row.assignee_id),team:row.team||'DCS',meeting_id:row.meeting_id||null,createdBy:row.created_by,assigneeId:row.assignee_id||null,done:row.status==='completed'?1:0,
     k:row.source_checklist_id ? 'modelo:'+row.source_checklist_id : undefined};
 }
 export function describeHistory(row) {
@@ -60,6 +60,8 @@ export function describeHistory(row) {
     case 'event_status':return `Status alterado: ${EVENT_STATUS_LABEL[details.from]||details.from} → ${EVENT_STATUS_LABEL[details.to]||details.to}`;
     case 'event_rescheduled':return 'Data ou horário reagendado';
     case 'reschedule_reason':return `Motivo do reagendamento: ${details.reason||'não informado'}`;
+    case 'meeting_created':return `Reunião preparada: ${details.title||''}`;
+    case 'meeting_updated':return `Reunião atualizada: ${details.title||''}`;
     case 'task_created':return `Tarefa criada: ${details.title||''}`;
     case 'task_status':return `Tarefa atualizada: ${details.title||''}`;
     case 'event_updated':return 'Informações do evento alteradas';
