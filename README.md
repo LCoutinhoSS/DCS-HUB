@@ -9,7 +9,7 @@ Sistema web para agenda, eventos, checklist operacional, gestão de tarefas, equ
 
 ## Status — 19 de novembro de 2026
 
-As migrações 001–007 foram **aplicadas e verificadas** no projeto Supabase existente `BUSCA AUTORIDADE`. O Autoridades SP preservou 150 registros de autoridades e 6 perfis; o HUB começou com 20 espaços ALESP e **nenhum evento ou perfil DCS criado automaticamente**. As tabelas DCS usam RLS.
+As migrações 001–010 foram **aplicadas e verificadas** no projeto Supabase existente `BUSCA AUTORIDADE`. O Autoridades SP preservou 150 registros de autoridades e 6 perfis; o HUB começou com 20 espaços ALESP e **nenhum evento criado automaticamente**. As tabelas DCS usam RLS.
 
 O cadastro de **94 deputados estaduais** da aplicação Autoridades SP é consultado pela função restrita `dcs_list_authorities`, usada também pela área **Autoridades SP**. Ela respeita as regras de mascaramento existentes e não duplica nem edita a tabela original. Novos solicitantes (órgãos, setores, outros) são armazenados em `public.event_requesters`. O evento registra o vínculo à fonte e o nome de referência na data do cadastro.
 
@@ -17,6 +17,17 @@ O cadastro de **94 deputados estaduais** da aplicação Autoridades SP é consul
 
 
 **Correção de acesso — 19/11/2026:** no Autoridades SP, a tabela `public.autoridades` tem RLS de leitura, mas não concede `SELECT` direto ao papel `authenticated`. Isso causava `permission denied for table autoridades` na homologação. A migração **008** instalou a função `dcs_list_authorities`, restrita a membros ativos do HUB, que reutiliza `consultar_autoridades_seguras()` e devolve somente campos públicos/autorizados. A UI de **Autoridades SP** e o seletor de **Solicitantes** passaram a usar essa função. Os testes com perfil ativo retornaram 150 registros (94 deputados); sem perfil DCS, zero. Nenhuma permissão da tabela original foi modificada.
+
+## Atualização 0.10 — Aceite, comentários e alerta de prazos
+
+- **Aceitar tarefa:** responsável confirma o recebimento com data/hora registradas. A nova pessoa deverá aceitar novamente se houver redistribuição.
+- **Comentários:** conversa de trabalho vinculada a cada tarefa, acessível somente pelo criador, responsável e gestores, com autoria, data e aviso interno de nova mensagem.
+- **Atrasos:** destaque nos cartões, filtro Atrasadas no Kanban e indicador no Dashboard; aviso de vencimento hoje ou amanhã.
+- **Lembretes internos automáticos durante sessão autenticada:** alerta diário por tarefa vencendo amanhã, hoje ou atrasada, sem duplicações; não é e-mail, Teams, push nem processamento enquanto todos estão desconectados.
+- **Segurança:** RLS específica de comentários, aceite apenas pelo responsável, notificações somente aos participantes e RPCs protegidas.
+- Banco recebeu a **migração 010**; simulação com dois usuários validou aceite, bloqueio de comentário indevido, aviso ao criador, lembrete único e reset de aceite após reatribuição; todos os dados fictícios foram revertidos.
+
+A **integração de eventos com o calendário Microsoft Teams/Outlook** é a próxima fase. Dependerá de escolher o calendário institucional, registrar o aplicativo no Microsoft Entra ID e obter autorização de permissões junto à TI. Veja [Manual de colaboração 0.10](docs/COLABORACAO_10.md).
 
 ## Atualização 0.9 — Colaboração operacional
 
@@ -57,6 +68,7 @@ A seleção de um espaço da ALESP **não é uma reserva** e a confirmação de 
 - `supabase/migrations/202611180001_*.sql` a `202611180007_*.sql` — **já aplicadas**, não executar novamente.
 - `supabase/migrations/202611190008_dcs_authorities_bridge.sql` — **já aplicada**; consulta protegida para o HUB, sem conceder SELECT direto à tabela original.
 - `supabase/migrations/202611190009_collaboration_meetings_tasks.sql` — **já aplicada**; reuniões e execução segura de tarefas/checklist.
+- `supabase/migrations/202611190010_task_collaboration.sql` — **já aplicada**; aceite, comentários e lembrete diário protegido.
 - `.github/workflows/build-homologacao.yml` — compila o login real com **chave publicável**, publica exclusivamente o caminho `/homologacao/`; o site raiz continua sendo demonstração.
 - `.github/workflows/ci.yml` — testes e build.
 
@@ -67,6 +79,7 @@ O projeto usa o **mesmo Supabase e Auth** do Autoridades SP, com isolamento **l�
 Os Supabase Advisors identificaram avisos anteriores de funções `SECURITY DEFINER` públicas no Autoridades SP e outros pontos de segurança. Eles precisam ser revisados em conjunto, sem mudanças bruscas que interrompam a aplicação existente. Antes de dados institucionais, validar também políticas de retenção, LGPD, auditoria, aprovação TI e alternativas de SSO/MFA.
 
 **Leia também:**
+- [Aceite, comentários e lembretes (0.10)](docs/COLABORACAO_10.md)
 - [Fluxo colaborativo de reuniões e tarefas (0.9)](docs/COLABORACAO_09.md)
 - [Banco compartilhado e primeiro login](docs/BANCO_COMPARTILHADO.md)
 - [Guia dos eventos e checklists](docs/OPERACOES_08.md)
