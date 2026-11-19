@@ -103,4 +103,6 @@ document.addEventListener('submit',e=>{
   .finally(()=>{if(btn.isConnected)btn.disabled=false;});
 });
 window.DCS_MEETINGS={renderEvent,setData,eventMeetings,get,reset};
+// Recupera as reuniões se a sessão autenticada iniciou antes do módulo.
+if(real()&&B()?.S?.in)window.DCS_BACKEND.refreshMeetings().then(()=>{if(B().S.route==='eventos')B().rr();}).catch(e=>console.warn('[DCS HUB] Reuniões:',e));
 })();
