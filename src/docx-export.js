@@ -110,5 +110,5 @@ function download(blob,name){
  a.href=url;a.download=name;a.style.display='none';document.body.appendChild(a);a.click();a.remove();
  setTimeout(()=>URL.revokeObjectURL(url),15000);
 }
-window.DCS_DOCX={create,download,filename,version:'0.13'};
+window.DCS_DOCX={create,download,filename,packageZip:zip,escapeXml:xml,version:'0.14'};
 })();
