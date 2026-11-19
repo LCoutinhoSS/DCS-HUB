@@ -59,3 +59,17 @@
 .gab-check-row .btn{font-size:11px;min-height:30px}
 .gab-check-row-disabled{opacity:.66}
 @media(max-width:780px){.gab-head{flex-direction:column}.gab-answer-bottom{flex-wrap:wrap}.gab-answer-bottom small{margin-left:0;text-align:left}.gab-answer-bottom .btn{margin-left:auto}.gab-check-row{flex-wrap:wrap}.gab-check-row .tk{flex-basis:100%}}
+
+/* v0.14: revisão da precedência da mesa */
+.gab-protocol-panel{border:1px solid var(--bd);background:var(--gl2);border-radius:14px;padding:16px}
+.gab-protocol-head{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:14px}
+.gab-protocol-head h3{font:600 17px Fraunces,Georgia,serif;margin:0 0 5px}
+.gab-protocol-head p{color:var(--mu);font-size:11px;margin:0;line-height:1.5}
+.gab-protocol-list{display:flex;flex-direction:column;gap:8px}
+.gab-protocol-row{display:flex;align-items:center;gap:12px;background:var(--hv);border-radius:10px;padding:10px 12px}
+.gab-protocol-num{display:flex;align-items:center;justify-content:center;flex:none;width:32px;height:32px;background:var(--gl2);border:1px solid var(--bd);border-radius:9px;font:600 15px Fraunces,serif}
+.gab-protocol-row>div{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.gab-protocol-row b{font-size:12px;overflow-wrap:anywhere}
+.gab-protocol-row small{font-size:10px;color:var(--mu);line-height:1.45;overflow-wrap:anywhere}
+.gab-protocol-row .btn{font-size:11px;flex:none}
+@media(max-width:650px){.gab-protocol-head{flex-direction:column}.gab-protocol-row{flex-wrap:wrap}}
