@@ -290,7 +290,7 @@ export const backend={
         .select('event_id,question_key,answer,status,updated_by,updated_at')
         .eq('event_id',eventId).order('question_key'),
       supabase.from('event_participants')
-        .select('id,event_id,authority_id,full_name,role_title,organization,participation,invitation_status,notes,active,created_by,updated_by,created_at,updated_at')
+        .select('id,event_id,authority_id,full_name,role_title,organization,participation,invitation_status,notes,honorific,protocol_order,represented_for,active,created_by,updated_by,created_at,updated_at')
         .eq('event_id',eventId).order('created_at')
     ]);
     return {answers:check(answers),participants:check(participants)};
@@ -309,7 +309,7 @@ export const backend={
   },
   async updateEventParticipant(id,patch){
     ensureUser();
-    const allowed=['authority_id','full_name','role_title','organization','participation','invitation_status','notes','active'];
+    const allowed=['authority_id','full_name','role_title','organization','participation','invitation_status','notes','honorific','protocol_order','represented_for','active'];
     const data=Object.fromEntries(allowed.filter(k=>Object.hasOwn(patch,k)).map(k=>[k,patch[k]]));
     if(!Object.keys(data).length)throw new Error('Nenhuma alteração recebida');
     return check(await supabase.from('event_participants').update(data).eq('id',id).select('id').single());
