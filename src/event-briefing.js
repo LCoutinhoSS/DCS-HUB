@@ -177,7 +177,7 @@ function renderBriefing(ev){
    const visible=all.filter(q=>!onlyPending||!['confirmed','not_applicable'].includes(byKey.get(q.key)?.status));
    if(!visible.length)return '';
    const done=all.filter(q=>['confirmed','not_applicable'].includes(byKey.get(q.key)?.status)).length;
-   return '<details class="gab-group"'+(i===0||onlyPending?' open':'')+'><summary><span>'+esc(section)+'</span><small>'+done+'/'+all.length+' resolvidas</small></summary><div class="gab-questions">'+visible.map(q=>{
+   return '<details class="gab-group" data-gab-section="'+esc(section)+'"'+(i===0||onlyPending?' open':'')+'><summary><span>'+esc(section)+'</span><small>'+done+'/'+all.length+' resolvidas</small></summary><div class="gab-questions">'+visible.map(q=>{
      const ans=byKey.get(q.key),st=ans?.status||'pending',textValue=ans?.answer||'';
      const author=ans?.updated_by?(window.DCS_BACKEND?.profileLabel?.(ans.updated_by)||'Equipe'):'';
      return '<div class="gab-question"><div class="gab-question-title"><b>'+esc(q.title)+'</b><span class="gab-status gab-status-'+esc(st)+'">'+esc(statusLabel[st]||st)+'</span></div>'+

@@ -18,6 +18,15 @@ O cadastro de **94 deputados estaduais** da aplicação Autoridades SP é consul
 
 **Correção de acesso — 19/11/2026:** no Autoridades SP, a tabela `public.autoridades` tem RLS de leitura, mas não concede `SELECT` direto ao papel `authenticated`. Isso causava `permission denied for table autoridades` na homologação. A migração **008** instalou a função `dcs_list_authorities`, restrita a membros ativos do HUB, que reutiliza `consultar_autoridades_seguras()` e devolve somente campos públicos/autorizados. A UI de **Autoridades SP** e o seletor de **Solicitantes** passaram a usar essa função. Os testes com perfil ativo retornaram 150 registros (94 deputados); sem perfil DCS, zero. Nenhuma permissão da tabela original foi modificada.
 
+## Correção 0.17.1 — Navegação estável durante preenchimento
+
+- Correção urgente de usabilidade: o HUB agora preserva **rolagem vertical e horizontal** após atualizar a mesma aba.
+- A **Ficha do Gabinete** mantém os grupos `<details>` abertos/fechados após salvar respostas. Os grupos têm identificadores estáveis por seção.
+- Ao atualizar informações de fundo enquanto um campo está em foco, o HUB tenta preservar o texto ainda digitado e o foco na mesma caixa — sem transformar isso em salvamento automático.
+- Abas e eventos distintos mantêm suas posições separadas, em vez de reaproveitar a rolagem de outra tela.
+- Ao fechar formulários, o foco retorna sem forçar a área principal ao topo.
+- Não há mudanças de permissão, tabelas Supabase ou modelo de dados. Testes de regressão cobrem os cenários de apresentação.
+
 ## Atualização 0.17 — Controle compartilhado de importação manual
 
 - Na aba **Outlook / Teams**, cada evento exibe **Importação ainda não registrada**, **Importação manual declarada**, **Evento alterado desde a declaração**, ou **Evento cancelado — conferir exclusão no Outlook**.

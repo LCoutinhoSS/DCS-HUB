@@ -167,7 +167,15 @@ function toast(m){const d=document.createElement('div');d.className='ts';d.setAt
 function can(){if(S.role==='Leitor'){toast('Perfil Leitor: somente consulta. Na versão real, o servidor e o banco também bloqueiam essa ação.');return false}return true}
 function act(t){A.unshift([t,'agora']);A.length=Math.min(A.length,5)}
 function ov(h){if(!$('#ov').innerHTML)S.lf=document.activeElement;$('#ov').innerHTML=h;const f=$('#ov input,#ov button');f&&f.focus()}
-function closeOv(){$('#ov').innerHTML='';S.lf&&S.lf.focus&&S.lf.focus();S.lf=null}
+function closeOv(){
+  const view=$('#view'),savedScroll=view?.scrollTop||0;
+  $('#ov').innerHTML='';
+  if(S.lf?.isConnected&&S.lf?.focus){
+   try{S.lf.focus({preventScroll:true});}catch(_){S.lf.focus();}
+  }
+  if(view)view.scrollTop=savedScroll;
+  S.lf=null;
+ }
 function closeSb(){$('#sb').classList.remove('op')}
 function bell(){const n=N.filter(x=>x.u).length;$('#nb').textContent=n;$('#nb').hidden=!n}
 function refresh(){if(S.route==='dashboard'&&$('#kp')){kpis();agenda();tasks();feed()}else if(['agenda','tarefas','eventos'].includes(S.route))rr()}
@@ -260,7 +268,12 @@ addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()===
  if(e.key==='Escape'){closeOv();closeSb();return}
  if($('#pq')){if(e.key==='ArrowDown'){e.preventDefault();pi=Math.min(pi+1,pr.length-1);palp()}else if(e.key==='ArrowUp'){e.preventDefault();pi=Math.max(pi-1,0);palp()}else if(e.key==='Enter'){e.preventDefault();palgo(pi)}}});
 const apr=()=>['Administrador','Gestor'].includes(S.role),ts=t=>t.s||(t.done?'Concluído':'Pendente'),ST=['Pendente','Em andamento','Aguardando aprovação','Concluído','Cancelado'];
-function page(){$('#view').innerHTML=S.route==='agenda'?agPage():S.route==='eventos'?evPage():kbPage()}
+function page(){
+  const view=$('#view'),paint=()=>{view.innerHTML=S.route==='agenda'?agPage():S.route==='eventos'?evPage():kbPage();};
+  const keep=window.DCS_VIEW_STABILITY;
+  if(keep)keep.render(view,keep.key(S),paint);
+  else paint();
+ }
 function rr(){$('#view').classList.add('re');page()}
 function gen(ev){let n=0;ev.chk.forEach((c,i)=>{const k=ev.id+':'+i;if(c.d||c.applicable===false||!c.assignee_label||c.assignee_label==='Equipe'||T.some(t=>t.k===k))return;const task={id:'g'+k,k,t:c.x,ev:ev.t.split(' — ')[0],due:c.due_at?c.due_at.split('-').reverse().join('/'):ev.d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}),pri:'Média',s:'Pendente',eid:ev.id,w:c.assignee_label||'Equipe',team:c.team||ev.team||'DCS'};T.unshift(task);window.DCS_DEMO_NOTIFY?.assigned(task,task.w);n++});return n}
 function ics(){return window.DCS_CALENDAR?.buildIcs(E)||''}
@@ -338,4 +351,4 @@ function createFlowDemo(data){
 window.DCS_BRIDGE={E,T,PPL,A,N,S,route,refresh,rr,openEv,openNt,closeOv,toast,bell,createFlowDemo,generateDemoTasks:gen};
 </script>
 <script defer src="./src/demo-auth.js"></script>
-<script defer src="./src/admin.js"></script><script defer src="./src/knowledge.js"></script><script defer src="./src/teams.js"></script><script defer src="./src/venues.js"></script><script defer src="./src/demo-notifications.js"></script><script defer src="./src/checklist-models.js"></script><script defer src="./src/requesters.js"></script><script defer src="./src/eventflow.js"></script><script defer src="./src/autoridades-integration.js"></script><script defer src="./src/meetings.js"></script><script defer src="./src/task-collaboration.js"></script><script defer src="./src/event-briefing.js"></script><script defer src="./src/mesa-reorder.js"></script><script defer src="./src/event-overview.js"></script><script defer src="./src/material-builder.js"></script><script defer src="./src/docx-export.js"></script><script defer src="./src/prismas-pptx.js"></script><script defer src="./src/event-materials.js"></script><script defer src="./src/calendar-bridge.js"></script><script defer src="./src/calendar-manual.js"></script></body></html>
+<script defer src="./src/admin.js"></script><script defer src="./src/knowledge.js"></script><script defer src="./src/teams.js"></script><script defer src="./src/venues.js"></script><script defer src="./src/demo-notifications.js"></script><script defer src="./src/checklist-models.js"></script><script defer src="./src/requesters.js"></script><script defer src="./src/eventflow.js"></script><script defer src="./src/autoridades-integration.js"></script><script defer src="./src/meetings.js"></script><script defer src="./src/task-collaboration.js"></script><script defer src="./src/event-briefing.js"></script><script defer src="./src/mesa-reorder.js"></script><script defer src="./src/event-overview.js"></script><script defer src="./src/material-builder.js"></script><script defer src="./src/docx-export.js"></script><script defer src="./src/prismas-pptx.js"></script><script defer src="./src/event-materials.js"></script><script defer src="./src/calendar-bridge.js"></script><script defer src="./src/calendar-manual.js"></script><script defer src="./src/view-stability.js"></script></body></html>
