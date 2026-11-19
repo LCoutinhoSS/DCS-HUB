@@ -30,7 +30,8 @@ test('painel Autoridades está disponível nas duas versões, somente leitura',(
   assert.match(page,/autoridades-integration\.js/);
   assert.match(page,/DCS_AUTORIDADES\.render\(\)/);
  }
- assert.match(moduleCode,/Consulta à mesma base/);
+ assert.match(moduleCode,/Diretório de autoridades/);
+ assert.match(moduleCode,/Pessoas e mesa/);
  assert.doesNotMatch(moduleCode,/data-authorities-delete/);
 });
 test('solicitante deputado não é duplicado em nova tabela',()=>{
