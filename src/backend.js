@@ -314,6 +314,13 @@ export const backend={
     if(!Object.keys(data).length)throw new Error('Nenhuma alteração recebida');
     return check(await supabase.from('event_participants').update(data).eq('id',id).select('id').single());
   },
+  async reorderEventMesa(eventId,ids,expected){
+    ensureUser();
+    if(!Array.isArray(ids)||ids.length<1||ids.length>99)throw Error('Lista da mesa inválida');
+    return check(await supabase.rpc('dcs_reorder_event_mesa',{
+      p_event:eventId,p_participant_ids:ids,p_expected:expected
+    }));
+  },
   async listAuthorities(){
     ensureUser();
     // A tabela original não concede SELECT ao role authenticated.
