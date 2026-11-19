@@ -72,8 +72,8 @@ function cards(ev){
      'Decisões alinhadas com o gabinete, pendências, convidados e responsáveis pelas providências.')+'</p>'+
    (rec?'<small>Versão '+rec.version+' · salvo '+esc(fmt(rec.saved_at))+'</small>':
     '<small>Sem documento criado para este evento.</small>')+
-   '<button class="btn '+(rec?'':'pri')+'" data-material-open="'+esc(kind)+'"> '+
-   (rec?'Visualizar / revisar':'Preparar documento')+'</button></article>';
+   (rec||canOperate(ev)?'<button class="btn '+(rec?'':'pri')+'" data-material-open="'+esc(kind)+'"> '+
+   (rec?'Visualizar / revisar':'Preparar documento')+'</button>':'<span class="material-version">Sem documento disponível para consulta</span>')+'</article>';
  }).join('')+'</div>';
 }
 function selectTypes(current){
@@ -159,7 +159,7 @@ async function start(evId,kind){
 async function generate(evId,kind,first=false){
  const ev=eventFor(evId);if(!ev||!canOperate(ev))throw Error('Sem permissão para preparar materiais');
  if(!first&&editor?.blocks?.length&&!window.confirm('Substituir o texto em edição pelos dados atuais do HUB? Alterações ainda não salvas serão perdidas.'))return;
- const gab=await window.DCS_GABINETE.ensure(evId);
+ const gab=await window.DCS_GABINETE.ensure(evId,true);
  if(real())await window.DCS_BACKEND.refreshMeetings();
  const meetings=window.DCS_MEETINGS?.eventMeetings?.(evId)||[];
  const tasks=(B()?.T||[]).filter(t=>t.eid===evId);
