@@ -166,8 +166,8 @@ function nominata(ev,state){
   protocolRole(p)+(p.represented_for?' — Neste ato representando '+clean(p.represented_for):'')+
   ' ['+protocolStatus(p)+']'));
  out.push(block('heading','SAUDAÇÃO GERAL'));
- out.push(block('text','Em nome de '+clean(mesa[0]?.full_name||'REPRESENTANTE A CONFIRMAR')+
-  ', cumprimento as autoridades aqui presentes e senhoras e senhores. Texto de saudação a conferir pelo Cerimonial.'));
+ out.push(block('note','A CONFIRMAR: em nome de qual autoridade será feita a saudação inicial. A primeira pessoa da lista não é escolhida automaticamente.'));
+ out.push(block('text','Senhoras e senhores, cumprimento as autoridades aqui presentes. Formulação e tratamentos sujeitos à revisão do Cerimonial.'));
  const representation=mesa.concat(guests).filter(p=>p.represented_for?.trim());
  if(representation.length){
   out.push(block('heading','REPRESENTAÇÕES INFORMADAS'));
