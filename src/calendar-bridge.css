@@ -1,0 +1,16 @@
+/* DCS HUB 0.16 — exportação de agenda Outlook */
+.dcs-calendar{display:flex;flex-direction:column;gap:18px;padding:14px 2px}
+.dcs-calendar-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.dcs-calendar-head h2{margin:4px 0 8px;font:600 22px Fraunces,Georgia,serif}
+.dcs-calendar-head p{margin:0;font-size:12px;color:var(--mu);line-height:1.6}
+.dcs-calendar-info{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.dcs-calendar-info>div{display:flex;flex-direction:column;gap:7px;background:var(--gl2);border:1px solid var(--bd);border-radius:12px;padding:14px}
+.dcs-calendar-info small{color:var(--mu);font-size:11px}
+.dcs-calendar-info b{font-size:13px;overflow-wrap:anywhere}
+.dcs-calendar-actions{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:8px}
+.dcs-calendar-actions .btn{text-decoration:none;white-space:nowrap}
+.dcs-calendar-limit{background:var(--gl2);border:1px solid var(--bd);padding:15px;border-radius:12px}
+.dcs-calendar-limit strong{font-size:12px}
+.dcs-calendar-limit p{font-size:12px;color:var(--mu);line-height:1.65;margin:8px 0 0}
+.dcs-calendar-dialog p{line-height:1.6}
+@media(max-width:650px){.dcs-calendar-head{flex-direction:column}.dcs-calendar-info{grid-template-columns:1fr}}

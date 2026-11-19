@@ -18,6 +18,16 @@ O cadastro de **94 deputados estaduais** da aplicação Autoridades SP é consul
 
 **Correção de acesso — 19/11/2026:** no Autoridades SP, a tabela `public.autoridades` tem RLS de leitura, mas não concede `SELECT` direto ao papel `authenticated`. Isso causava `permission denied for table autoridades` na homologação. A migração **008** instalou a função `dcs_list_authorities`, restrita a membros ativos do HUB, que reutiliza `consultar_autoridades_seguras()` e devolve somente campos públicos/autorizados. A UI de **Autoridades SP** e o seletor de **Solicitantes** passaram a usar essa função. Os testes com perfil ativo retornaram 150 registros (94 deputados); sem perfil DCS, zero. Nenhuma permissão da tabela original foi modificada.
 
+## Atualização 0.16 — Ponte com calendário Outlook / Teams (importação .ics)
+
+- **Gestão de eventos → Outlook / Teams:** nova aba com título, data, horário e local, permitindo baixar um evento confirmado ou concluído como arquivo `.ics`.
+- **Agenda integrada → Exportar .ics:** agora baixa de verdade o arquivo com os eventos elegíveis, sem exigir cópia manual de código.
+- **Segurança:** não exporta briefing, contatos, convidados ou tarefas; eventos pendentes e cancelados ficam de fora. Os arquivos usam fusos UTC interoperáveis, identificador estável, escaping e dobra RFC 5545.
+- **Limite explícito:** importar `.ics` não sincroniza atualizações, não gera reunião Teams e não reserva o espaço. A criação direta via Graph depende do calendário autorizado e do registro/consentimento do aplicativo pela TI.
+- Sem alterações de banco na versão 0.16. Autoridades SP preservado.
+
+Veja [Guia Outlook / Teams 0.16](docs/OUTLOOK_CALENDARIO_016.md).
+
 ## Atualização 0.15 — Reorganização visual da mesa
 
 - A aba **Pessoas e mesa** permite reordenar os integrantes por arraste, botões e teclado. A prévia pode ser descartada ou salva.
