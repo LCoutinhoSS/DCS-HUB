@@ -194,7 +194,7 @@ function renderBriefing(ev){
 }
 function renderParticipants(ev){
  const waiting=info(ev.id);if(waiting)return waiting;
- const people=(current(ev.id).participants||[]).filter(p=>p.active!==false);
+ const people=(current(ev.id).participants||[]).filter(p=>p.active!==false).sort((a,b)=>{const pa=a.participation==='mesa'?(a.protocol_order||999):1000,pb=b.participation==='mesa'?(b.protocol_order||999):1000;return pa-pb||a.full_name.localeCompare(b.full_name,'pt-BR');});
  const counters=Object.entries(roles).map(([k,v])=>[k,v,people.filter(p=>p.participation===k).length]).filter(x=>x[2]);
  return '<div class="gab-shell"><div class="gab-head"><div><div class="hub-kicker">Pessoas vinculadas ao evento</div><h2>Participantes e composição da mesa</h2>'+
  '<p>Registre nomes e cargos informados pelo gabinete. Uma pessoa pode ser convidada mesmo sem constar no Diretório de Autoridades SP.</p></div>'+
@@ -204,8 +204,8 @@ function renderParticipants(ev){
  '<div class="gab-participant-summary">'+(counters.length?counters.map(x=>'<span>'+esc(x[1])+': <b>'+x[2]+'</b></span>').join(''):'<span>Ainda não há participantes cadastrados.</span>')+'</div>'+
  (people.length?'<div class="gab-people">'+people.map(p=>
   '<article class="gab-person"><div><span class="gab-status gab-status-'+esc(p.invitation_status)+'">'+esc(presenceLabel[p.invitation_status]||p.invitation_status)+'</span>'+
-  '<h3>'+esc(p.full_name)+'</h3><p>'+esc([p.role_title,p.organization].filter(Boolean).join(' · ')||'Cargo a confirmar')+'</p>'+
-  '<small>'+esc(roles[p.participation]||'Participante')+(p.authority_id?' · Vinculado ao Diretório':' · Cadastro neste evento')+'</small>'+
+  '<h3>'+esc(p.full_name)+'</h3><p>'+esc([p.honorific,p.role_title,p.organization].filter(Boolean).join(' · ')||'Cargo a confirmar')+'</p>'+
+  '<small>'+esc(roles[p.participation]||'Participante')+(p.protocol_order?' · Ordem Cerimonial: '+p.protocol_order:' · Ordem pendente')+(p.authority_id?' · Diretório':' · Cadastro no evento')+'</small>'+ (p.represented_for?'<p class="gab-person-note">Neste ato representando: '+esc(p.represented_for)+'</p>':'')+
   (p.notes?'<p class="gab-person-note">'+esc(p.notes)+'</p>':'')+'</div>'+
   (editable(ev)?'<button class="btn" data-person-edit="'+esc(p.id)+'" data-person-event="'+esc(ev.id)+'">Editar</button>':'')+'</article>'
  ).join('')+'</div>':'<section class="gab-empty"><h3>Lista ainda não preenchida</h3><p>Adicione autoridades convidadas, palestrantes, homenageados ou pessoas da mesa. Não é necessário cadastrá-las antes no Autoridades SP.</p></section>')+
@@ -233,6 +233,10 @@ async function openPersonForm(eventId,personId){
  Object.entries(roles).map(([k,v])=>'<option value="'+k+'"'+(person?.participation===k?' selected':'')+'>'+esc(v)+'</option>').join('')+'</select></label>'+
  '<label>Situação do convite<select class="fi" name="invitation_status">'+
  Object.entries(presenceLabel).map(([k,v])=>'<option value="'+k+'"'+((person?.invitation_status||'to_confirm')===k?' selected':'')+'>'+esc(v)+'</option>').join('')+'</select></label></div>'+
+ '<div class="hub-note">A ordem protocolar é definida manualmente pelo Cerimonial. Não é calculada pela ordem de cadastro ou pelo Diretório de Autoridades.</div>'+
+ '<div class="flow-grid">'+inp('honorific','Tratamento / título (ex.: Senhora Deputada, Doutor)',person?.honorific,110)+
+ '<label>Ordem na mesa / nominata<input class="fi" name="protocol_order" type="number" min="1" max="99" value="'+esc(person?.protocol_order||'')+'" placeholder="1, 2, 3…"></label></div>'+
+ inp('represented_for','Neste ato representando (opcional)',person?.represented_for,180)+
  '<label>Observações de trabalho (opcional)<textarea class="fi" name="notes" maxlength="1000" rows="2" placeholder="Informações públicas e operacionais">'+esc(person?.notes||'')+'</textarea></label>'+
  '<p class="hub-note">Não informe documentos, dados privados de contato ou detalhes de segurança nesta lista.</p>'+
  '<div class="hub-actions" style="justify-content:flex-end">'+(person?'<button type="button" class="btn" data-person-disable="'+esc(person.id)+'" data-person-event="'+esc(eventId)+'">Retirar da lista</button>':'')+
@@ -260,8 +264,12 @@ async function savePerson(form){
     organization:String(d.get('organization')||'').trim(),
     participation:String(d.get('participation')),
     invitation_status:String(d.get('invitation_status')),
+    honorific:String(d.get('honorific')||'').trim(),
+    protocol_order:String(d.get('protocol_order')||'').trim()?Number(d.get('protocol_order')):null,
+    represented_for:String(d.get('represented_for')||'').trim(),
     notes:String(d.get('notes')||'').trim()};
  if(obj.full_name.length<2)throw Error('Informe o nome completo');
+ if(obj.protocol_order!==null&&(!Number.isInteger(obj.protocol_order)||obj.protocol_order<1||obj.protocol_order>99))throw Error('A ordem deve ser um número inteiro de 1 a 99');
  if(live()){
   if(id)await window.DCS_BACKEND.updateEventParticipant(id,obj);
   else await window.DCS_BACKEND.createEventParticipant(ev,obj);
