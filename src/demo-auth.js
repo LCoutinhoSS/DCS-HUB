@@ -104,6 +104,7 @@ function reset(){
   window.DCS_DEMO_NOTIFY?.reset();
   window.DCS_MEETINGS?.reset();
   window.DCS_GABINETE?.reset();
+  window.DCS_MATERIALS?.reset();
   localStorage.removeItem('dcs-hub-preview-data-v1');
  }catch(_){}
  window.location.reload();
