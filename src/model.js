@@ -62,6 +62,7 @@ export function describeHistory(row) {
     case 'reschedule_reason':return `Motivo do reagendamento: ${details.reason||'não informado'}`;
     case 'briefing_answer_saved':return `Resposta do gabinete atualizada (${details.question_key||'pergunta'})`;
     case 'event_participant_updated':return 'Lista de pessoas e mesa atualizada';
+    case 'mesa_reordered':return 'Ordem da mesa reorganizada pelo Cerimonial';
     case 'meeting_created':return `Reunião preparada: ${details.title||''}`;
     case 'meeting_updated':return `Reunião atualizada: ${details.title||''}`;
     case 'task_created':return `Tarefa criada: ${details.title||''}`;
