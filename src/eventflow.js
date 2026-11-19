@@ -6,7 +6,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const kinds=()=>window.DCS_CHECKLISTS?.TYPES||[];
 const ck=()=>window.DCS_CHECKLISTS;
 const live=()=>!!window.DCS_BACKEND?.enabled;
-let step=0,busy=false;
+let step=0,busy=false,checklistFilter='pending';
 const steps=['Tipo e solicitante','Data, local e pauta','Tarefas por responsável','Conferência'];
 const pad=n=>String(n).padStart(2,'0');
 function isoDate(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
@@ -64,8 +64,8 @@ function createMarkup(date){
  '<label>Data de término<input class="fi" name="e" type="date" value="'+isoDate(d)+'"></label>'+
  '<label>Horário de término<input class="fi" name="end_h" type="time" value="11:00"></label></div>'+
  (window.DCS_VENUES?.selectMarkup()||'<p>Carregando espaços…</p>')+
- '<div class="flow-grid"><label>Público estimado<input class="fi" name="audience" type="number" min="0" max="100000" placeholder="Ex.: 120"></label>'+
- '<label>Pessoas/autoridades principais<input class="fi" name="guests" maxlength="300" placeholder="Convidados principais"></label></div>'+
+ '<label>Público estimado<input class="fi" name="audience" type="number" min="0" max="100000" placeholder="Ex.: 120"></label>'+ 
+ '<div class="hub-note">Quem ocupa a mesa ou participará do evento será registrado depois na aba <b>Pessoas e mesa</b>. As respostas do gabinete terão uma ficha própria.</div>'+ 
  meetingFields()+
  '<label>Observações operacionais<textarea class="fi" name="notes" maxlength="2000" placeholder="Acessibilidade, montagem, necessidades técnicas, providências…"></textarea></label></section>'+
  '<section class="flow-pane" data-pane="2" hidden><div class="flow-section-title">03 / Tarefas e responsáveis</div>'+
@@ -197,13 +197,36 @@ function meetingHtml(ev){
  '<div class="hub-actions">'+(B().S.role==='Leitor'?'':'<button class="btn" data-flow-meeting-edit="'+esc(ev.id)+'">Editar pauta e decisões</button><button class="btn pri" data-nt="'+esc(ev.id)+'">+ Tarefa para encaminhamento</button>')+'</div></div>';
 }
 function checklistHtml(ev){
- const cklist=ev.chk||[],sections=[...new Set(cklist.map(x=>x.section||'Etapas'))];
- return '<div class="flow-event-info">'+sections.map(section=>
- '<div class="flow-checklist-group"><h3>'+esc(section)+'</h3>'+
- cklist.map((x,i)=>({x,i})).filter(z=>(z.x.section||'Etapas')===section).map(({x,i})=>
- '<div class="flow-checklist-item"><button class="tk'+(x.d?' dn':'')+'" data-ck="'+esc(ev.id)+':'+i+'" role="checkbox" aria-checked="'+!!x.d+'"><span class="cb"></span><b>'+esc(x.x)+'</b></button>'+
- '<small>'+esc(x.assignee_label||x.assignee||'Equipe')+' · '+(x.applicable===false?'Não aplicável':x.d?'Concluído':'Pendente')+'</small>'+(B().S.role==='Leitor'?'':'<button class="btn" data-flow-delegate="'+esc(ev.id)+':'+i+'">Delegar</button>')+'</div>').join('')+
- '</div>').join('')+'</div>';
+ const all=ev.chk||[],applicable=all.filter(x=>x.applicable!==false);
+ const done=applicable.filter(x=>x.d).length;
+ const sections=[...new Set(all.map(x=>x.section||'Etapas'))];
+ const pct=applicable.length?Math.round(100*done/applicable.length):0;
+ const filters=[['pending','Pendentes'],['all','Todos'],['done','Concluídos']];
+ const row=(x,i)=>'<div class="gab-check-row'+(x.applicable===false?' gab-check-row-disabled':'')+'">'+
+ (B().S.role==='Leitor'||x.applicable===false?
+  '<span class="tk'+(x.d?' dn':'')+'"><span class="cb">'+(x.d?'✓':'')+'</span><b>'+esc(x.x)+'</b></span>':
+  '<button class="tk'+(x.d?' dn':'')+'" data-ck="'+esc(ev.id)+':'+i+'" role="checkbox" aria-checked="'+!!x.d+'"><span class="cb">'+(x.d?'✓':'')+'</span><b>'+esc(x.x)+'</b></button>')+
+ '<small>'+esc(x.applicable===false?'Não aplicável':x.d?'Concluído':x.assignee_label||'Sem responsável')+
+ (x.d?'':' · '+esc(x.due_at||'Sem prazo'))+'</small>'+
+ (B().S.role==='Leitor'||x.applicable===false?'':'<button class="btn" data-flow-delegate="'+esc(ev.id)+':'+i+'">Delegar</button>')+
+ '</div>';
+ const groups=sections.map((section,idx)=>{
+  const members=all.map((x,i)=>({x,i})).filter(z=>(z.x.section||'Etapas')===section);
+  const visible=members.filter(({x})=>checklistFilter==='all'||(checklistFilter==='pending'&&x.applicable!==false&&!x.d)||(checklistFilter==='done'&&x.d));
+  if(!visible.length)return '';
+  const completed=members.filter(({x})=>x.d).length;
+  return '<details class="gab-group"'+(idx===0||checklistFilter!=='all'?' open':'')+'>'+
+  '<summary><span>'+esc(section)+'</span><small>'+completed+' / '+members.length+' etapas concluídas</small></summary>'+
+  '<div style="padding:0 14px">'+visible.map(({x,i})=>row(x,i)).join('')+'</div></details>';
+ }).filter(Boolean);
+ return '<div class="gab-shell"><div class="gab-head"><div><div class="hub-kicker">Operação · equipes DCS e Cerimonial</div><h2>Checklist de execução</h2>'+
+ '<p>As perguntas feitas ao gabinete ficam na ficha própria. Aqui você acompanha providências, responsáveis e prazos, divididos por fase.</p></div>'+
+ '<button class="btn" data-gab-jump="gabinete">Ver respostas do gabinete</button></div>'+
+ '<div class="gab-check-summary"><strong>'+done+' de '+applicable.length+' concluídas</strong>'+
+ '<span class="mu">'+pct+'% da execução</span><div class="hub-actions" style="margin-left:auto">'+filters.map(([v,label])=>'<button class="btn'+(v===checklistFilter?' pri':'')+'" data-flow-filter="'+v+'">'+label+'</button>').join('')+'</div></div>'+
+ '<div class="gab-progress"><span style="width:'+pct+'%"></span></div>'+
+ (groups.length?groups.join(''):'<div class="gab-empty">Não há itens com esse filtro. Selecione "Todos" para consultar o checklist completo.</div>')+
+ '</div>';
 }
 function delegationModal(eventId,index){
  const ev=B().E.find(e=>e.id===eventId),item=ev?.chk[index];
@@ -264,6 +287,7 @@ async function submitMeeting(form){
  B().closeOv();B().toast('Informações da reunião atualizadas');
 }
 document.addEventListener('click',e=>{
+ const filter=e.target.closest('[data-flow-filter]');if(filter){checklistFilter=filter.dataset.flowFilter;B().rr();return;}
  const delegate=e.target.closest('[data-flow-delegate]');if(delegate){const [id,i]=delegate.dataset.flowDelegate.split(':');delegationModal(id,Number(i));return;}
  const meeting=e.target.closest('[data-flow-meeting-edit]');if(meeting){meetingModal(meeting.dataset.flowMeetingEdit);return;}
  if(!e.target.closest('#flow-sheet'))return;
