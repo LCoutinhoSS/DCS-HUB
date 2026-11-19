@@ -215,7 +215,7 @@ function checklistHtml(ev){
   const visible=members.filter(({x})=>checklistFilter==='all'||(checklistFilter==='pending'&&x.applicable!==false&&!x.d)||(checklistFilter==='done'&&x.d));
   if(!visible.length)return '';
   const completed=members.filter(({x})=>x.d).length;
-  return '<details class="gab-group"'+(idx===0||checklistFilter!=='all'?' open':'')+'>'+
+  return '<details class="gab-group"'+(idx===0?' open':'')+'>'+
   '<summary><span>'+esc(section)+'</span><small>'+completed+' / '+members.length+' etapas concluídas</small></summary>'+
   '<div style="padding:0 14px">'+visible.map(({x,i})=>row(x,i)).join('')+'</div></details>';
  }).filter(Boolean);
