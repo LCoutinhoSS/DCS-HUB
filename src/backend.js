@@ -51,9 +51,10 @@ async function loadAll() {
     supabase.from('event_checklist').select('*'),
     supabase.from('tasks').select('*').order('created_at',{ascending:false}),
     supabase.from('event_history').select('*').order('created_at',{ascending:false}).limit(500),
-    supabase.from('task_notifications').select('id,task_id,title,created_at,read_at').order('created_at',{ascending:false}).limit(100)
+    supabase.from('task_notifications').select('id,task_id,title,created_at,read_at').order('created_at',{ascending:false}).limit(100),
+    supabase.from('event_meetings').select('id,event_id,title,starts_at,duration_minutes,format,attendees,agenda,minutes,decisions,status,created_by,created_at,updated_at').order('starts_at',{ascending:false})
   ]);
-  const [people,events,checklist,tasks,history,notifications]=q.map(check);
+  const [people,events,checklist,tasks,history,notifications,meetings]=q.map(check);
   profiles=people;
   labelById=new Map();idByLabel=new Map();
   people.forEach(p=>{
@@ -69,7 +70,8 @@ async function loadAll() {
   data.E.splice(0,data.E.length,...events.map(e=>toUiEvent(e,checklist,history,labelFor)));
   data.T.splice(0,data.T.length,...tasks.map(t=>toUiTask(t,eventMap,labelFor)));
   data.A.splice(0,data.A.length,...history.slice(0,8).map(h=>[describeHistory(h),new Date(h.created_at).toLocaleString('pt-BR')]));
-  data.N.splice(0,data.N.length,...notifications.map(n=>({id:n.id,t:n.title,w:new Date(n.created_at).toLocaleString('pt-BR'),u:!n.read_at})));
+  data.N.splice(0,data.N.length,...notifications.map(n=>({id:n.id,task_id:n.task_id,t:n.title,w:new Date(n.created_at).toLocaleString('pt-BR'),u:!n.read_at})));
+  window.DCS_MEETINGS?.setData(meetings);
   data.bell();
   window.DCS_TEAMS?.load().catch(e=>console.warn('[DCS HUB] Não foi possível carregar a equipe:',e));
   window.DCS_REQUESTERS?.load().catch(e=>console.warn('[DCS HUB] Não foi possível carregar solicitantes:',e));
@@ -98,6 +100,7 @@ export const backend={
     window.DCS_KNOWLEDGE?.reset();
     window.DCS_VENUES?.reset();
     window.DCS_REQUESTERS?.reset();
+    window.DCS_MEETINGS?.reset();
     const box=$('#rl')?.closest('label');if(box)box.hidden=true;
     const note=$('.lc .pl');if(note)note.textContent='Acesso real via Supabase Auth. Apenas contas ativadas pela administração podem entrar. Não há seleção de perfil de demonstração.';
     const mail=$('#lf input[type=email]');if(mail)mail.required=true;
@@ -119,7 +122,7 @@ export const backend={
       await loadAll();enterApp();
     }catch(e){await supabase.auth.signOut();profile=null;alertError(e);}
   },
-  async logout(){if(notificationPoll)clearInterval(notificationPoll);notificationPoll=null;check(await supabase.auth.signOut());profile=null;profiles=[];labelById=new Map();idByLabel=new Map();window.DCS_KNOWLEDGE?.reset();window.DCS_VENUES?.reset();window.DCS_REQUESTERS?.reset();bridge().E.splice(0);bridge().T.splice(0);bridge().N.splice(0);showLogin();bridge().toast('Sessão encerrada');},
+  async logout(){if(notificationPoll)clearInterval(notificationPoll);notificationPoll=null;check(await supabase.auth.signOut());profile=null;profiles=[];labelById=new Map();idByLabel=new Map();window.DCS_KNOWLEDGE?.reset();window.DCS_VENUES?.reset();window.DCS_REQUESTERS?.reset();window.DCS_MEETINGS?.reset();bridge().E.splice(0);bridge().T.splice(0);bridge().N.splice(0);showLogin();bridge().toast('Sessão encerrada');},
   async reload(){await loadAll();bridge().refresh();},
   async createEvent(form){
     ensureUser();
@@ -143,7 +146,7 @@ export const backend={
   async toggleChecklist(eventId,index,drawer=false){
     const ev=bridge().E.find(e=>e.id===eventId);const item=ev?.chk[index];
     if(!item)throw new Error('Checklist não encontrado');
-    check(await supabase.from('event_checklist').update({completed:!item.d}).eq('id',item.id).select('id').single());
+    check(await supabase.rpc('dcs_set_checklist_complete',{p_checklist_id:item.id,p_completed:!item.d}));
     await this.reload();if(drawer)bridge().openEv(eventId);else bridge().rr();
   },
   async createTask(form){
@@ -151,19 +154,22 @@ export const backend={
     const label=form.get('w');const eventId=form.get('v')||null;
     check(await supabase.from('tasks').insert({
       title:String(form.get('t')||'').trim(),event_id:eventId,
-      assignee_id:idFor(label),team:form.get('team'),created_by:profile.id,due_at:form.get('d'),
+      assignee_id:idFor(label),team:form.get('team'),meeting_id:form.get('meeting_id')||null,created_by:profile.id,due_at:form.get('d'),
       priority:PRIORITY_CODE[form.get('p')]||'medium',status:'pending'
     }).select('id').single());
     bridge().closeOv();await this.reload();bridge().toast('Tarefa cadastrada e atribuída no banco');
   },
   async assignTask(id,label){
-    const team=window.DCS_TEAMS?.getTeam(label);
-    check(await supabase.from('tasks').update({assignee_id:idFor(label),...(team?{team}:{})}).eq('id',id).select('id').single());
+    ensureUser();
+    const existing=bridge().T.find(x=>x.id===id);
+    const team=window.DCS_TEAMS?.getTeam(label)||existing?.team||'DCS';
+    check(await supabase.rpc('dcs_assign_task',{p_task_id:id,p_assignee_id:idFor(label),p_team:team}));
     await this.reload();bridge().rr();bridge().toast('Responsável atualizado');
   },
   async taskStatus(id,label){
+    ensureUser();
     const status=TASK_STATUS_CODE[label];if(!status)throw new Error('Status inválido');
-    check(await supabase.from('tasks').update({status}).eq('id',id).select('id').single());
+    check(await supabase.rpc('dcs_set_task_status',{p_task_id:id,p_status:status}));
     await this.reload();bridge().rr();bridge().toast('Status da tarefa atualizado');
   },
   async reschedule(form,id){
@@ -299,6 +305,27 @@ export const backend={
     bridge().toast('Evento planejado. As tarefas do modelo serão enviadas após confirmação do gestor.');
     return eventId;
   },
+  async createMeeting(data){
+    ensureUser();
+    const payload={event_id:data.event_id,title:data.title,starts_at:data.starts_at,
+      duration_minutes:data.duration_minutes,format:data.format,attendees:data.attendees,
+      agenda:data.agenda,minutes:data.minutes||'',decisions:data.decisions||'',
+      status:data.status||'agendada',created_by:profile.id};
+    const row=check(await supabase.from('event_meetings').insert(payload).select('id').single());
+    await this.reload();bridge().toast('Reunião vinculada ao evento');
+    return row.id;
+  },
+  async updateMeeting(id,patch){
+    ensureUser();
+    const row=check(await supabase.from('event_meetings').update(patch).eq('id',id).select('id').single());
+    await this.reload();bridge().toast('Pauta e decisões salvas');
+    return row.id;
+  },
+  async refreshMeetings(){
+    ensureUser();
+    const rows=check(await supabase.from('event_meetings').select('id,event_id,title,starts_at,duration_minutes,format,attendees,agenda,minutes,decisions,status,created_by,created_at,updated_at').order('starts_at',{ascending:false}));
+    window.DCS_MEETINGS?.setData(rows);
+  },
   async listVenues(){
     ensureUser();
     return check(await supabase.from('venues').select('id,name,kind,authority,active,created_at,updated_at').order('name'));
@@ -318,9 +345,9 @@ export const backend={
   },
   async refreshNotifications(){
     if(!profile?.active)return;
-    const items=check(await supabase.from('task_notifications').select('id,title,created_at,read_at').order('created_at',{ascending:false}).limit(100));
+    const items=check(await supabase.from('task_notifications').select('id,task_id,title,created_at,read_at').order('created_at',{ascending:false}).limit(100));
     const ui=bridge();
-    ui.N.splice(0,ui.N.length,...items.map(n=>({id:n.id,t:n.title,w:new Date(n.created_at).toLocaleString('pt-BR'),u:!n.read_at})));
+    ui.N.splice(0,ui.N.length,...items.map(n=>({id:n.id,task_id:n.task_id,t:n.title,w:new Date(n.created_at).toLocaleString('pt-BR'),u:!n.read_at})));
     ui.bell();
   },
   async markNotificationsRead(){
