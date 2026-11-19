@@ -24,7 +24,7 @@ function cardControls(t){
  const note=isOverdue(t)?'<span class="task-alert task-overdue">Atrasada</span>':
    isDueSoon(t)?'<span class="task-alert task-soon">Vence em breve</span>':'';
  const acceptance=t.acceptedAt?'<span class="task-alert task-accepted">Aceita</span>':
-   (t.assigneeId||t.w&&t.w!=='Equipe')?'<span class="task-alert task-awaiting">Aguardando aceite</span>':'';
+   (!['Concluído','Cancelado'].includes(t.s)&&(t.assigneeId||t.w&&t.w!=='Equipe'))?'<span class="task-alert task-awaiting">Aguardando aceite</span>':'';
  return '<div class="task-collaboration">'+note+acceptance+'</div><div class="task-buttons">'+
    (canAccept(t)?'<button class="btn pri" data-task-accept="'+esc(t.id)+'" type="button">Aceitar tarefa</button>':'')+
    (canReadComments(t)?'<button class="btn" data-task-comments="'+esc(t.id)+'" type="button">Comentários</button>':'')+
@@ -73,6 +73,7 @@ async function addComment(form){
  B()?.toast(real()?'Comentário registrado no banco':'Comentário registrado apenas nesta demonstração');
 }
 document.addEventListener('click',e=>{
+ if(e.target.closest('[data-close]'))activeThread=null;
  const accept=e.target.closest('[data-task-accept]');
  if(accept){
   const task=taskFor(accept.dataset.taskAccept);
