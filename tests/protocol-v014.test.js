@@ -60,7 +60,7 @@ test('prismas usam apenas mesa confirmada; tratamento, nome e cargo em trios',()
  assert.doesNotMatch(txt,/Convidado C/,'convidado não confirmado fica fora da impressão');
  assert.doesNotMatch(txt,/Pessoa fora da mesa/);
  assert.ok(txt.indexOf('CONVIDADA B')<txt.indexOf('CONVIDADO A'));
- assert.deepEqual(blocks.slice(2,5).map(x=>x.kind),['heading','title','text']);
+ assert.equal(Array.from(blocks.slice(2,5),x=>x.kind).join(','),'heading,title,text');
 });
 test('PowerPoint editável é pacote OOXML com uma folha de duas faces por pessoa',async()=>{
  const w=init(),blocks=w.DCS_MATERIAL_BUILDER.build('prismas',event,{participants:people},[],[],[]);
