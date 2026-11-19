@@ -101,6 +101,7 @@ function reset(){
  try{
   sessionStorage.removeItem(store);
   window.DCS_DEMO_NOTIFY?.reset();
+  window.DCS_MEETINGS?.reset();
   localStorage.removeItem('dcs-hub-preview-data-v1');
  }catch(_){}
  window.location.reload();
