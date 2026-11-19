@@ -19,8 +19,8 @@ const priorities={
  comunicacao_visual:['material','referencias','aprovacao']
 };
 const templates=[
- ['Roteiro','Sequência e horários do evento, recepção, abertura, falas e encerramento','docs'],
- ['Resumo da reunião','Decisões, providências e informações que faltam do gabinete','preps'],
+ ['Roteiro','Gerar, revisar com o Cerimonial e exportar o Word editável','materiais'],
+ ['Resumo da reunião','Consolidar decisões e pendências em Word revisado','materiais'],
  ['Nominatas','Nomes e cargos para composição de mesa e agradecimentos','participantes'],
  ['Prismas','Tratamento, nome e cargo para identificação na mesa','participantes']
 ];
@@ -129,8 +129,8 @@ function tasksSection(s){
 }
 function materialsSection(){
  const body='<div class="sum-material-list">'+templates.map(([name,desc,tab])=>
- '<div class="sum-material"><div><strong>'+esc(name)+'</strong><small>'+esc(desc)+'</small></div>'+button(tab,tab==='docs'?'Abrir documentos':tab==='preps'?'Ver reunião':'Consultar dados')+'</div>').join('')+'</div>'+
- '<p class="sum-subtle">Os arquivos-modelo fornecidos servem de referência. Eles não foram publicados nem vinculados automaticamente à biblioteca do HUB. A geração de roteiros, nominatas e prismas ainda será implementada.</p>';
+ '<div class="sum-material"><div><strong>'+esc(name)+'</strong><small>'+esc(desc)+'</small></div>'+button(tab,tab==='materiais'?'Preparar Word':'Consultar dados')+'</div>').join('')+'</div>'+
+ '<p class="sum-subtle">Os arquivos-modelo fornecidos são referências, não cópias publicadas no HUB. Roteiro e Resumo da Reunião podem ser preparados e revisados na aba Materiais. Nominatas e prismas automáticos virão depois.</p>';
  return section('Materiais de trabalho',body);
 }
 function render(ev){
