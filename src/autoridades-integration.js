@@ -26,7 +26,7 @@ function activeRows(){
 function paint(){
  const root=$('#view');if(!root||B()?.S?.route!=='autoridades')return;
  if(!real()){
-  root.innerHTML='<div class="admin-shell"><section class="hub-hero"><div class="hub-kicker">Integração · Catálogo oficial</div><h1>Autoridades SP no DCS HUB</h1><p>A demonstração pública não lê o banco real. Entre na área de homologação com sua conta autorizada para consultar as autoridades cadastradas.</p></section>'+
+  root.innerHTML='<div class="admin-shell"><section class="hub-hero"><div class="hub-kicker">Integração · Catálogo oficial</div><h1>Diretório de autoridades</h1><p>A demonstração pública não lê o banco real. Entre na área de homologação com sua conta autorizada para consultar as autoridades cadastradas.</p></section>'+
   '<section class="card hub-panel"><h2>Uma única base de autoridades</h2><p>Deputados, vereadores e prefeitos existentes no Autoridades SP são consultados em tempo real pelo HUB, sem duplicação nem edição.</p>'+
   '<a class="btn pri" href="homologacao/" rel="noopener">Acessar homologação com login real</a></section></div>';
   return;
@@ -39,7 +39,7 @@ function paint(){
  const categories=[...new Set((rows||[]).map(x=>x.kind))].sort();
  const option=(v,l)=>'<option value="'+esc(v)+'"'+(v===kind?' selected':'')+'>'+esc(l)+'</option>';
  root.innerHTML='<div class="admin-shell"><section class="hub-hero"><div class="hub-kicker">Integração ativa · Banco compartilhado</div>'+
- '<h1>Autoridades SP</h1><p>Consulta à mesma base do Autoridades SP, sem copiar os registros. A gestão das autoridades permanece na aplicação de origem.</p></section>'+
+ '<h1>Diretório de autoridades</h1><p>Use aqui para consultar nomes e cargos do Autoridades SP. Para registrar convidados, homenageados e integrantes da mesa de uma solenidade, abra o evento e escolha <b>Pessoas e mesa</b>. A gestão do diretório continua na aplicação de origem.</p></section>'+
  '<div class="hub-stats"><div class="card hub-stat"><small>Total no catálogo</small><b>'+(rows||[]).length+'</b></div>'+
  '<div class="card hub-stat"><small>Deputados estaduais</small><b>'+(rows||[]).filter(x=>x.kind==='deputado_estadual').length+'</b></div>'+
  '<div class="card hub-stat"><small>Com e-mail informado</small><b>'+(rows||[]).filter(x=>!!x.email).length+'</b></div>'+
