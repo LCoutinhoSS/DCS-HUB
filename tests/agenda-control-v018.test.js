@@ -72,7 +72,7 @@ test('páginas registram nova rota, menu, painel, resumo e preservam o suporte a
 });
 test('painel é apenas leitura: nenhuma gravação direta na Microsoft ou Supabase',()=>{
  const js=read('../src/agenda-control.js');
- assert.doesNotMatch(js,/\\.insert\\(|\\.upsert\\(|\\.update\\(|graph\\.microsoft\\.com|teamsForBusiness/i);
+ assert.doesNotMatch(js,/\.insert\(|\.upsert\(|\.update\(|graph\.microsoft\.com|teamsForBusiness/i);
  assert.match(js,/Sem registro/);
  assert.match(js,/Conferir cancelamento/);
  assert.match(js,/não comprova sincronização/);
