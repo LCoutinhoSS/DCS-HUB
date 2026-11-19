@@ -153,7 +153,7 @@ export const backend={
     ensureUser();
     const label=form.get('w');const eventId=form.get('v')||null;
     check(await supabase.from('tasks').insert({
-      title:String(form.get('t')||'').trim(),event_id:eventId,
+      title:String(form.get('t')||'').trim(),description:String(form.get('description')||'').slice(0,2000),event_id:eventId,
       assignee_id:idFor(label),team:form.get('team'),meeting_id:form.get('meeting_id')||null,created_by:profile.id,due_at:form.get('d'),
       priority:PRIORITY_CODE[form.get('p')]||'medium',status:'pending'
     }).select('id').single());
