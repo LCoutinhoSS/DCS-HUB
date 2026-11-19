@@ -154,7 +154,7 @@ document.addEventListener('click',e=>{
  }
 });
 window.DCS_CALENDAR=Object.freeze({...old,renderEvent});
-window.DCS_CALENDAR_MANUAL=Object.freeze({snapshot,stale,statusOf,refresh,reset,setData(rows){
+window.DCS_CALENDAR_MANUAL=Object.freeze({snapshot,stale,statusOf,getRecord(id){return records.get(id)||null;},hasLoaded(){return loaded;},refresh,reset,setData(rows){
  records.clear();(rows||[]).forEach(r=>records.set(r.event_id,r));loaded=true;attempted=true;lastError='';
 }});
 })();

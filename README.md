@@ -27,6 +27,16 @@ O cadastro de **94 deputados estaduais** da aplicação Autoridades SP é consul
 - Ao fechar formulários, o foco retorna sem forçar a área principal ao topo.
 - Não há mudanças de permissão, tabelas Supabase ou modelo de dados. Testes de regressão cobrem os cenários de apresentação.
 
+## Atualização 0.18 — Painel de Controle da Agenda
+
+- **Nova página "Controle da agenda" no menu** e **resumo no Dashboard**, com contagem rápida de pontos de atenção.
+- **Fila visual:** eventos confirmados sem importação declarada, importações desatualizadas após mudanças e cancelados com possível pendência no Outlook; inclui conferidos e aguardando aprovação.
+- **Busca e filtros** por situação e próximos 30 dias. O botão **Abrir evento** leva à aba **Outlook / Teams** do compromisso escolhido.
+- **Estabilidade:** filtros preservam a rolagem, aproveitando a correção v0.17.1.
+- **Segurança:** consulta somente os registros do HUB, sem Graph/Teams conectado, sem alteração do banco e sem tocar na base Autoridades SP. "Conferido" continua sendo uma declaração manual, não uma confirmação Microsoft.
+
+Veja [Guia de apresentação e uso do Controle da Agenda 0.18](docs/CONTROLE_AGENDA_018.md).
+
 ## Atualização 0.17 — Controle compartilhado de importação manual
 
 - Na aba **Outlook / Teams**, cada evento exibe **Importação ainda não registrada**, **Importação manual declarada**, **Evento alterado desde a declaração**, ou **Evento cancelado — conferir exclusão no Outlook**.
