@@ -18,6 +18,17 @@ O cadastro de **94 deputados estaduais** da aplicação Autoridades SP é consul
 
 **Correção de acesso — 19/11/2026:** no Autoridades SP, a tabela `public.autoridades` tem RLS de leitura, mas não concede `SELECT` direto ao papel `authenticated`. Isso causava `permission denied for table autoridades` na homologação. A migração **008** instalou a função `dcs_list_authorities`, restrita a membros ativos do HUB, que reutiliza `consultar_autoridades_seguras()` e devolve somente campos públicos/autorizados. A UI de **Autoridades SP** e o seletor de **Solicitantes** passaram a usar essa função. Os testes com perfil ativo retornaram 150 registros (94 deputados); sem perfil DCS, zero. Nenhuma permissão da tabela original foi modificada.
 
+## Atualização 0.12 — Visão rápida e teste com perfil Servidor
+
+- A primeira aba de cada evento agora é **Visão rápida**: solicitante, data/local, decisões confirmadas, pendências para retorno do gabinete, mesa/homenageados, reuniões e tarefas com prazo.
+- Os resumos são calculados das respostas e participantes existentes. **Sem resposta não significa confirmado**: o HUB diferencia informação registrada, aguardando confirmação e ausente.
+- Acesso **Copiar resumo** para compartilhar a síntese e **Atualizar** para consultar respostas gravadas por outras contas.
+- Os cinco documentos fornecidos (dois roteiros, resumo de reunião, modelo de nominatas e modelo de prismas) foram analisados como fluxos; **não foram publicados no GitHub**. A visão rápida indica onde consultar seus dados de origem; a geração dos arquivos editáveis permanece futura.
+- **Acesso demonstrativo de Servidor DCS** na demonstração pública: `usuario@demo.dcs-hub.invalid` · `DCSdemo2026!`. Fictício, sem banco real. Homologação real só com convite no Supabase Auth e ativação administrativa.
+- Mantidas as tabelas atuais sem nova migração ou exclusão dos dados existentes.
+
+Ver [Guia da Visão rápida e acesso comum (0.12)](docs/VISAO_RAPIDA_012.md).
+
 ## Atualização 0.11 — Ficha do Gabinete, mesa e checklist por fases
 
 - **Ficha do Gabinete:** perguntas extraídas e adaptadas dos cinco checklists ALESP, agrupadas por assunto, com respostas, situação, autor/data e filtro de pendências. Cada resposta fica no banco e pode ser consultada por outras contas do HUB.
@@ -91,6 +102,7 @@ O projeto usa o **mesmo Supabase e Auth** do Autoridades SP, com isolamento **l�
 Os Supabase Advisors identificaram avisos anteriores de funções `SECURITY DEFINER` públicas no Autoridades SP e outros pontos de segurança. Eles precisam ser revisados em conjunto, sem mudanças bruscas que interrompam a aplicação existente. Antes de dados institucionais, validar também políticas de retenção, LGPD, auditoria, aprovação TI e alternativas de SSO/MFA.
 
 **Leia também:**
+- [Visão rápida e perfil Servidor (0.12)](docs/VISAO_RAPIDA_012.md)
 - [Ficha do Gabinete, pessoas e mesa (0.11)](docs/GABINETE_011.md)
 - [Aceite, comentários e lembretes (0.10)](docs/COLABORACAO_10.md)
 - [Fluxo colaborativo de reuniões e tarefas (0.9)](docs/COLABORACAO_09.md)
