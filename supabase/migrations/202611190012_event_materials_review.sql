@@ -38,7 +38,7 @@ begin
     or pg_column_size(p_blocks)>90000
  then raise exception 'Documento inválido ou grande demais'; end if;
  if exists(select 1 from jsonb_array_elements(p_blocks) b
-  where jsonb_typeof(b)<>'object' or b->>'kind' not in
+  where jsonb_typeof(b)<>'object' or b->>'kind' is null or b->>'kind' not in
   ('title','subtitle','heading','text','bullet','time','meta','note')
   or jsonb_typeof(b->'text')<>'string'
   or length(b->>'text')>2000)
