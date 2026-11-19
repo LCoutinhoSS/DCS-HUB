@@ -18,6 +18,15 @@ O cadastro de **94 deputados estaduais** da aplicação Autoridades SP é consul
 
 **Correção de acesso — 19/11/2026:** no Autoridades SP, a tabela `public.autoridades` tem RLS de leitura, mas não concede `SELECT` direto ao papel `authenticated`. Isso causava `permission denied for table autoridades` na homologação. A migração **008** instalou a função `dcs_list_authorities`, restrita a membros ativos do HUB, que reutiliza `consultar_autoridades_seguras()` e devolve somente campos públicos/autorizados. A UI de **Autoridades SP** e o seletor de **Solicitantes** passaram a usar essa função. Os testes com perfil ativo retornaram 150 registros (94 deputados); sem perfil DCS, zero. Nenhuma permissão da tabela original foi modificada.
 
+## Atualização 0.15 — Reorganização visual da mesa
+
+- A aba **Pessoas e mesa** permite reordenar os integrantes por arraste, botões e teclado. A prévia pode ser descartada ou salva.
+- O banco salva a nova sequência de forma atômica pela RPC `dcs_reorder_event_mesa`, detecta edições de outra conta e registra antes/depois no histórico.
+- Nominatas e prismas passam a refletir a nova ordem; materiais aprovados anteriormente exigem nova revisão após alteração dos participantes.
+- A precedência continua sendo definida pelo Cerimonial. O Autoridades SP permanece inalterado.
+
+Veja [Guia de reordenação da mesa 0.15](docs/MESA_ORDEM_015.md).
+
 ## Atualização 0.14 — Nominatas Word e prismas PowerPoint
 
 - **Pessoas e mesa** agora tem tratamento/título, ordem protocolar manual e indicação de quem a pessoa representa. O quadro **Ordem da mesa** reúne essas informações e sinaliza o que falta confirmar.
