@@ -1,0 +1,23 @@
+/* DCS HUB v0.10 — colaboração e alerta visual de prazos */
+.task-collaboration{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0}
+.task-alert{display:inline-flex;align-items:center;padding:4px 7px;border-radius:7px;font-size:10px;line-height:1.3;font-weight:700;border:1px solid var(--bd)}
+.task-overdue{color:#db635e;background:rgba(219,99,94,.11);border-color:rgba(219,99,94,.3)}
+.task-soon{color:#dba348;background:rgba(219,163,72,.10);border-color:rgba(219,163,72,.3)}
+.task-accepted{color:#48a583;background:rgba(72,165,131,.12);border-color:rgba(72,165,131,.3)}
+.task-awaiting{color:var(--mu);background:var(--hv)}
+.task-buttons{display:flex;flex-wrap:wrap;gap:6px;margin:7px 0 9px}
+.task-buttons .btn{font-size:11px;min-height:28px;padding:6px 10px}
+.task-thread{width:min(680px,96vw);max-height:92vh;overflow:auto}
+.task-thread-head{display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
+.task-thread-head h2{font:600 25px Fraunces,Georgia,serif;margin:5px 0}
+.task-thread .mu{font-size:12px;line-height:1.5}
+.task-comment-list{display:flex;flex-direction:column;gap:9px;max-height:42vh;overflow:auto;border-top:1px solid var(--bd);border-bottom:1px solid var(--bd);padding:14px 0;margin:14px 0}
+.task-comment{background:var(--gl2);border:1px solid var(--bd);border-radius:11px;padding:11px 14px}
+.task-comment-meta{display:flex;gap:12px;align-items:center;justify-content:space-between}
+.task-comment-meta strong{font-size:12px}
+.task-comment-meta small{color:var(--mu);font-size:10px}
+.task-comment p{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;line-height:1.65;margin:7px 0 0}
+.task-thread textarea.fi{min-height:90px;resize:vertical}
+.task-overdue-card{border-color:rgba(219,99,94,.4)!important}
+.task-filter-active{color:#db635e!important;border-color:rgba(219,99,94,.5)!important}
+@media(max-width:680px){.task-thread{max-height:100vh;width:100vw}.task-comment-list{max-height:33vh}}
