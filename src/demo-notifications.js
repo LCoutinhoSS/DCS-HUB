@@ -5,7 +5,7 @@
 const roles={
  'Administrador':{email:'admin@demo.dcs-hub.invalid',name:'Marina S.'},
  'Gestor':{email:'gestor@demo.dcs-hub.invalid',name:'Rafael T.'},
- 'Servidor DCS':{email:'dcs@demo.dcs-hub.invalid',name:'Camila A.'},
+ 'Servidor DCS':{email:'usuario@demo.dcs-hub.invalid',name:'Camila A.'},
  'Servidor Cerimonial':{email:'cerimonial@demo.dcs-hub.invalid',name:'Bruno L.'},
  'Leitor':{email:'leitor@demo.dcs-hub.invalid',name:'Júlia M.'}
 };
