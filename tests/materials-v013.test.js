@@ -129,6 +129,14 @@ test('revisão e exportação têm verificação no banco, não apenas um botão
  assert.match(ui,/window\.DCS_DOCX\.create/);
 });
 
+test('validação no servidor rejeita tipo inválido e trechos sem texto',()=>{
+ const hardening=read('../supabase/migrations/202611190013_material_blocks_validation.sql');
+ assert.match(hardening,/create function public\.dcs_valid_material_blocks/);
+ assert.match(hardening,/jsonb_typeof\(b->'text'\) is distinct from 'string'/);
+ assert.match(hardening,/event_materials_blocks_valid/);
+ assert.match(hardening,/revoke all on function public\.dcs_valid_material_blocks/);
+});
+
 test('aba Materiais integra as duas telas e deixa a revisão fora de popup',()=>{
  assert.doesNotThrow(()=>new Function(ui));
  for(const page of pages){
