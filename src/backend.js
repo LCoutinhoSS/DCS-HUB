@@ -227,20 +227,19 @@ export const backend={
   },
   async listAuthorities(){
     ensureUser();
-    // Fonte única: tabela Autoridades SP. Consulta somente leitura.
-    return check(await supabase.from('autoridades')
-      .select('id,name,kind,role,org,city,partido,email,status_verificacao,updated_at')
-      .order('name',{ascending:true}).limit(1000));
+    // A tabela original não concede SELECT ao role authenticated.
+    // A ponte RPC preserva as regras de mascaramento do Autoridades SP.
+    return check(await supabase.rpc('dcs_list_authorities',{p_kind:null}));
   },
   async listRequesters(){
     ensureUser();
     // Autoridades SP é a fonte única dos deputados em exercício.
     // Não se copiam nem alteram registros de public.autoridades.
     const [master,custom]=await Promise.all([
-      supabase.from('autoridades').select('id,name,kind,updated_at').eq('kind','deputado_estadual').order('name'),
+      supabase.rpc('dcs_list_authorities',{p_kind:'deputado_estadual'}),
       supabase.from('event_requesters').select('id,name,kind,source,active,created_at,updated_at').order('name')
     ]);
-    const deputies=check(master).map(a=>({
+    const deputies=check(master).filter(a=>a.name).map(a=>({
       id:'a:'+a.id,name:a.name,kind:'deputado',source:'Autoridades SP · cadastro oficial',
       active:true,updated_at:a.updated_at,linked_authority_id:a.id
     }));
