@@ -103,6 +103,7 @@ export const backend={
     window.DCS_REQUESTERS?.reset();
     window.DCS_MEETINGS?.reset();
     window.DCS_GABINETE?.reset();
+    window.DCS_MATERIALS?.reset();
     const box=$('#rl')?.closest('label');if(box)box.hidden=true;
     const note=$('.lc .pl');if(note)note.textContent='Acesso real via Supabase Auth. Apenas contas ativadas pela administração podem entrar. Não há seleção de perfil de demonstração.';
     const mail=$('#lf input[type=email]');if(mail)mail.required=true;
@@ -124,7 +125,7 @@ export const backend={
       await loadAll();enterApp();
     }catch(e){await supabase.auth.signOut();profile=null;alertError(e);}
   },
-  async logout(){if(notificationPoll)clearInterval(notificationPoll);notificationPoll=null;check(await supabase.auth.signOut());profile=null;profiles=[];labelById=new Map();idByLabel=new Map();window.DCS_KNOWLEDGE?.reset();window.DCS_VENUES?.reset();window.DCS_REQUESTERS?.reset();window.DCS_MEETINGS?.reset();window.DCS_GABINETE?.reset();window.DCS_TASKS?.reset();bridge().E.splice(0);bridge().T.splice(0);bridge().N.splice(0);showLogin();bridge().toast('Sessão encerrada');},
+  async logout(){if(notificationPoll)clearInterval(notificationPoll);notificationPoll=null;check(await supabase.auth.signOut());profile=null;profiles=[];labelById=new Map();idByLabel=new Map();window.DCS_KNOWLEDGE?.reset();window.DCS_VENUES?.reset();window.DCS_REQUESTERS?.reset();window.DCS_MEETINGS?.reset();window.DCS_GABINETE?.reset();window.DCS_MATERIALS?.reset();window.DCS_TASKS?.reset();bridge().E.splice(0);bridge().T.splice(0);bridge().N.splice(0);showLogin();bridge().toast('Sessão encerrada');},
   async reload(){await loadAll();bridge().refresh();},
   async createEvent(form){
     ensureUser();
@@ -255,6 +256,32 @@ export const backend={
     return check(await supabase.from('knowledge_article_revisions')
       .select('id,article_id,version,title,summary,body,category,status,media,created_at')
       .eq('article_id',id).order('version',{ascending:false}));
+  },
+  async listEventMaterials(eventId){
+    ensureUser();
+    return check(await supabase.from('event_materials')
+      .select('id,event_id,kind,blocks,version,approved_version,saved_by,saved_at,approved_by,approved_at')
+      .eq('event_id',eventId));
+  },
+  async saveEventMaterial(eventId,kind,blocks){
+    ensureUser();
+    if(!Array.isArray(blocks)||blocks.length<2||blocks.length>140)
+      throw new Error('Documento inválido');
+    return check(await supabase.rpc('dcs_save_material',{
+      p_event:eventId,p_kind:kind,p_blocks:blocks
+    }));
+  },
+  async approveEventMaterial(eventId,kind,version){
+    ensureUser();
+    return check(await supabase.rpc('dcs_approve_material',{
+      p_event:eventId,p_kind:kind,p_version:version
+    }));
+  },
+  async exportEventMaterial(eventId,kind){
+    ensureUser();
+    return check(await supabase.rpc('dcs_export_material',{
+      p_event:eventId,p_kind:kind
+    }));
   },
   async getEventBriefingData(eventId){
     ensureUser();
