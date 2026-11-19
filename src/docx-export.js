@@ -44,9 +44,11 @@ function para(content,style,center=false){
 }
 const styleFor={title:'Title',subtitle:'Subtitle',heading:'Heading1',text:'Normal',bullet:'DCSBullet',time:'DCSTime',meta:'DCSMeta',note:'DCSNote'};
 function documentXml(blocks,metadata={}){
- const status=metadata.status==='approved'?'VERSÃO REVISADA NO DCS HUB':'MINUTA PARA CONFERÊNCIA';
+ const status=metadata.status==='approved'?'VERSÃO REVISADA NO DCS HUB'+(metadata.version?' · VERSÃO '+metadata.version:''):'MINUTA PARA CONFERÊNCIA';
+ const reviewed=metadata.reviewedAt?'Revisão registrada em '+new Date(metadata.reviewedAt).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):'';
  const body=para('DCS HUB  |  DIVISÃO DE COMUNICAÇÃO SOCIAL','DCSMeta')+
   para(status,'DCSNote')+
+  (reviewed?para(reviewed,'DCSNote'):'')+
   blocks.map(b=>para(b.kind==='bullet'?'•  '+b.text:b.text,styleFor[b.kind]||'Normal',b.kind==='title'||b.kind==='subtitle')).join('')+
   para('Informações provenientes do HUB. Confirmar dados e autorização de uso antes da circulação.','DCSNote');
  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
