@@ -134,7 +134,7 @@ function addDemo(){
 }
 function showInstructions(){
  modal('<h2>Cadastro de novos servidores</h2><p>O HUB não cria contas de autenticação diretamente no navegador, pois isso exigiria credenciais administrativas secretas.</p>'+
- '<p>Na instância <b>separada do Supabase DCS HUB</b>, abra <b>Authentication → Users</b> e convide/crie o usuário com e-mail institucional. O banco cria automaticamente um perfil <b>Leitor · Inativo</b>.</p>'+
+ '<p>Na instância <b>Supabase compartilhada com o Autoridades SP</b>, acesse <b>Authentication → Users</b> e utilize <b>Invite user</b> para enviar convite ao e-mail autorizado pela TI. O banco pode criar um perfil DCS inicial inativo, conforme a configuração vigente.</p>'+
  '<p>Depois, volte a esta tela, clique em <b>Atualizar</b> e em <b>Gerenciar</b> para definir perfil, unidade e ativar a conta.</p>'+
  '<p class="admin-hint">Antes do uso institucional, valide o domínio do e-mail, o método de convite e as políticas de TI. Não envie convites nem exponha chaves secretas no GitHub.</p>'+
  '<div style="text-align:right;margin-top:16px"><button class="btn pri" data-close>Entendi</button></div>');
