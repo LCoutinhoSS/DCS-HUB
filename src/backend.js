@@ -102,6 +102,7 @@ export const backend={
     window.DCS_VENUES?.reset();
     window.DCS_REQUESTERS?.reset();
     window.DCS_MEETINGS?.reset();
+    window.DCS_GABINETE?.reset();
     const box=$('#rl')?.closest('label');if(box)box.hidden=true;
     const note=$('.lc .pl');if(note)note.textContent='Acesso real via Supabase Auth. Apenas contas ativadas pela administração podem entrar. Não há seleção de perfil de demonstração.';
     const mail=$('#lf input[type=email]');if(mail)mail.required=true;
@@ -123,7 +124,7 @@ export const backend={
       await loadAll();enterApp();
     }catch(e){await supabase.auth.signOut();profile=null;alertError(e);}
   },
-  async logout(){if(notificationPoll)clearInterval(notificationPoll);notificationPoll=null;check(await supabase.auth.signOut());profile=null;profiles=[];labelById=new Map();idByLabel=new Map();window.DCS_KNOWLEDGE?.reset();window.DCS_VENUES?.reset();window.DCS_REQUESTERS?.reset();window.DCS_MEETINGS?.reset();window.DCS_TASKS?.reset();bridge().E.splice(0);bridge().T.splice(0);bridge().N.splice(0);showLogin();bridge().toast('Sessão encerrada');},
+  async logout(){if(notificationPoll)clearInterval(notificationPoll);notificationPoll=null;check(await supabase.auth.signOut());profile=null;profiles=[];labelById=new Map();idByLabel=new Map();window.DCS_KNOWLEDGE?.reset();window.DCS_VENUES?.reset();window.DCS_REQUESTERS?.reset();window.DCS_MEETINGS?.reset();window.DCS_GABINETE?.reset();window.DCS_TASKS?.reset();bridge().E.splice(0);bridge().T.splice(0);bridge().N.splice(0);showLogin();bridge().toast('Sessão encerrada');},
   async reload(){await loadAll();bridge().refresh();},
   async createEvent(form){
     ensureUser();
@@ -254,6 +255,37 @@ export const backend={
     return check(await supabase.from('knowledge_article_revisions')
       .select('id,article_id,version,title,summary,body,category,status,media,created_at')
       .eq('article_id',id).order('version',{ascending:false}));
+  },
+  async getEventBriefingData(eventId){
+    ensureUser();
+    const [answers,participants]=await Promise.all([
+      supabase.from('event_briefing_answers')
+        .select('event_id,question_key,answer,status,updated_by,updated_at')
+        .eq('event_id',eventId).order('question_key'),
+      supabase.from('event_participants')
+        .select('id,event_id,authority_id,full_name,role_title,organization,participation,invitation_status,notes,active,created_by,updated_by,created_at,updated_at')
+        .eq('event_id',eventId).order('created_at')
+    ]);
+    return {answers:check(answers),participants:check(participants)};
+  },
+  async saveEventBriefingAnswer(eventId,key,answer,status){
+    ensureUser();
+    check(await supabase.rpc('dcs_save_event_briefing',{
+      p_event:eventId,p_key:key,p_answer:answer,p_status:status
+    }));
+  },
+  async createEventParticipant(eventId,data){
+    ensureUser();
+    return check(await supabase.from('event_participants').insert({
+      event_id:eventId,created_by:profile.id,updated_by:profile.id,...data
+    }).select('id').single());
+  },
+  async updateEventParticipant(id,patch){
+    ensureUser();
+    const allowed=['authority_id','full_name','role_title','organization','participation','invitation_status','notes','active'];
+    const data=Object.fromEntries(allowed.filter(k=>Object.hasOwn(patch,k)).map(k=>[k,patch[k]]));
+    if(!Object.keys(data).length)throw new Error('Nenhuma alteração recebida');
+    return check(await supabase.from('event_participants').update(data).eq('id',id).select('id').single());
   },
   async listAuthorities(){
     ensureUser();
