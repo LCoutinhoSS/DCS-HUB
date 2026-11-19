@@ -1,0 +1,25 @@
+/* DCS HUB · Reuniões e decisões vinculadas ao evento — v0.9 */
+.meeting-hub{display:flex;flex-direction:column;gap:13px;margin:15px 0}
+.meeting-header,.meeting-summary{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.meeting-header h2{font:600 23px Fraunces,Georgia,serif;margin:0 0 5px}
+.meeting-header p{margin:0;font-size:12px}
+.meeting-empty{border:1px dashed var(--bd);background:var(--gl2);padding:27px;border-radius:15px}
+.meeting-empty h3{margin:0 0 8px;font-size:16px}
+.meeting-empty p{font-size:13px;max-width:600px;line-height:1.6}
+.meeting-item{border:1px solid var(--bd);border-radius:14px;background:var(--gl2);overflow:hidden}
+.meeting-summary{padding:17px 18px;align-items:flex-start}
+.meeting-summary h3{margin:7px 0;font:600 18px Fraunces,serif;overflow-wrap:anywhere}
+.meeting-summary p{font-size:11px;color:var(--mu);margin:0}
+.meeting-detail{border-top:1px solid var(--bd);padding:16px 18px;display:grid;gap:14px}
+.meeting-kv{padding:11px 12px;border-radius:10px;border:1px solid var(--bd)}
+.meeting-kv b{font-size:12px;display:block;margin-bottom:6px}
+.meeting-kv p{white-space:pre-wrap;font-size:12.5px;line-height:1.68;margin:0;overflow-wrap:anywhere}
+.meeting-detail h4{margin:5px 0;font-size:14px}
+.meeting-task{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px;border-radius:10px;background:var(--hv)}
+.meeting-task b{font-size:12px;max-width:65%;overflow-wrap:anywhere}
+.meeting-task small{font-size:10.5px;color:var(--mu);text-align:right}
+.meeting-form{max-height:92vh;overflow:auto}
+.meeting-form label{font-size:12px;font-weight:600;display:block;margin:10px 0}
+.meeting-form textarea{min-height:82px;resize:vertical}
+.task-focus{outline:2px solid var(--acc);box-shadow:0 0 0 5px rgba(190,157,101,.08)}
+@media(max-width:670px){.meeting-header,.meeting-summary{align-items:flex-start;flex-direction:column}.meeting-task{align-items:flex-start;flex-direction:column}.meeting-task b{max-width:none}.meeting-task small{text-align:left}}
