@@ -7,7 +7,7 @@ Sistema web para agenda, eventos, checklist operacional, gestão de tarefas, equ
 - **[Demonstração pública](https://lcoutinhoss.github.io/DCS-HUB/):** dados e senhas fictícios apenas no navegador. Use para conhecer a interface; não insira dados reais.
 - **[Homologação com login Supabase](https://lcoutinhoss.github.io/DCS-HUB/homologacao/):** usa as contas já existentes do Supabase do **Autoridades SP**, mas tem **permissões, registros e tabelas próprias**. O primeiro administrador do HUB deve ser um administrador já autorizado no Autoridades SP; as demais contas aguardam aprovação. Inicialmente use apenas dados fictícios.
 
-## Status — 18 de novembro de 2026
+## Status — 19 de novembro de 2026
 
 As migrações 001–007 foram **aplicadas e verificadas** no projeto Supabase existente `BUSCA AUTORIDADE`. O Autoridades SP preservou 150 registros de autoridades e 6 perfis; o HUB começou com 20 espaços ALESP e **nenhum evento ou perfil DCS criado automaticamente**. As tabelas DCS usam RLS.
 
@@ -17,6 +17,18 @@ O cadastro de **94 deputados estaduais** da aplicação Autoridades SP é consul
 
 
 **Correção de acesso — 19/11/2026:** no Autoridades SP, a tabela `public.autoridades` tem RLS de leitura, mas não concede `SELECT` direto ao papel `authenticated`. Isso causava `permission denied for table autoridades` na homologação. A migração **008** instalou a função `dcs_list_authorities`, restrita a membros ativos do HUB, que reutiliza `consultar_autoridades_seguras()` e devolve somente campos públicos/autorizados. A UI de **Autoridades SP** e o seletor de **Solicitantes** passaram a usar essa função. Os testes com perfil ativo retornaram 150 registros (94 deputados); sem perfil DCS, zero. Nenhuma permissão da tabela original foi modificada.
+
+## Atualização 0.9 — Colaboração operacional
+
+- **Reuniões preparatórias vinculadas aos eventos**, com calendário, participantes, pauta, ata, decisões e histórico.
+- **Tarefas de encaminhamento ligadas à reunião de origem**, com equipe, responsável individual, prioridade e prazo.
+- **Avisos dentro do HUB** para quem recebe tarefa e também para seu criador quando o responsável atualiza o andamento; o sino tem botão **Ver tarefa**.
+- **Minhas tarefas** e **Ver reunião** para navegar rapidamente dos encaminhamentos ao trabalho.
+- **Concluir checklist agora funciona no banco**, sincronizando o cartão de tarefa quando houver vínculo.
+- **Permissões mais seguras:** alterações de tarefas e checklist agora passam por RPCs com verificação de identidade, papel e responsabilidade; não existe mais atualização direta livre desses campos via Data API.
+- Banco já recebeu **migração 009**; teste transacional com dois usuários simulados passou e foi revertido sem deixar registros fictícios.
+
+O e-mail/Teams/Outlook e a colaboração via dois navegadores reais ainda exigem homologação com integrantes da equipe. Leia [Manual de colaboração 0.9](docs/COLABORACAO_09.md).
 
 ## Recursos
 
@@ -44,6 +56,7 @@ A seleção de um espaço da ALESP **não é uma reserva** e a confirmação de 
 - `src/knowledge.js`, `src/admin.js` — revista interna, documentos e perfis.
 - `supabase/migrations/202611180001_*.sql` a `202611180007_*.sql` — **já aplicadas**, não executar novamente.
 - `supabase/migrations/202611190008_dcs_authorities_bridge.sql` — **já aplicada**; consulta protegida para o HUB, sem conceder SELECT direto à tabela original.
+- `supabase/migrations/202611190009_collaboration_meetings_tasks.sql` — **já aplicada**; reuniões e execução segura de tarefas/checklist.
 - `.github/workflows/build-homologacao.yml` — compila o login real com **chave publicável**, publica exclusivamente o caminho `/homologacao/`; o site raiz continua sendo demonstração.
 - `.github/workflows/ci.yml` — testes e build.
 
@@ -54,6 +67,7 @@ O projeto usa o **mesmo Supabase e Auth** do Autoridades SP, com isolamento **l�
 Os Supabase Advisors identificaram avisos anteriores de funções `SECURITY DEFINER` públicas no Autoridades SP e outros pontos de segurança. Eles precisam ser revisados em conjunto, sem mudanças bruscas que interrompam a aplicação existente. Antes de dados institucionais, validar também políticas de retenção, LGPD, auditoria, aprovação TI e alternativas de SSO/MFA.
 
 **Leia também:**
+- [Fluxo colaborativo de reuniões e tarefas (0.9)](docs/COLABORACAO_09.md)
 - [Banco compartilhado e primeiro login](docs/BANCO_COMPARTILHADO.md)
 - [Guia dos eventos e checklists](docs/OPERACOES_08.md)
 - [Manual de Administração](docs/ADMINISTRACAO.md)
