@@ -98,7 +98,7 @@ function create(blocks,metadata){
  });
 }
 function filename(kind,title){
- const prefix=kind==='roteiro'?'Roteiro':'Resumo_Reuniao';
+ const prefix=({roteiro:'Roteiro',resumo_reuniao:'Resumo_Reuniao',nominata:'Nominata',prismas:'Prismas'})[kind]||'Documento';
  const normalized=String(title||'evento').normalize('NFKD').replace(/[\u0300-\u036f]/g,'')
   .replace(/[^a-zA-Z0-9 _-]/g,'').trim().replace(/\s+/g,'_').slice(0,55)||'evento';
  return prefix+'_'+normalized+'.docx';
