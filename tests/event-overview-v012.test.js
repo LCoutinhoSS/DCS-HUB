@@ -79,6 +79,6 @@ test('materiais institucionais usados como padrões, sem alegar anexos ou geraç
  assert.match(ov,/Resumo da reunião/);
  assert.match(ov,/Nominatas/);
  assert.match(ov,/Prismas/);
- assert.match(ov,/não foram publicados nem vinculados automaticamente/i);
+ assert.match(ov,/Roteiro e Resumo da Reunião podem ser preparados e revisados/i);
  assert.doesNotMatch(ov,/\.docx|\.pptx|\.doc\b/);
 });
