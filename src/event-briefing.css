@@ -73,3 +73,16 @@
 .gab-protocol-row small{font-size:10px;color:var(--mu);line-height:1.45;overflow-wrap:anywhere}
 .gab-protocol-row .btn{font-size:11px;flex:none}
 @media(max-width:650px){.gab-protocol-head{flex-direction:column}.gab-protocol-row{flex-wrap:wrap}}
+
+/* v0.15: mesa reordenável por arraste, teclado e botões */
+.gab-mesa-editor .gab-protocol-row[draggable=true]{cursor:grab;touch-action:pan-y}
+.gab-mesa-editor .gab-protocol-row[draggable=true]:active{cursor:grabbing}
+.gab-mesa-editor .gab-protocol-row:focus-visible{outline:2px solid var(--ac,var(--tx));outline-offset:2px}
+.gab-mesa-editor .gab-protocol-row.gab-dragging{opacity:.5}
+.gab-mesa-editor .gab-protocol-row.gab-drag-target{outline:2px dashed var(--ac,var(--tx));outline-offset:2px}
+.gab-mesa-editor .gab-protocol-row>.gab-protocol-actions{display:flex;flex-direction:row;align-items:center;gap:5px;flex:none;min-width:auto}
+.gab-mesa-editor .gab-protocol-actions .btn{font-size:11px;min-width:30px;padding:6px 9px}
+.gab-mesa-editor .gab-protocol-actions .btn:disabled{opacity:.32;cursor:not-allowed}
+.gab-mesa-editor .gab-mesa-save{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap;margin-top:12px}
+.gab-mesa-editor .gab-mesa-save .gab-hint{margin-right:auto}
+@media(max-width:650px){.gab-mesa-editor .gab-protocol-row>.gab-protocol-actions{width:100%;justify-content:flex-end}}
