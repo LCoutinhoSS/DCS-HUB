@@ -1,0 +1,53 @@
+/* DCS HUB 0.12 — visão rápida: conteúdo primeiro, ações com contexto */
+.sum-shell{padding:8px 0;display:flex;flex-direction:column;gap:16px}
+.sum-demo-note{border-radius:9px;border:1px solid var(--bd);padding:9px 12px;font-size:11px;background:var(--gl2);color:var(--mu)}
+.sum-header{background:linear-gradient(120deg,rgba(59,108,162,.10),rgba(182,147,91,.055));border:1px solid var(--bd);border-radius:15px;padding:21px}
+.sum-head-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.sum-head-top h2{font:650 27px Fraunces,Georgia,serif;margin:5px 0 7px}
+.sum-head-top p{font-size:12px;line-height:1.6;max-width:630px;color:var(--mu);margin:0}
+.sum-head-top .hub-actions{display:flex;flex-wrap:wrap;justify-content:flex-end}
+.sum-facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:20px}
+.sum-facts>div{background:var(--gl2);border:1px solid var(--bd);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:6px}
+.sum-facts small{font-size:10px;color:var(--mu)}
+.sum-facts strong{font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.sum-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:11px}
+.sum-metric{background:var(--gl2);padding:10px 13px;border-radius:10px;border:1px solid var(--bd);display:flex;align-items:baseline;gap:10px}
+.sum-metric b{font:600 23px Fraunces,Georgia,serif}
+.sum-metric small{font-size:10px;line-height:1.3;color:var(--mu)}
+.sum-metric-alert{border-color:rgba(218,158,68,.42)}
+.sum-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:16px;align-items:start}
+.sum-main,.sum-aside{display:flex;flex-direction:column;gap:15px;min-width:0}
+.sum-section{border:1px solid var(--bd);background:var(--gl2);border-radius:14px;overflow:hidden}
+.sum-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 16px 12px;border-bottom:1px solid var(--bd)}
+.sum-section-head h3{font:600 17px Fraunces,Georgia,serif;line-height:1.35;margin:0}
+.sum-section-head .btn{font-size:11px;min-height:30px;white-space:nowrap}
+.sum-confirmed-list,.sum-pending-list,.sum-person-list,.sum-tasks,.sum-material-list{padding:10px 16px 14px;display:flex;flex-direction:column;gap:9px}
+.sum-answer{display:flex;gap:10px;padding:11px;border-radius:10px;background:var(--hv)}
+.sum-done-marker{display:grid;place-items:center;flex:none;border-radius:50%;width:21px;height:21px;background:rgba(57,154,112,.18);color:#35a47e;font-weight:bold;font-size:12px}
+.sum-answer b{font-size:12px;line-height:1.4}
+.sum-answer p{font-size:12px;line-height:1.55;margin:4px 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.sum-answer small{font-size:10px;color:var(--mu)}
+.sum-pending-item{display:flex;gap:10px;align-items:flex-start;padding:10px 11px;border:1px solid var(--bd);border-radius:9px}
+.sum-pending-dot{width:8px;height:8px;flex:none;border-radius:50%;background:var(--wa);margin-top:5px}
+.sum-pending-item div,.sum-person div,.sum-task div,.sum-material div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.sum-pending-item b,.sum-person b,.sum-task b,.sum-material strong{font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.sum-pending-item small,.sum-person small,.sum-task small,.sum-material small{font-size:10.5px;color:var(--mu);line-height:1.5;overflow-wrap:anywhere}
+.sum-subtle{padding:0 16px 13px;margin:0;color:var(--mu);font-size:10.5px;line-height:1.6}
+.sum-empty{padding:13px;font-size:12px;line-height:1.6;border:1px dashed var(--bd);border-radius:9px;color:var(--mu)}
+.sum-person{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid var(--bd)}
+.sum-person:last-child{border-bottom:0}
+.sum-task{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--bd)}
+.sum-task:last-child{border-bottom:0}
+.sum-task-status,.sum-task-late{display:inline-flex;flex:none;max-width:94px;font-size:9px;padding:4px 6px;border-radius:6px;border:1px solid var(--bd)}
+.sum-task-late{color:#d85d54;border-color:rgba(216,93,84,.35);background:rgba(216,93,84,.1)}
+.sum-meeting{padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.sum-meeting b{font-size:13px}
+.sum-meeting small{font-size:10px;color:var(--mu)}
+.sum-meeting h4{font-size:11px;margin:8px 0 0}
+.sum-meeting p{font-size:12px;line-height:1.6;white-space:pre-wrap;margin:0}
+.sum-material{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--bd)}
+.sum-material:last-child{border-bottom:0}
+.sum-material .btn{white-space:nowrap;flex:none;font-size:10px;min-height:28px}
+.sum-loading{border:1px dashed var(--bd);border-radius:14px;padding:28px;color:var(--mu)}
+@media(max-width:1000px){.sum-facts{grid-template-columns:repeat(2,minmax(0,1fr))}.sum-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.sum-grid{grid-template-columns:1fr}}
+@media(max-width:600px){.sum-header{padding:15px}.sum-head-top{flex-direction:column}.sum-head-top h2{font-size:23px}.sum-facts{grid-template-columns:1fr 1fr}.sum-metric{flex-direction:column;gap:3px}.sum-section-head{flex-direction:column;align-items:flex-start}.sum-material{flex-direction:column;align-items:flex-start}.sum-person{flex-direction:column}}
