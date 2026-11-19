@@ -8,10 +8,17 @@ const index=read('../index.html');
 const demo=read('../demo.html');
 const sql=read('../supabase/migrations/202611180006_requesters_eventflow.sql');
 const onboarding=read('../supabase/migrations/202611180007_shared_project_onboarding.sql');
+const bridge=read('../supabase/migrations/202611190008_dcs_authorities_bridge.sql');
 
 test('catálogo Autoridades SP é lido diretamente e não alterado pelo HUB',()=>{
- assert.match(backend,/from\('autoridades'\)/);
- assert.match(backend,/\.eq\('kind','deputado_estadual'\)/);
+ assert.match(backend,/supabase\.rpc\('dcs_list_authorities',\{p_kind:null\}\)/);
+ assert.match(backend,/supabase\.rpc\('dcs_list_authorities',\{p_kind:'deputado_estadual'\}\)/);
+ assert.doesNotMatch(backend,/\.from\('autoridades'\)/);
+ assert.match(bridge,/public\.consultar_autoridades_seguras\(\)/);
+ assert.match(bridge,/public\.is_member\(\)/);
+ assert.match(bridge,/revoke all on function public\.dcs_list_authorities\(text\) from public, anon/);
+ assert.match(bridge,/grant execute on function public\.dcs_list_authorities\(text\) to authenticated/);
+ assert.doesNotMatch(bridge,/grant (select|all) on public\.autoridades/i);
  assert.match(backend,/async listAuthorities\(/);
  assert.doesNotMatch(backend,/from\('autoridades'\)\.insert/);
  assert.doesNotMatch(backend,/from\('autoridades'\)\.update/);
