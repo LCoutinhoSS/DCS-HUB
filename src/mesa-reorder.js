@@ -65,7 +65,7 @@ G.renderParticipants=function(ev){
 };
 function renderFocus(id){
  B().rr();
- if(id)document.querySelectorAll('[data-mesa-event][data-mesa-id]').forEach(x=>{if(x.dataset.mesaId===id&&x.tabIndex===0)x.focus();});
+ if(id)document.querySelectorAll('.gab-mesa-editor .gab-protocol-row[data-mesa-id]').forEach(x=>{if(x.dataset.mesaId===id&&x.tabIndex===0)x.focus();});
 }
 function reorder(eid,from,to,after){
  const ev=B()?.E?.find(x=>x.id===eid);if(!ev||!canEdit(ev)||saving.has(eid))return;
