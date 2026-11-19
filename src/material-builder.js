@@ -130,11 +130,76 @@ function roteiro(ev,state,meetings,tasks,questions){
  out.push(block('note','Minuta operacional: horários intermediários, precedência e presença de autoridades exigem validação do Cerimonial antes de utilização.'));
  return out;
 }
+// Ordem de cadastro NÃO equivale à precedência. Usamos apenas a ordem manual do Cerimonial.
+function orderedMesa(state){
+ return (state.participants||[]).filter(p=>p.active!==false&&p.participation==='mesa'
+   &&p.invitation_status!=='declined')
+  .sort((a,b)=>(a.protocol_order??999)-(b.protocol_order??999)||
+     String(a.full_name).localeCompare(String(b.full_name),'pt-BR'));
+}
+const protocolStatus=p=>p.invitation_status==='confirmed'?'CONFIRMADO':'PRESENÇA A CONFIRMAR';
+const protocolTitle=p=>clean(p.honorific||'TRATAMENTO A CONFIRMAR');
+const protocolName=p=>clean(p.full_name||'NOME A CONFIRMAR');
+const protocolRole=p=>clean(p.role_title||'CARGO A CONFIRMAR');
+const protocolOrder=p=>Number.isInteger(p.protocol_order)?String(p.protocol_order):'ORDEM A CONFIRMAR';
+function nominata(ev,state){
+ const mesa=orderedMesa(state);
+ const guests=(state.participants||[]).filter(p=>p.active!==false&&
+  p.participation!=='mesa'&&p.invitation_status!=='declined');
+ const out=[
+  block('title','NOMINATA — '+clean(ev.t||'EVENTO')),
+  block('subtitle','CERIMONIAL · MINUTA DE SAUDAÇÕES E COMPOSIÇÃO DA MESA'),
+  block('meta','SOLICITANTE: '+clean(ev.requester_name||'A confirmar')),
+  block('meta','DATA: '+fmtDate(ev.d)+' · '+fmtTime(ev.d)),
+  block('heading','COMPOSIÇÃO DA MESA — ORDEM SUJEITA À VALIDAÇÃO DO CERIMONIAL')
+ ];
+ if(!mesa.length)out.push(block('note','Mesa ainda não cadastrada em Pessoas e mesa.'));
+ for(const p of mesa){
+  out.push(block('bullet',protocolOrder(p)+'. '+protocolTitle(p)+' — '+
+   protocolName(p)+' — '+protocolRole(p)+
+   (p.represented_for?' (neste ato representando '+clean(p.represented_for)+')':'')+
+   ' ['+protocolStatus(p)+']'));
+ }
+ out.push(block('heading','AUTORIDADES E OUTROS CONVIDADOS A CUMPRIMENTAR'));
+ if(!guests.length)out.push(block('note','Nenhum outro convidado cadastrado.'));
+ for(const p of guests)out.push(block('bullet',protocolTitle(p)+' — '+protocolName(p)+' — '+
+  protocolRole(p)+(p.represented_for?' — Neste ato representando '+clean(p.represented_for):'')+
+  ' ['+protocolStatus(p)+']'));
+ out.push(block('heading','SAUDAÇÃO GERAL'));
+ out.push(block('text','Em nome de '+clean(mesa[0]?.full_name||'REPRESENTANTE A CONFIRMAR')+
+  ', cumprimento as autoridades aqui presentes e senhoras e senhores. Texto de saudação a conferir pelo Cerimonial.'));
+ const representation=mesa.concat(guests).filter(p=>p.represented_for?.trim());
+ if(representation.length){
+  out.push(block('heading','REPRESENTAÇÕES INFORMADAS'));
+  for(const p of representation)out.push(block('bullet',protocolName(p)+
+   ' — neste ato representando '+clean(p.represented_for)));
+ }
+ out.push(block('note','A ordem protocolar não é calculada pelo sistema: deve ser inserida e validada manualmente. Não confundir convidado com presença confirmada.'));
+ return out;
+}
+function prismas(ev,state){
+ const mesa=orderedMesa(state);
+ const confirmed=mesa.filter(p=>p.invitation_status==='confirmed');
+ const out=[
+  block('meta','PRISMAS PARA A MESA — '+clean(ev.t||'EVENTO')),
+  block('meta','Modelo vertical de duas faces para dobrar. A face superior será invertida no PowerPoint.')
+ ];
+ // Os prismas de impressão usam apenas pessoas com presença confirmada.
+ if(!confirmed.length)return out.concat(block('note','Nenhuma pessoa confirmada para a mesa. Atualize Pessoas e mesa.'));
+ for(const p of confirmed){
+  out.push(block('heading',protocolTitle(p).toUpperCase()));
+  out.push(block('title',protocolName(p).toUpperCase()));
+  out.push(block('text',protocolRole(p).toUpperCase()));
+ }
+ return out;
+}
 function build(kind,ev,state,meetings,tasks,questions){
  if(!ev||!state)throw Error('Evento e briefing são obrigatórios');
  if(kind==='roteiro')return roteiro(ev,state,meetings,tasks,questions);
  if(kind==='resumo_reuniao')return summary(ev,state,meetings,tasks,questions);
+ if(kind==='nominata')return nominata(ev,state);
+ if(kind==='prismas')return prismas(ev,state);
  throw Error('Modelo de documento inválido');
 }
-window.DCS_MATERIAL_BUILDER={build,fmtDate,fmtTime,pending};
+window.DCS_MATERIAL_BUILDER={build,fmtDate,fmtTime,pending,orderedMesa};
 })();
