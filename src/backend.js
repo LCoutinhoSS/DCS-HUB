@@ -86,6 +86,7 @@ function enterApp() {
   const note=$('.sb .pl');if(note)note.innerHTML='Banco institucional <b>conectado</b> · <span id="pf">'+ui.S.role+'</span>';
   $('#login').hidden=true;$('#app').hidden=false;ui.route();
   if(notificationPoll)clearInterval(notificationPoll);
+  backend.refreshNotifications().catch(e=>console.warn('[DCS HUB] Avisos:',e));
   notificationPoll=setInterval(()=>{if(profile?.active)backend.refreshNotifications().catch(console.warn);},30000);
 }
 function showLogin(){
@@ -122,7 +123,7 @@ export const backend={
       await loadAll();enterApp();
     }catch(e){await supabase.auth.signOut();profile=null;alertError(e);}
   },
-  async logout(){if(notificationPoll)clearInterval(notificationPoll);notificationPoll=null;check(await supabase.auth.signOut());profile=null;profiles=[];labelById=new Map();idByLabel=new Map();window.DCS_KNOWLEDGE?.reset();window.DCS_VENUES?.reset();window.DCS_REQUESTERS?.reset();window.DCS_MEETINGS?.reset();bridge().E.splice(0);bridge().T.splice(0);bridge().N.splice(0);showLogin();bridge().toast('Sessão encerrada');},
+  async logout(){if(notificationPoll)clearInterval(notificationPoll);notificationPoll=null;check(await supabase.auth.signOut());profile=null;profiles=[];labelById=new Map();idByLabel=new Map();window.DCS_KNOWLEDGE?.reset();window.DCS_VENUES?.reset();window.DCS_REQUESTERS?.reset();window.DCS_MEETINGS?.reset();window.DCS_TASKS?.reset();bridge().E.splice(0);bridge().T.splice(0);bridge().N.splice(0);showLogin();bridge().toast('Sessão encerrada');},
   async reload(){await loadAll();bridge().refresh();},
   async createEvent(form){
     ensureUser();
@@ -166,6 +167,29 @@ export const backend={
     check(await supabase.rpc('dcs_assign_task',{p_task_id:id,p_assignee_id:idFor(label),p_team:team}));
     await this.reload();bridge().rr();bridge().toast('Responsável atualizado');
   },
+  async acceptTask(id){
+    ensureUser();
+    check(await supabase.rpc('dcs_accept_task',{p_task_id:id}));
+    await this.reload();
+    bridge().rr();
+    bridge().toast('Aceite registrado e comunicado ao criador');
+  },
+  async listTaskComments(id){
+    ensureUser();
+    return check(await supabase.from('task_comments')
+      .select('id,task_id,author_id,body,created_at').eq('task_id',id)
+      .order('created_at',{ascending:true}).limit(150));
+  },
+  async addTaskComment(id,body){
+    ensureUser();
+    const trimmed=String(body||'').trim();
+    if(!trimmed||trimmed.length>2000)throw new Error('Escreva um comentário de até 2.000 caracteres.');
+    check(await supabase.from('task_comments')
+      .insert({task_id:id,author_id:profile.id,body:trimmed}).select('id').single());
+    await this.refreshNotifications();
+    return true;
+  },
+  profileLabel(id){return id===profile?.id?'Você':labelFor(id);},
   async taskStatus(id,label){
     ensureUser();
     const status=TASK_STATUS_CODE[label];if(!status)throw new Error('Status inválido');
@@ -345,6 +369,8 @@ export const backend={
   },
   async refreshNotifications(){
     if(!profile?.active)return;
+    // Gera alertas apenas na sessão ativa; o índice impede repetição diária.
+    check(await supabase.rpc('dcs_sync_my_reminders'));
     const items=check(await supabase.from('task_notifications').select('id,task_id,title,created_at,read_at').order('created_at',{ascending:false}).limit(100));
     const ui=bridge();
     ui.N.splice(0,ui.N.length,...items.map(n=>({id:n.id,task_id:n.task_id,t:n.title,w:new Date(n.created_at).toLocaleString('pt-BR'),u:!n.read_at})));
